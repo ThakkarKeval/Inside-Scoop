@@ -1,0 +1,23 @@
+name: inside_scoop_example
+description: "Demonstrates how to use the inside_scoop plugin."
+publish_to: 'none'
+
+environment:
+  sdk: ^3.13.7
+
+dependencies:
+  cupertino_icons: ^1.0.8
+  flutter:
+    sdk: flutter
+  inside_scoop:
+    path: ../
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
