@@ -12,13 +12,35 @@ class MockInsideScoopPlatform
 
   @override
   Future<AppInfo> getAppInfo() => Future.value(
-        const AppInfo(
-          appName: 'InsideScoopMock',
-          packageName: 'com.mock.inside_scoop',
-          version: '1.0.0',
-          buildNumber: '1',
-        ),
-      );
+    const AppInfo(
+      appName: 'InsideScoopMock',
+      packageName: 'com.mock.inside_scoop',
+      version: '1.0.0',
+      buildNumber: '1',
+    ),
+  );
+
+  @override
+  Future<OsInfo> getOsInfo() => Future.value(
+    const OsInfo(
+      name: 'MockOS',
+      version: '1.0',
+      buildNumber: '100',
+      architecture: 'arm64',
+    ),
+  );
+
+  @override
+  Future<DeviceInfo> getDeviceInfo() => Future.value(
+    const DeviceInfo(
+      model: 'MockDevice',
+      manufacturer: 'MockMaker',
+      brand: 'MockBrand',
+      category: DeviceCategory.phone,
+      isPhysicalDevice: true,
+      supportedAbis: ['arm64'],
+    ),
+  );
 }
 
 void main() {
@@ -46,5 +68,27 @@ void main() {
     final result = await insideScoopPlugin.app.info();
     expect(result.isAvailable, isTrue);
     expect(result.valueOrNull?.appName, equals('InsideScoopMock'));
+  });
+
+  test('os.info returns OsInfo from platform instance', () async {
+    final InsideScoop insideScoopPlugin = InsideScoop();
+    final MockInsideScoopPlatform fakePlatform = MockInsideScoopPlatform();
+    InsideScoopPlatform.instance = fakePlatform;
+
+    final result = await insideScoopPlugin.os.info();
+    expect(result.isAvailable, isTrue);
+    expect(result.valueOrNull?.name, equals('MockOS'));
+    expect(result.valueOrNull?.architecture, equals('arm64'));
+  });
+
+  test('device.info returns DeviceInfo from platform instance', () async {
+    final InsideScoop insideScoopPlugin = InsideScoop();
+    final MockInsideScoopPlatform fakePlatform = MockInsideScoopPlatform();
+    InsideScoopPlatform.instance = fakePlatform;
+
+    final result = await insideScoopPlugin.device.info();
+    expect(result.isAvailable, isTrue);
+    expect(result.valueOrNull?.model, equals('MockDevice'));
+    expect(result.valueOrNull?.category, equals(DeviceCategory.phone));
   });
 }

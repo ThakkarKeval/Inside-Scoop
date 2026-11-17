@@ -489,6 +489,284 @@ size_t PigeonInternalDeepHash(const PlatformAppInfo& v) {
   return v.Hash();
 }
 
+// PlatformOsInfo
+
+PlatformOsInfo::PlatformOsInfo(
+  const std::string& name,
+  const std::string& version,
+  const std::string& build_number,
+  const std::string& architecture)
+ : name_(name),
+    version_(version),
+    build_number_(build_number),
+    architecture_(architecture) {}
+
+PlatformOsInfo::PlatformOsInfo(
+  const std::string& name,
+  const std::string& version,
+  const std::string& build_number,
+  const std::string& architecture,
+  const std::string* kernel_version)
+ : name_(name),
+    version_(version),
+    build_number_(build_number),
+    architecture_(architecture),
+    kernel_version_(kernel_version ? std::optional<std::string>(*kernel_version) : std::nullopt) {}
+
+const std::string& PlatformOsInfo::name() const {
+  return name_;
+}
+
+void PlatformOsInfo::set_name(std::string_view value_arg) {
+  name_ = value_arg;
+}
+
+
+const std::string& PlatformOsInfo::version() const {
+  return version_;
+}
+
+void PlatformOsInfo::set_version(std::string_view value_arg) {
+  version_ = value_arg;
+}
+
+
+const std::string& PlatformOsInfo::build_number() const {
+  return build_number_;
+}
+
+void PlatformOsInfo::set_build_number(std::string_view value_arg) {
+  build_number_ = value_arg;
+}
+
+
+const std::string& PlatformOsInfo::architecture() const {
+  return architecture_;
+}
+
+void PlatformOsInfo::set_architecture(std::string_view value_arg) {
+  architecture_ = value_arg;
+}
+
+
+const std::string* PlatformOsInfo::kernel_version() const {
+  return kernel_version_ ? &(*kernel_version_) : nullptr;
+}
+
+void PlatformOsInfo::set_kernel_version(const std::string_view* value_arg) {
+  kernel_version_ = value_arg ? std::optional<std::string>(*value_arg) : std::nullopt;
+}
+
+void PlatformOsInfo::set_kernel_version(std::string_view value_arg) {
+  kernel_version_ = value_arg;
+}
+
+
+EncodableList PlatformOsInfo::ToEncodableList() const {
+  EncodableList list;
+  list.reserve(5);
+  list.push_back(EncodableValue(name_));
+  list.push_back(EncodableValue(version_));
+  list.push_back(EncodableValue(build_number_));
+  list.push_back(EncodableValue(architecture_));
+  list.push_back(kernel_version_ ? EncodableValue(*kernel_version_) : EncodableValue());
+  return list;
+}
+
+PlatformOsInfo PlatformOsInfo::FromEncodableList(const EncodableList& list) {
+  PlatformOsInfo decoded(
+    std::get<std::string>(list[0]),
+    std::get<std::string>(list[1]),
+    std::get<std::string>(list[2]),
+    std::get<std::string>(list[3]));
+  auto& encodable_kernel_version = list[4];
+  if (!encodable_kernel_version.IsNull()) {
+    decoded.set_kernel_version(std::get<std::string>(encodable_kernel_version));
+  }
+  return decoded;
+}
+
+bool PlatformOsInfo::operator==(const PlatformOsInfo& other) const {
+  return PigeonInternalDeepEquals(name_, other.name_) && PigeonInternalDeepEquals(version_, other.version_) && PigeonInternalDeepEquals(build_number_, other.build_number_) && PigeonInternalDeepEquals(architecture_, other.architecture_) && PigeonInternalDeepEquals(kernel_version_, other.kernel_version_);
+}
+
+bool PlatformOsInfo::operator!=(const PlatformOsInfo& other) const {
+  return !(*this == other);
+}
+
+size_t PlatformOsInfo::Hash() const {
+  size_t result = 1;
+  result = result * 31 + PigeonInternalDeepHash(name_);
+  result = result * 31 + PigeonInternalDeepHash(version_);
+  result = result * 31 + PigeonInternalDeepHash(build_number_);
+  result = result * 31 + PigeonInternalDeepHash(architecture_);
+  result = result * 31 + PigeonInternalDeepHash(kernel_version_);
+  return result;
+}
+
+std::ostream& operator<<(
+  std::ostream& os,
+  const PlatformOsInfo& obj) {
+  os << "PlatformOsInfo(";
+  os << "name: ";
+  os << PigeonInternalToString(obj.name_);
+  os << ", version: ";
+  os << PigeonInternalToString(obj.version_);
+  os << ", build_number: ";
+  os << PigeonInternalToString(obj.build_number_);
+  os << ", architecture: ";
+  os << PigeonInternalToString(obj.architecture_);
+  os << ", kernel_version: ";
+  if (obj.kernel_version_) {
+    os << PigeonInternalToString(*obj.kernel_version_);
+  }
+  else {
+    os << "null";
+  }
+  os << ")";
+  return os;
+}
+
+size_t PigeonInternalDeepHash(const PlatformOsInfo& v) {
+  return v.Hash();
+}
+
+// PlatformDeviceInfo
+
+PlatformDeviceInfo::PlatformDeviceInfo(
+  const std::string& model,
+  const std::string& manufacturer,
+  const std::string& brand,
+  int64_t category_index,
+  bool is_physical_device,
+  const EncodableList& supported_abis)
+ : model_(model),
+    manufacturer_(manufacturer),
+    brand_(brand),
+    category_index_(category_index),
+    is_physical_device_(is_physical_device),
+    supported_abis_(supported_abis) {}
+
+const std::string& PlatformDeviceInfo::model() const {
+  return model_;
+}
+
+void PlatformDeviceInfo::set_model(std::string_view value_arg) {
+  model_ = value_arg;
+}
+
+
+const std::string& PlatformDeviceInfo::manufacturer() const {
+  return manufacturer_;
+}
+
+void PlatformDeviceInfo::set_manufacturer(std::string_view value_arg) {
+  manufacturer_ = value_arg;
+}
+
+
+const std::string& PlatformDeviceInfo::brand() const {
+  return brand_;
+}
+
+void PlatformDeviceInfo::set_brand(std::string_view value_arg) {
+  brand_ = value_arg;
+}
+
+
+int64_t PlatformDeviceInfo::category_index() const {
+  return category_index_;
+}
+
+void PlatformDeviceInfo::set_category_index(int64_t value_arg) {
+  category_index_ = value_arg;
+}
+
+
+bool PlatformDeviceInfo::is_physical_device() const {
+  return is_physical_device_;
+}
+
+void PlatformDeviceInfo::set_is_physical_device(bool value_arg) {
+  is_physical_device_ = value_arg;
+}
+
+
+const EncodableList& PlatformDeviceInfo::supported_abis() const {
+  return supported_abis_;
+}
+
+void PlatformDeviceInfo::set_supported_abis(const EncodableList& value_arg) {
+  supported_abis_ = value_arg;
+}
+
+
+EncodableList PlatformDeviceInfo::ToEncodableList() const {
+  EncodableList list;
+  list.reserve(6);
+  list.push_back(EncodableValue(model_));
+  list.push_back(EncodableValue(manufacturer_));
+  list.push_back(EncodableValue(brand_));
+  list.push_back(EncodableValue(category_index_));
+  list.push_back(EncodableValue(is_physical_device_));
+  list.push_back(EncodableValue(supported_abis_));
+  return list;
+}
+
+PlatformDeviceInfo PlatformDeviceInfo::FromEncodableList(const EncodableList& list) {
+  PlatformDeviceInfo decoded(
+    std::get<std::string>(list[0]),
+    std::get<std::string>(list[1]),
+    std::get<std::string>(list[2]),
+    std::get<int64_t>(list[3]),
+    std::get<bool>(list[4]),
+    std::get<EncodableList>(list[5]));
+  return decoded;
+}
+
+bool PlatformDeviceInfo::operator==(const PlatformDeviceInfo& other) const {
+  return PigeonInternalDeepEquals(model_, other.model_) && PigeonInternalDeepEquals(manufacturer_, other.manufacturer_) && PigeonInternalDeepEquals(brand_, other.brand_) && PigeonInternalDeepEquals(category_index_, other.category_index_) && PigeonInternalDeepEquals(is_physical_device_, other.is_physical_device_) && PigeonInternalDeepEquals(supported_abis_, other.supported_abis_);
+}
+
+bool PlatformDeviceInfo::operator!=(const PlatformDeviceInfo& other) const {
+  return !(*this == other);
+}
+
+size_t PlatformDeviceInfo::Hash() const {
+  size_t result = 1;
+  result = result * 31 + PigeonInternalDeepHash(model_);
+  result = result * 31 + PigeonInternalDeepHash(manufacturer_);
+  result = result * 31 + PigeonInternalDeepHash(brand_);
+  result = result * 31 + PigeonInternalDeepHash(category_index_);
+  result = result * 31 + PigeonInternalDeepHash(is_physical_device_);
+  result = result * 31 + PigeonInternalDeepHash(supported_abis_);
+  return result;
+}
+
+std::ostream& operator<<(
+  std::ostream& os,
+  const PlatformDeviceInfo& obj) {
+  os << "PlatformDeviceInfo(";
+  os << "model: ";
+  os << PigeonInternalToString(obj.model_);
+  os << ", manufacturer: ";
+  os << PigeonInternalToString(obj.manufacturer_);
+  os << ", brand: ";
+  os << PigeonInternalToString(obj.brand_);
+  os << ", category_index: ";
+  os << PigeonInternalToString(obj.category_index_);
+  os << ", is_physical_device: ";
+  os << PigeonInternalToString(obj.is_physical_device_);
+  os << ", supported_abis: ";
+  os << PigeonInternalToString(obj.supported_abis_);
+  os << ")";
+  return os;
+}
+
+size_t PigeonInternalDeepHash(const PlatformDeviceInfo& v) {
+  return v.Hash();
+}
+
 
 PigeonInternalCodecSerializer::PigeonInternalCodecSerializer() {}
 
@@ -498,6 +776,12 @@ EncodableValue PigeonInternalCodecSerializer::ReadValueOfType(
   switch (type) {
     case 129: {
         return CustomEncodableValue(PlatformAppInfo::FromEncodableList(std::get<EncodableList>(ReadValue(stream))));
+      }
+    case 130: {
+        return CustomEncodableValue(PlatformOsInfo::FromEncodableList(std::get<EncodableList>(ReadValue(stream))));
+      }
+    case 131: {
+        return CustomEncodableValue(PlatformDeviceInfo::FromEncodableList(std::get<EncodableList>(ReadValue(stream))));
       }
     default:
       return ::flutter::StandardCodecSerializer::ReadValueOfType(type, stream);
@@ -511,6 +795,16 @@ void PigeonInternalCodecSerializer::WriteValue(
     if (custom_value->type() == typeid(PlatformAppInfo)) {
       stream->WriteByte(129);
       WriteValue(EncodableValue(std::any_cast<PlatformAppInfo>(*custom_value).ToEncodableList()), stream);
+      return;
+    }
+    if (custom_value->type() == typeid(PlatformOsInfo)) {
+      stream->WriteByte(130);
+      WriteValue(EncodableValue(std::any_cast<PlatformOsInfo>(*custom_value).ToEncodableList()), stream);
+      return;
+    }
+    if (custom_value->type() == typeid(PlatformDeviceInfo)) {
+      stream->WriteByte(131);
+      WriteValue(EncodableValue(std::any_cast<PlatformDeviceInfo>(*custom_value).ToEncodableList()), stream);
       return;
     }
   }
@@ -566,6 +860,48 @@ void InsideScoopHostApi::SetUp(
       channel.SetMessageHandler([api](const EncodableValue& message, const ::flutter::MessageReply<EncodableValue>& reply) {
         try {
           ErrorOr<PlatformAppInfo> output = api->GetAppInfo();
+          if (output.has_error()) {
+            reply(WrapError(output.error()));
+            return;
+          }
+          EncodableList wrapped;
+          wrapped.push_back(CustomEncodableValue(std::move(output).TakeValue()));
+          reply(EncodableValue(std::move(wrapped)));
+        } catch (const std::exception& exception) {
+          reply(WrapError(exception.what()));
+        }
+      });
+    } else {
+      channel.SetMessageHandler(nullptr);
+    }
+  }
+  {
+    BasicMessageChannel<> channel(binary_messenger, "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getOsInfo" + prepended_suffix, &GetCodec());
+    if (api != nullptr) {
+      channel.SetMessageHandler([api](const EncodableValue& message, const ::flutter::MessageReply<EncodableValue>& reply) {
+        try {
+          ErrorOr<PlatformOsInfo> output = api->GetOsInfo();
+          if (output.has_error()) {
+            reply(WrapError(output.error()));
+            return;
+          }
+          EncodableList wrapped;
+          wrapped.push_back(CustomEncodableValue(std::move(output).TakeValue()));
+          reply(EncodableValue(std::move(wrapped)));
+        } catch (const std::exception& exception) {
+          reply(WrapError(exception.what()));
+        }
+      });
+    } else {
+      channel.SetMessageHandler(nullptr);
+    }
+  }
+  {
+    BasicMessageChannel<> channel(binary_messenger, "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getDeviceInfo" + prepended_suffix, &GetCodec());
+    if (api != nullptr) {
+      channel.SetMessageHandler([api](const EncodableValue& message, const ::flutter::MessageReply<EncodableValue>& reply) {
+        try {
+          ErrorOr<PlatformDeviceInfo> output = api->GetDeviceInfo();
           if (output.has_error()) {
             reply(WrapError(output.error()));
             return;

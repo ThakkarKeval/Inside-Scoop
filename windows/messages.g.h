@@ -117,6 +117,109 @@ class PlatformAppInfo {
 };
 
 
+// Generated class from Pigeon that represents data sent in messages.
+class PlatformOsInfo {
+ public:
+  // Constructs an object setting all non-nullable fields.
+  explicit PlatformOsInfo(
+    const std::string& name,
+    const std::string& version,
+    const std::string& build_number,
+    const std::string& architecture);
+
+  // Constructs an object setting all fields.
+  explicit PlatformOsInfo(
+    const std::string& name,
+    const std::string& version,
+    const std::string& build_number,
+    const std::string& architecture,
+    const std::string* kernel_version);
+
+  const std::string& name() const;
+  void set_name(std::string_view value_arg);
+
+  const std::string& version() const;
+  void set_version(std::string_view value_arg);
+
+  const std::string& build_number() const;
+  void set_build_number(std::string_view value_arg);
+
+  const std::string& architecture() const;
+  void set_architecture(std::string_view value_arg);
+
+  const std::string* kernel_version() const;
+  void set_kernel_version(const std::string_view* value_arg);
+  void set_kernel_version(std::string_view value_arg);
+
+  bool operator==(const PlatformOsInfo& other) const;
+  bool operator!=(const PlatformOsInfo& other) const;
+  /// Returns a hash code value for the object. This method is supported for the benefit of hash tables.
+  size_t Hash() const;
+  /// Stream output operator for formatted string representation.
+  friend std::ostream& operator<<(std::ostream& os, const PlatformOsInfo& obj);
+ private:
+  static PlatformOsInfo FromEncodableList(const ::flutter::EncodableList& list);
+  ::flutter::EncodableList ToEncodableList() const;
+  friend class InsideScoopHostApi;
+  friend class PigeonInternalCodecSerializer;
+  std::string name_;
+  std::string version_;
+  std::string build_number_;
+  std::string architecture_;
+  std::optional<std::string> kernel_version_;
+};
+
+
+// Generated class from Pigeon that represents data sent in messages.
+class PlatformDeviceInfo {
+ public:
+  // Constructs an object setting all fields.
+  explicit PlatformDeviceInfo(
+    const std::string& model,
+    const std::string& manufacturer,
+    const std::string& brand,
+    int64_t category_index,
+    bool is_physical_device,
+    const ::flutter::EncodableList& supported_abis);
+
+  const std::string& model() const;
+  void set_model(std::string_view value_arg);
+
+  const std::string& manufacturer() const;
+  void set_manufacturer(std::string_view value_arg);
+
+  const std::string& brand() const;
+  void set_brand(std::string_view value_arg);
+
+  int64_t category_index() const;
+  void set_category_index(int64_t value_arg);
+
+  bool is_physical_device() const;
+  void set_is_physical_device(bool value_arg);
+
+  const ::flutter::EncodableList& supported_abis() const;
+  void set_supported_abis(const ::flutter::EncodableList& value_arg);
+
+  bool operator==(const PlatformDeviceInfo& other) const;
+  bool operator!=(const PlatformDeviceInfo& other) const;
+  /// Returns a hash code value for the object. This method is supported for the benefit of hash tables.
+  size_t Hash() const;
+  /// Stream output operator for formatted string representation.
+  friend std::ostream& operator<<(std::ostream& os, const PlatformDeviceInfo& obj);
+ private:
+  static PlatformDeviceInfo FromEncodableList(const ::flutter::EncodableList& list);
+  ::flutter::EncodableList ToEncodableList() const;
+  friend class InsideScoopHostApi;
+  friend class PigeonInternalCodecSerializer;
+  std::string model_;
+  std::string manufacturer_;
+  std::string brand_;
+  int64_t category_index_;
+  bool is_physical_device_;
+  ::flutter::EncodableList supported_abis_;
+};
+
+
 class PigeonInternalCodecSerializer : public ::flutter::StandardCodecSerializer {
  public:
   PigeonInternalCodecSerializer();
@@ -142,6 +245,8 @@ class InsideScoopHostApi {
   virtual ~InsideScoopHostApi() {}
   virtual ErrorOr<std::optional<std::string>> GetPlatformVersion() = 0;
   virtual ErrorOr<PlatformAppInfo> GetAppInfo() = 0;
+  virtual ErrorOr<PlatformOsInfo> GetOsInfo() = 0;
+  virtual ErrorOr<PlatformDeviceInfo> GetDeviceInfo() = 0;
 
   // The codec used by InsideScoopHostApi.
   static const ::flutter::StandardMessageCodec& GetCodec();

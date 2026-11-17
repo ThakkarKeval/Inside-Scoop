@@ -1,8 +1,10 @@
 package com.cavernlabs.inside.scoop.inside_scoop
 
+import android.app.UiModeManager
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.os.Build
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import java.security.MessageDigest
@@ -78,6 +80,75 @@ class InsideScoopPlugin(private var context: Context? = null) : FlutterPlugin, I
             buildNumber = buildNumber,
             buildSignature = signature,
             installerStore = installerStore
+        )
+    }
+
+    override fun getOsInfo(): PlatformOsInfo {
+        val osName = "Android"
+        val osVersion = Build.VERSION.RELEASE ?: ""
+        val buildNumber = Build.DISPLAY?.takeIf { it.isNotBlank() } ?: Build.ID ?: ""
+        val arch = System.getProperty("os.arch") ?: (Build.SUPPORTED_ABIS?.firstOrNull() ?: "")
+        val kernelVersion = System.getProperty("os.version")
+
+        return PlatformOsInfo(
+            name = osName,
+            version = osVersion,
+            buildNumber = buildNumber,
+            architecture = arch,
+            kernelVersion = kernelVersion
+        )
+    }
+
+    override fun getDeviceInfo(): PlatformDeviceInfo {
+        val model = Build.MODEL ?: ""
+        val manufacturer = Build.MANUFACTURER ?: ""
+        val brand = Build.BRAND ?: ""
+        val fingerprint = Build.FINGERPRINT ?: ""
+        val device = Build.DEVICE ?: ""
+        val hardware = Build.HARDWARE ?: ""
+        val product = Build.PRODUCT ?: ""
+
+        val currentContext = context
+        val categoryIndex: Long = currentContext?.let { ctx ->
+            val uiModeManager = ctx.getSystemService(Context.UI_MODE_SERVICE) as? UiModeManager
+            val uiType = uiModeManager?.currentModeType ?: Configuration.UI_MODE_TYPE_NORMAL
+            when (uiType) {
+                Configuration.UI_MODE_TYPE_TELEVISION -> 5L // tv
+                Configuration.UI_MODE_TYPE_WATCH -> 4L // wearable
+                Configuration.UI_MODE_TYPE_DESK -> 2L // desktop
+                else -> {
+                    val sw = ctx.resources?.configuration?.smallestScreenWidthDp ?: 0
+                    if (sw >= 600) 1L else 0L // tablet or phone
+                }
+            }
+        } ?: 0L
+
+        val isPhysicalDevice = !(
+            fingerprint.startsWith("generic") ||
+            fingerprint.startsWith("unknown") ||
+            model.contains("google_sdk") ||
+            model.contains("Emulator") ||
+            model.contains("Android SDK built for x86") ||
+            manufacturer.contains("Genymotion") ||
+            (brand.startsWith("generic") && device.startsWith("generic")) ||
+            hardware.contains("goldfish") ||
+            hardware.contains("ranchu") ||
+            product.contains("sdk") ||
+            product.contains("google_sdk") ||
+            product.contains("sdk_x86") ||
+            product.contains("vbox86p") ||
+            product.contains("emulator")
+        )
+
+        val supportedAbis = Build.SUPPORTED_ABIS?.toList() ?: emptyList<String>()
+
+        return PlatformDeviceInfo(
+            model = model,
+            manufacturer = manufacturer,
+            brand = brand,
+            categoryIndex = categoryIndex,
+            isPhysicalDevice = isPhysicalDevice,
+            supportedAbis = supportedAbis
         )
     }
 

@@ -36,8 +36,44 @@ class PlatformAppInfo {
   final String? installerStore;
 }
 
+class PlatformOsInfo {
+  PlatformOsInfo({
+    required this.name,
+    required this.version,
+    required this.buildNumber,
+    required this.architecture,
+    this.kernelVersion,
+  });
+
+  final String name;
+  final String version;
+  final String buildNumber;
+  final String architecture;
+  final String? kernelVersion;
+}
+
+class PlatformDeviceInfo {
+  PlatformDeviceInfo({
+    required this.model,
+    required this.manufacturer,
+    required this.brand,
+    required this.categoryIndex,
+    required this.isPhysicalDevice,
+    required this.supportedAbis,
+  });
+
+  final String model;
+  final String manufacturer;
+  final String brand;
+  final int categoryIndex;
+  final bool isPhysicalDevice;
+  final List<String?> supportedAbis;
+}
+
 @HostApi()
 abstract class InsideScoopHostApi {
   String? getPlatformVersion();
   PlatformAppInfo getAppInfo();
+  PlatformOsInfo getOsInfo();
+  PlatformDeviceInfo getDeviceInfo();
 }

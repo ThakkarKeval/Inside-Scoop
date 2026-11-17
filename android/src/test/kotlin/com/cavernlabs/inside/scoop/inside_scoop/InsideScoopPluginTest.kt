@@ -3,6 +3,7 @@ package com.cavernlabs.inside.scoop.inside_scoop
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 
 internal class InsideScoopPluginTest {
     @Test
@@ -18,5 +19,25 @@ internal class InsideScoopPluginTest {
         assertFailsWith<RuntimeException> {
             plugin.getAppInfo()
         }
+    }
+
+    @Test
+    fun getOsInfo_returnsExpectedOsMetadata() {
+        val plugin = InsideScoopPlugin()
+        val osInfo = plugin.getOsInfo()
+        assertEquals("Android", osInfo.name)
+        assertNotNull(osInfo.version)
+        assertNotNull(osInfo.buildNumber)
+        assertNotNull(osInfo.architecture)
+    }
+
+    @Test
+    fun getDeviceInfo_returnsExpectedDeviceMetadata() {
+        val plugin = InsideScoopPlugin()
+        val deviceInfo = plugin.getDeviceInfo()
+        assertEquals(android.os.Build.MODEL ?: "", deviceInfo.model)
+        assertEquals(android.os.Build.MANUFACTURER ?: "", deviceInfo.manufacturer)
+        assertEquals(android.os.Build.BRAND ?: "", deviceInfo.brand)
+        assertNotNull(deviceInfo.supportedAbis)
     }
 }

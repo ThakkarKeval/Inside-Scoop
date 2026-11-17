@@ -18,6 +18,8 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
   AppInfo? _appInfo;
+  OsInfo? _osInfo;
+  DeviceInfo? _deviceInfo;
   final _insideScoopPlugin = InsideScoop();
 
   @override
@@ -37,12 +39,16 @@ class _MyAppState extends State<MyApp> {
     }
 
     final appResult = await _insideScoopPlugin.app.info();
+    final osResult = await _insideScoopPlugin.os.info();
+    final deviceResult = await _insideScoopPlugin.device.info();
 
     if (!mounted) return;
 
     setState(() {
       _platformVersion = platformVersion;
       _appInfo = appResult.valueOrNull;
+      _osInfo = osResult.valueOrNull;
+      _deviceInfo = deviceResult.valueOrNull;
     });
   }
 
@@ -51,19 +57,43 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(title: const Text('inside_scoop Example')),
-        body: Center(
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Running on: $_platformVersion\n'),
               if (_appInfo != null) ...[
-                Text('App Name: ${_appInfo!.appName}'),
-                Text('Package: ${_appInfo!.packageName}'),
-                Text(
-                  'Version: ${_appInfo!.version} (Build ${_appInfo!.buildNumber})',
+                const Text(
+                  'Application Metadata',
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                if (_appInfo!.installerStore != null)
-                  Text('Store: ${_appInfo!.installerStore}'),
+                Text('Name: ${_appInfo!.appName}'),
+                Text('Package: ${_appInfo!.packageName}'),
+                Text('Version: ${_appInfo!.version}+${_appInfo!.buildNumber}'),
+                const SizedBox(height: 12),
+              ],
+              if (_osInfo != null) ...[
+                const Text(
+                  'Operating System Metadata',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text('OS: ${_osInfo!.name} ${_osInfo!.version}'),
+                Text('Build: ${_osInfo!.buildNumber}'),
+                Text('Architecture: ${_osInfo!.architecture}'),
+                const SizedBox(height: 12),
+              ],
+              if (_deviceInfo != null) ...[
+                const Text(
+                  'Device Metadata',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text('Model: ${_deviceInfo!.model}'),
+                Text('Manufacturer: ${_deviceInfo!.manufacturer}'),
+                Text('Brand: ${_deviceInfo!.brand}'),
+                Text('Category: ${_deviceInfo!.category.name}'),
+                Text('Physical: ${_deviceInfo!.isPhysicalDevice}'),
+                Text('ABIs: ${_deviceInfo!.supportedAbis.join(", ")}'),
               ],
             ],
           ),

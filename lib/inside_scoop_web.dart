@@ -4,6 +4,8 @@ import 'package:web/web.dart' as web;
 
 import 'inside_scoop_platform_interface.dart';
 import 'src/core/models/app_info.dart';
+import 'src/core/models/device_info.dart';
+import 'src/core/models/os_info.dart';
 
 class InsideScoopWeb extends InsideScoopPlatform {
   InsideScoopWeb();
@@ -27,6 +29,37 @@ class InsideScoopWeb extends InsideScoopPlatform {
       version: '1.0.0',
       buildNumber: '1',
       installerStore: 'web',
+    );
+  }
+
+  @override
+  Future<OsInfo> getOsInfo() async {
+    final ua = web.window.navigator.userAgent;
+    final platform = web.window.navigator.platform;
+    return OsInfo(
+      name: 'Web ($platform)',
+      version: 'Browser',
+      buildNumber: ua,
+      architecture: 'wasm/js',
+      kernelVersion: null,
+    );
+  }
+
+  @override
+  Future<DeviceInfo> getDeviceInfo() async {
+    final touchPoints = web.window.navigator.maxTouchPoints;
+    final width = web.window.screen.width;
+    final category = touchPoints > 0
+        ? (width < 600 ? DeviceCategory.phone : DeviceCategory.tablet)
+        : DeviceCategory.desktop;
+
+    return DeviceInfo(
+      model: 'Browser Client',
+      manufacturer: 'Web Client',
+      brand: 'Web',
+      category: category,
+      isPhysicalDevice: true,
+      supportedAbis: const <String>['wasm', 'javascript'],
     );
   }
 }

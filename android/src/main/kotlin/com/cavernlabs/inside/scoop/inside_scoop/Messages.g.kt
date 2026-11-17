@@ -248,12 +248,132 @@ data class PlatformAppInfo (
     return "PlatformAppInfo(appName=$appName, packageName=$packageName, version=$version, buildNumber=$buildNumber, buildSignature=$buildSignature, installerStore=$installerStore)"
   }
 }
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class PlatformOsInfo (
+  val name: String,
+  val version: String,
+  val buildNumber: String,
+  val architecture: String,
+  val kernelVersion: String? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): PlatformOsInfo {
+      val name = pigeonVar_list[0] as String
+      val version = pigeonVar_list[1] as String
+      val buildNumber = pigeonVar_list[2] as String
+      val architecture = pigeonVar_list[3] as String
+      val kernelVersion = pigeonVar_list[4] as String?
+      return PlatformOsInfo(name, version, buildNumber, architecture, kernelVersion)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      name,
+      version,
+      buildNumber,
+      architecture,
+      kernelVersion,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as PlatformOsInfo
+    return MessagesPigeonUtils.deepEquals(this.name, other.name) && MessagesPigeonUtils.deepEquals(this.version, other.version) && MessagesPigeonUtils.deepEquals(this.buildNumber, other.buildNumber) && MessagesPigeonUtils.deepEquals(this.architecture, other.architecture) && MessagesPigeonUtils.deepEquals(this.kernelVersion, other.kernelVersion)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.name)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.version)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.buildNumber)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.architecture)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.kernelVersion)
+    return result
+  }
+  override fun toString(): String {
+    return "PlatformOsInfo(name=$name, version=$version, buildNumber=$buildNumber, architecture=$architecture, kernelVersion=$kernelVersion)"
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class PlatformDeviceInfo (
+  val model: String,
+  val manufacturer: String,
+  val brand: String,
+  val categoryIndex: Long,
+  val isPhysicalDevice: Boolean,
+  val supportedAbis: List<String?>
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): PlatformDeviceInfo {
+      val model = pigeonVar_list[0] as String
+      val manufacturer = pigeonVar_list[1] as String
+      val brand = pigeonVar_list[2] as String
+      val categoryIndex = pigeonVar_list[3] as Long
+      val isPhysicalDevice = pigeonVar_list[4] as Boolean
+      val supportedAbis = pigeonVar_list[5] as List<String?>
+      return PlatformDeviceInfo(model, manufacturer, brand, categoryIndex, isPhysicalDevice, supportedAbis)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      model,
+      manufacturer,
+      brand,
+      categoryIndex,
+      isPhysicalDevice,
+      supportedAbis,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as PlatformDeviceInfo
+    return MessagesPigeonUtils.deepEquals(this.model, other.model) && MessagesPigeonUtils.deepEquals(this.manufacturer, other.manufacturer) && MessagesPigeonUtils.deepEquals(this.brand, other.brand) && MessagesPigeonUtils.deepEquals(this.categoryIndex, other.categoryIndex) && MessagesPigeonUtils.deepEquals(this.isPhysicalDevice, other.isPhysicalDevice) && MessagesPigeonUtils.deepEquals(this.supportedAbis, other.supportedAbis)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.model)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.manufacturer)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.brand)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.categoryIndex)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.isPhysicalDevice)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.supportedAbis)
+    return result
+  }
+  override fun toString(): String {
+    return "PlatformDeviceInfo(model=$model, manufacturer=$manufacturer, brand=$brand, categoryIndex=$categoryIndex, isPhysicalDevice=$isPhysicalDevice, supportedAbis=$supportedAbis)"
+  }
+}
 private open class MessagesPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
       129.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
           PlatformAppInfo.fromList(it)
+        }
+      }
+      130.toByte() -> {
+        (readValue(buffer) as? List<Any?>)?.let {
+          PlatformOsInfo.fromList(it)
+        }
+      }
+      131.toByte() -> {
+        (readValue(buffer) as? List<Any?>)?.let {
+          PlatformDeviceInfo.fromList(it)
         }
       }
       else -> super.readValueOfType(type, buffer)
@@ -265,6 +385,14 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
         stream.write(129)
         writeValue(stream, value.toList())
       }
+      is PlatformOsInfo -> {
+        stream.write(130)
+        writeValue(stream, value.toList())
+      }
+      is PlatformDeviceInfo -> {
+        stream.write(131)
+        writeValue(stream, value.toList())
+      }
       else -> super.writeValue(stream, value)
     }
   }
@@ -274,6 +402,8 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
 interface InsideScoopHostApi {
   fun getPlatformVersion(): String?
   fun getAppInfo(): PlatformAppInfo
+  fun getOsInfo(): PlatformOsInfo
+  fun getDeviceInfo(): PlatformDeviceInfo
 
   companion object {
     /** The codec used by InsideScoopHostApi. */
@@ -305,6 +435,36 @@ interface InsideScoopHostApi {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
               listOf(api.getAppInfo())
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getOsInfo$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.getOsInfo())
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getDeviceInfo$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.getDeviceInfo())
             } catch (exception: Throwable) {
               MessagesPigeonUtils.wrapError(exception)
             }

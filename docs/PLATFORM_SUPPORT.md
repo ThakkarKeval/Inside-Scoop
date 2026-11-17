@@ -40,3 +40,11 @@
 - **Windows**: Win32 (`GetModuleFileNameW`, `GetFileVersionInfoW`, `VerQueryValueW`).
 - **Linux**: POSIX binary location / desktop specification parser fallback.
 - **Web**: `web.document.title`, `web.window.location.host`.
+
+### Phase 2: Device & Operating System Metadata (`OsInfo`, `DeviceInfo`)
+- **Android**: `Build` (`MODEL`, `MANUFACTURER`, `BRAND`, `VERSION.RELEASE`, `DISPLAY`, `SUPPORTED_ABIS`), emulator heuristic detection, and `UiModeManager`/smallest-width screen category resolution.
+- **iOS**: `UIDevice.current` (system name, version, idiom), `sysctlbyname` (`hw.machine`, `kern.osversion`, `kern.version`), `#if targetEnvironment(simulator)`.
+- **macOS**: `ProcessInfo.processInfo`, `sysctlbyname` (`hw.model`, `kern.osversion`, `kern.version`), MacBook laptop vs desktop classification.
+- **Windows**: `RtlGetVersion` via `ntdll.dll`, `GetNativeSystemInfo` architecture, and `GetComputerNameW`.
+- **Linux**: POSIX and system release inspection fallbacks.
+- **Web**: `package:web` reading `navigator.userAgent`, `navigator.platform`, `navigator.maxTouchPoints`, and screen resolution.

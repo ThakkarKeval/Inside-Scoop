@@ -9,6 +9,8 @@
 
 namespace inside_scoop {
 
+typedef LONG(NTAPI* RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
+
 void InsideScoopPlugin::RegisterWithRegistrar(
     flutter::PluginRegistrarWindows *registrar) {
   auto plugin = std::make_unique<InsideScoopPlugin>();
@@ -77,6 +79,93 @@ ErrorOr<PlatformAppInfo> InsideScoopPlugin::GetAppInfo() {
   std::string installer = "Windows";
   app_info.set_installer_store(installer);
   return app_info;
+}
+
+ErrorOr<PlatformOsInfo> InsideScoopPlugin::GetOsInfo() {
+  std::string os_version = "Windows";
+  std::string build_number = "";
+  std::string kernel_version = "";
+
+  HMODULE ntdll = GetModuleHandleW(L"ntdll.dll");
+  if (ntdll) {
+    auto rtl_get_version = reinterpret_cast<RtlGetVersionPtr>(
+        GetProcAddress(ntdll, "RtlGetVersion"));
+    if (rtl_get_version) {
+      RTL_OSVERSIONINFOW osvi = { sizeof(RTL_OSVERSIONINFOW) };
+      if (rtl_get_version(&osvi) == 0) {
+        std::ostringstream ver_stream;
+        ver_stream << osvi.dwMajorVersion << "." << osvi.dwMinorVersion;
+        os_version = ver_stream.str();
+
+        std::ostringstream build_stream;
+        build_stream << osvi.dwBuildNumber;
+        build_number = build_stream.str();
+
+        std::ostringstream kernel_stream;
+        kernel_stream << "NT " << osvi.dwMajorVersion << "." << osvi.dwMinorVersion << "." << osvi.dwBuildNumber;
+        kernel_version = kernel_stream.str();
+      }
+    }
+  }
+
+  SYSTEM_INFO si;
+  GetNativeSystemInfo(&si);
+  std::string arch = "unknown";
+  switch (si.wProcessorArchitecture) {
+    case PROCESSOR_ARCHITECTURE_AMD64:
+      arch = "x86_64";
+      break;
+    case PROCESSOR_ARCHITECTURE_ARM64:
+      arch = "arm64";
+      break;
+    case PROCESSOR_ARCHITECTURE_INTEL:
+      arch = "x86";
+      break;
+    case PROCESSOR_ARCHITECTURE_ARM:
+      arch = "arm";
+      break;
+    default:
+      arch = "unknown";
+      break;
+  }
+
+  PlatformOsInfo os_info("Windows", os_version, build_number, arch);
+  if (!kernel_version.empty()) {
+    os_info.set_kernel_version(kernel_version);
+  }
+  return os_info;
+}
+
+ErrorOr<PlatformDeviceInfo> InsideScoopPlugin::GetDeviceInfo() {
+  wchar_t computer_name[MAX_COMPUTERNAME_LENGTH + 1];
+  DWORD size = sizeof(computer_name) / sizeof(computer_name[0]);
+  std::string name = "WindowsDevice";
+  if (GetComputerNameW(computer_name, &size)) {
+    std::wstring wide_name(computer_name, size);
+    name = std::string(wide_name.begin(), wide_name.end());
+  }
+
+  SYSTEM_INFO si;
+  GetNativeSystemInfo(&si);
+  flutter::EncodableList abis;
+  if (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64) {
+    abis.push_back(flutter::EncodableValue("x86_64"));
+    abis.push_back(flutter::EncodableValue("x86"));
+  } else if (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_ARM64) {
+    abis.push_back(flutter::EncodableValue("arm64"));
+  } else {
+    abis.push_back(flutter::EncodableValue("x86"));
+  }
+
+  PlatformDeviceInfo device_info(
+      name,
+      "Microsoft",
+      "Windows",
+      2, // desktop
+      true,
+      abis);
+
+  return device_info;
 }
 
 }  // namespace inside_scoop

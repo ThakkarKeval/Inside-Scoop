@@ -244,11 +244,130 @@ struct PlatformAppInfo: Hashable, CustomStringConvertible {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct PlatformOsInfo: Hashable, CustomStringConvertible {
+  var name: String
+  var version: String
+  var buildNumber: String
+  var architecture: String
+  var kernelVersion: String? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> PlatformOsInfo? {
+    let name = pigeonVar_list[0] as! String
+    let version = pigeonVar_list[1] as! String
+    let buildNumber = pigeonVar_list[2] as! String
+    let architecture = pigeonVar_list[3] as! String
+    let kernelVersion: String? = nilOrValue(pigeonVar_list[4])
+
+    return PlatformOsInfo(
+      name: name,
+      version: version,
+      buildNumber: buildNumber,
+      architecture: architecture,
+      kernelVersion: kernelVersion
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      name,
+      version,
+      buildNumber,
+      architecture,
+      kernelVersion,
+    ]
+  }
+  static func == (lhs: PlatformOsInfo, rhs: PlatformOsInfo) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return MessagesPigeonInternal.deepEquals(lhs.name, rhs.name) && MessagesPigeonInternal.deepEquals(lhs.version, rhs.version) && MessagesPigeonInternal.deepEquals(lhs.buildNumber, rhs.buildNumber) && MessagesPigeonInternal.deepEquals(lhs.architecture, rhs.architecture) && MessagesPigeonInternal.deepEquals(lhs.kernelVersion, rhs.kernelVersion)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("PlatformOsInfo")
+    MessagesPigeonInternal.deepHash(value: name, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: version, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: buildNumber, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: architecture, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: kernelVersion, hasher: &hasher)
+  }
+
+  public var description: String {
+    return "PlatformOsInfo(name: \(String(describing: name)), version: \(String(describing: version)), buildNumber: \(String(describing: buildNumber)), architecture: \(String(describing: architecture)), kernelVersion: \(String(describing: kernelVersion)))"
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct PlatformDeviceInfo: Hashable, CustomStringConvertible {
+  var model: String
+  var manufacturer: String
+  var brand: String
+  var categoryIndex: Int64
+  var isPhysicalDevice: Bool
+  var supportedAbis: [String?]
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> PlatformDeviceInfo? {
+    let model = pigeonVar_list[0] as! String
+    let manufacturer = pigeonVar_list[1] as! String
+    let brand = pigeonVar_list[2] as! String
+    let categoryIndex = pigeonVar_list[3] as! Int64
+    let isPhysicalDevice = pigeonVar_list[4] as! Bool
+    let supportedAbis = pigeonVar_list[5] as! [String?]
+
+    return PlatformDeviceInfo(
+      model: model,
+      manufacturer: manufacturer,
+      brand: brand,
+      categoryIndex: categoryIndex,
+      isPhysicalDevice: isPhysicalDevice,
+      supportedAbis: supportedAbis
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      model,
+      manufacturer,
+      brand,
+      categoryIndex,
+      isPhysicalDevice,
+      supportedAbis,
+    ]
+  }
+  static func == (lhs: PlatformDeviceInfo, rhs: PlatformDeviceInfo) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return MessagesPigeonInternal.deepEquals(lhs.model, rhs.model) && MessagesPigeonInternal.deepEquals(lhs.manufacturer, rhs.manufacturer) && MessagesPigeonInternal.deepEquals(lhs.brand, rhs.brand) && MessagesPigeonInternal.deepEquals(lhs.categoryIndex, rhs.categoryIndex) && MessagesPigeonInternal.deepEquals(lhs.isPhysicalDevice, rhs.isPhysicalDevice) && MessagesPigeonInternal.deepEquals(lhs.supportedAbis, rhs.supportedAbis)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("PlatformDeviceInfo")
+    MessagesPigeonInternal.deepHash(value: model, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: manufacturer, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: brand, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: categoryIndex, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: isPhysicalDevice, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: supportedAbis, hasher: &hasher)
+  }
+
+  public var description: String {
+    return "PlatformDeviceInfo(model: \(String(describing: model)), manufacturer: \(String(describing: manufacturer)), brand: \(String(describing: brand)), categoryIndex: \(String(describing: categoryIndex)), isPhysicalDevice: \(String(describing: isPhysicalDevice)), supportedAbis: \(String(describing: supportedAbis)))"
+  }
+}
+
 private class MessagesPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
     case 129:
       return PlatformAppInfo.fromList(self.readValue() as! [Any?])
+    case 130:
+      return PlatformOsInfo.fromList(self.readValue() as! [Any?])
+    case 131:
+      return PlatformDeviceInfo.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -259,6 +378,12 @@ private class MessagesPigeonCodecWriter: FlutterStandardWriter {
   override func writeValue(_ value: Any) {
     if let value = value as? PlatformAppInfo {
       super.writeByte(129)
+      super.writeValue(value.toList())
+    } else if let value = value as? PlatformOsInfo {
+      super.writeByte(130)
+      super.writeValue(value.toList())
+    } else if let value = value as? PlatformDeviceInfo {
+      super.writeByte(131)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -284,6 +409,8 @@ class MessagesPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
 protocol InsideScoopHostApi {
   func getPlatformVersion() throws -> String?
   func getAppInfo() throws -> PlatformAppInfo
+  func getOsInfo() throws -> PlatformOsInfo
+  func getDeviceInfo() throws -> PlatformDeviceInfo
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -317,6 +444,32 @@ class InsideScoopHostApiSetup {
       }
     } else {
       getAppInfoChannel.setMessageHandler(nil)
+    }
+    let getOsInfoChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getOsInfo\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getOsInfoChannel.setMessageHandler { _, reply in
+        do {
+          let result = try api.getOsInfo()
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      getOsInfoChannel.setMessageHandler(nil)
+    }
+    let getDeviceInfoChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getDeviceInfo\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getDeviceInfoChannel.setMessageHandler { _, reply in
+        do {
+          let result = try api.getDeviceInfo()
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      getDeviceInfoChannel.setMessageHandler(nil)
     }
   }
 }
