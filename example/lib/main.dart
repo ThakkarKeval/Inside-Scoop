@@ -20,6 +20,7 @@ class _MyAppState extends State<MyApp> {
   AppInfo? _appInfo;
   OsInfo? _osInfo;
   DeviceInfo? _deviceInfo;
+  Map<ScoopFeature, ScoopCapabilityInfo> _capabilities = {};
   final _insideScoopPlugin = InsideScoop();
 
   @override
@@ -41,6 +42,7 @@ class _MyAppState extends State<MyApp> {
     final appResult = await _insideScoopPlugin.app.info();
     final osResult = await _insideScoopPlugin.os.info();
     final deviceResult = await _insideScoopPlugin.device.info();
+    final capabilities = await _insideScoopPlugin.capabilities.getAll();
 
     if (!mounted) return;
 
@@ -49,6 +51,7 @@ class _MyAppState extends State<MyApp> {
       _appInfo = appResult.valueOrNull;
       _osInfo = osResult.valueOrNull;
       _deviceInfo = deviceResult.valueOrNull;
+      _capabilities = capabilities;
     });
   }
 
@@ -94,6 +97,41 @@ class _MyAppState extends State<MyApp> {
                 Text('Category: ${_deviceInfo!.category.name}'),
                 Text('Physical: ${_deviceInfo!.isPhysicalDevice}'),
                 Text('ABIs: ${_deviceInfo!.supportedAbis.join(", ")}'),
+                const SizedBox(height: 12),
+              ],
+              if (_capabilities.isNotEmpty) ...[
+                const Text(
+                  'Feature Capabilities',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                ..._capabilities.entries.map((entry) {
+                  final color = switch (entry.value.state) {
+                    ScoopCapabilityState.supported => Colors.green,
+                    ScoopCapabilityState.unsupported => Colors.red,
+                    ScoopCapabilityState.requiresPermission => Colors.orange,
+                    ScoopCapabilityState.restricted => Colors.amber.shade800,
+                  };
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '• ${entry.key.name}: ',
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        Text(
+                          entry.value.state.name,
+                          style: TextStyle(
+                            color: color,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
               ],
             ],
           ),

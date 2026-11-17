@@ -48,3 +48,8 @@
 - **Windows**: `RtlGetVersion` via `ntdll.dll`, `GetNativeSystemInfo` architecture, and `GetComputerNameW`.
 - **Linux**: POSIX and system release inspection fallbacks.
 - **Web**: `package:web` reading `navigator.userAgent`, `navigator.platform`, `navigator.maxTouchPoints`, and screen resolution.
+
+### Phase 3: Capability Detection (`CapabilitiesService`)
+- Dynamic runtime capability inspection mapping each `ScoopFeature` to `ScoopCapabilityState` (`supported`, `unsupported`, `requiresPermission`, `restricted`) with contextual descriptions.
+- Accurately models Android SELinux sandboxing (`cpuUtilization` restricted on Android 8.0+) and permission requirements (`networkInfo` requires `ACCESS_NETWORK_STATE`).
+- Accurately models browser sandbox restrictions (unsupported CPU utilization and battery status, restricted hardware specifications, memory, and network info).

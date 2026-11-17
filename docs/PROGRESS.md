@@ -1,14 +1,14 @@
 # Progress Tracker: inside_scoop
 
-## Current Phase: Phase 2 (Device & Operating System Metadata)
+## Current Phase: Phase 3 (Capability Detection)
 
 | Phase | Description | Status | Tests | Notes |
 |---|---|:---:|:---:|---|
 | **Phase 0** | Foundation & Architecture | Completed | Passed (11 tests) | Documentation, core types & results |
 | **Phase 1** | Application Information | Completed | Passed (21 tests) | App name, package ID, version, build, signature, store |
 | **Phase 2** | Device & OS Metadata | Completed | Passed (42 tests) | OS, device model, manufacturer, arch, category, physical |
-| **Phase 3** | Capability Detection | Next | Pending | Runtime capability discovery |
-| **Phase 4** | CPU Information | Not Started | — | CPU cores, model, utilization |
+| **Phase 3** | Capability Detection | Completed | Passed (49 tests) | Runtime capability query & platform restrictions |
+| **Phase 4** | CPU Information | Next | Pending | CPU cores, model, utilization |
 | **Phase 5** | Memory Information | Not Started | — | RAM metrics, process memory |
 | **Phase 6** | Storage Information | Not Started | — | Disk metrics, app storage, quota |
 | **Phase 7** | GPU Information | Not Started | — | GPU vendor, renderer, VRAM |
