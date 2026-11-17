@@ -377,6 +377,71 @@ class PlatformCpuInfo {
   }
 }
 
+class PlatformMemoryInfo {
+  PlatformMemoryInfo({
+    required this.totalPhysicalBytes,
+    required this.availablePhysicalBytes,
+    this.processResidentBytes,
+    this.processVirtualBytes,
+    required this.isLowMemory,
+  });
+
+  int totalPhysicalBytes;
+
+  int availablePhysicalBytes;
+
+  int? processResidentBytes;
+
+  int? processVirtualBytes;
+
+  bool isLowMemory;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      totalPhysicalBytes,
+      availablePhysicalBytes,
+      processResidentBytes,
+      processVirtualBytes,
+      isLowMemory,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static PlatformMemoryInfo decode(Object result) {
+    result as List<Object?>;
+    return PlatformMemoryInfo(
+      totalPhysicalBytes: result[0]! as int,
+      availablePhysicalBytes: result[1]! as int,
+      processResidentBytes: result[2] as int?,
+      processVirtualBytes: result[3] as int?,
+      isLowMemory: result[4]! as bool,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! PlatformMemoryInfo || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(totalPhysicalBytes, other.totalPhysicalBytes) && _deepEquals(availablePhysicalBytes, other.availablePhysicalBytes) && _deepEquals(processResidentBytes, other.processResidentBytes) && _deepEquals(processVirtualBytes, other.processVirtualBytes) && _deepEquals(isLowMemory, other.isLowMemory);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'PlatformMemoryInfo(totalPhysicalBytes: $totalPhysicalBytes, availablePhysicalBytes: $availablePhysicalBytes, processResidentBytes: $processResidentBytes, processVirtualBytes: $processVirtualBytes, isLowMemory: $isLowMemory)';
+  }
+}
+
 
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
@@ -397,6 +462,9 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is PlatformCpuInfo) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
+    }    else if (value is PlatformMemoryInfo) {
+      buffer.putUint8(133);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -413,6 +481,8 @@ class _PigeonCodec extends StandardMessageCodec {
         return PlatformDeviceInfo.decode(readValue(buffer)!);
       case 132:
         return PlatformCpuInfo.decode(readValue(buffer)!);
+      case 133:
+        return PlatformMemoryInfo.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -524,5 +594,23 @@ class InsideScoopHostApi {
     )
     ;
     return pigeonVar_replyValue! as PlatformCpuInfo;
+  }
+
+  Future<PlatformMemoryInfo> getMemoryInfo() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getMemoryInfo$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return pigeonVar_replyValue! as PlatformMemoryInfo;
   }
 }

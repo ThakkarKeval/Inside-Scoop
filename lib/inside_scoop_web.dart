@@ -6,6 +6,7 @@ import 'inside_scoop_platform_interface.dart';
 import 'src/core/models/app_info.dart';
 import 'src/core/models/cpu_info.dart';
 import 'src/core/models/device_info.dart';
+import 'src/core/models/memory_info.dart';
 import 'src/core/models/os_info.dart';
 
 class InsideScoopWeb extends InsideScoopPlatform {
@@ -86,6 +87,25 @@ class InsideScoopWeb extends InsideScoopPlatform {
       maxClockSpeedMhz: null,
       systemUtilization: null,
       processUtilization: null,
+    );
+  }
+
+  @override
+  Future<MemoryInfo> getMemoryInfo() async {
+    int totalBytes = 4 * 1024 * 1024 * 1024;
+    try {
+      final mem = web.window.navigator.deviceMemory;
+      if (mem > 0) {
+        totalBytes = (mem * 1024 * 1024 * 1024).round();
+      }
+    } catch (_) {}
+
+    return MemoryInfo(
+      totalPhysicalBytes: totalBytes,
+      availablePhysicalBytes: (totalBytes * 0.5).round(),
+      processResidentBytes: null,
+      processVirtualBytes: null,
+      isLowMemory: false,
     );
   }
 }

@@ -46,6 +46,15 @@ class FakeInsideScoopHostApi extends InsideScoopHostApi {
     systemUtilization: 25.0,
     processUtilization: 5.0,
   );
+
+  @override
+  Future<PlatformMemoryInfo> getMemoryInfo() async => PlatformMemoryInfo(
+    totalPhysicalBytes: 17179869184,
+    availablePhysicalBytes: 8589934592,
+    processResidentBytes: 104857600,
+    processVirtualBytes: 209715200,
+    isLowMemory: false,
+  );
 }
 
 void main() {
@@ -108,5 +117,18 @@ void main() {
     expect(cpuInfo.maxClockSpeedMhz, equals(3000));
     expect(cpuInfo.systemUtilization, equals(25.0));
     expect(cpuInfo.processUtilization, equals(5.0));
+  });
+
+  test('getMemoryInfo converts PlatformMemoryInfo to MemoryInfo', () async {
+    final platform = MethodChannelInsideScoop(
+      hostApi: FakeInsideScoopHostApi(),
+    );
+    final memInfo = await platform.getMemoryInfo();
+    expect(memInfo.totalPhysicalBytes, equals(17179869184));
+    expect(memInfo.availablePhysicalBytes, equals(8589934592));
+    expect(memInfo.usedPhysicalBytes, equals(8589934592));
+    expect(memInfo.processResidentBytes, equals(104857600));
+    expect(memInfo.processVirtualBytes, equals(209715200));
+    expect(memInfo.isLowMemory, isFalse);
   });
 }

@@ -175,6 +175,58 @@ class InsideScoopPlugin(private var context: Context? = null) : FlutterPlugin, I
         )
     }
 
+    override fun getMemoryInfo(): PlatformMemoryInfo {
+        val currentContext = context
+        val mi = android.app.ActivityManager.MemoryInfo()
+        val activityManager = currentContext?.getSystemService(Context.ACTIVITY_SERVICE) as? android.app.ActivityManager
+        activityManager?.getMemoryInfo(mi)
+
+        val totalMem = if (mi.totalMem > 0L) mi.totalMem else {
+            readMemTotalFromProc() ?: (1024L * 1024L * 1024L * 4L)
+        }
+        val availMem = if (mi.availMem > 0L) mi.availMem else (totalMem / 2L)
+        val isLowMem = mi.lowMemory
+
+        val runtime = java.lang.Runtime.getRuntime()
+        val residentBytes = runtime.totalMemory() - runtime.freeMemory()
+
+        return PlatformMemoryInfo(
+            totalPhysicalBytes = totalMem,
+            availablePhysicalBytes = availMem,
+            processResidentBytes = if (residentBytes > 0L) residentBytes else null,
+            processVirtualBytes = null,
+            isLowMemory = isLowMem
+        )
+    }
+
+    private fun readMemTotalFromProc(): Long? {
+        return try {
+            val file = java.io.File("/proc/meminfo")
+            if (!file.exists() || !file.canRead()) return null
+            val reader = file.bufferedReader()
+            var result: Long? = null
+            reader.useLines { lines ->
+                for (line in lines) {
+                    if (line.startsWith("MemTotal:")) {
+                        val colonParts = line.split(":")
+                        if (colonParts.size >= 2) {
+                            val trimmed = colonParts[1].trim()
+                            val numStr = trimmed.split(" ")[0].trim()
+                            val kb = numStr.toLongOrNull()
+                            if (kb != null) {
+                                result = kb * 1024L
+                                break
+                            }
+                        }
+                    }
+                }
+            }
+            result
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     private fun getPhysicalCores(): Long? {
         return try {
             val coreIds = java.util.HashSet<String>()

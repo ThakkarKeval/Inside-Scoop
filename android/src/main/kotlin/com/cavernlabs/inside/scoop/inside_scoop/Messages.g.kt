@@ -419,6 +419,59 @@ data class PlatformCpuInfo (
     return "PlatformCpuInfo(architecture=$architecture, modelName=$modelName, physicalCores=$physicalCores, logicalCores=$logicalCores, maxClockSpeedMhz=$maxClockSpeedMhz, systemUtilization=$systemUtilization, processUtilization=$processUtilization)"
   }
 }
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class PlatformMemoryInfo (
+  val totalPhysicalBytes: Long,
+  val availablePhysicalBytes: Long,
+  val processResidentBytes: Long? = null,
+  val processVirtualBytes: Long? = null,
+  val isLowMemory: Boolean
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): PlatformMemoryInfo {
+      val totalPhysicalBytes = pigeonVar_list[0] as Long
+      val availablePhysicalBytes = pigeonVar_list[1] as Long
+      val processResidentBytes = pigeonVar_list[2] as Long?
+      val processVirtualBytes = pigeonVar_list[3] as Long?
+      val isLowMemory = pigeonVar_list[4] as Boolean
+      return PlatformMemoryInfo(totalPhysicalBytes, availablePhysicalBytes, processResidentBytes, processVirtualBytes, isLowMemory)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      totalPhysicalBytes,
+      availablePhysicalBytes,
+      processResidentBytes,
+      processVirtualBytes,
+      isLowMemory,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as PlatformMemoryInfo
+    return MessagesPigeonUtils.deepEquals(this.totalPhysicalBytes, other.totalPhysicalBytes) && MessagesPigeonUtils.deepEquals(this.availablePhysicalBytes, other.availablePhysicalBytes) && MessagesPigeonUtils.deepEquals(this.processResidentBytes, other.processResidentBytes) && MessagesPigeonUtils.deepEquals(this.processVirtualBytes, other.processVirtualBytes) && MessagesPigeonUtils.deepEquals(this.isLowMemory, other.isLowMemory)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.totalPhysicalBytes)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.availablePhysicalBytes)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.processResidentBytes)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.processVirtualBytes)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.isLowMemory)
+    return result
+  }
+  override fun toString(): String {
+    return "PlatformMemoryInfo(totalPhysicalBytes=$totalPhysicalBytes, availablePhysicalBytes=$availablePhysicalBytes, processResidentBytes=$processResidentBytes, processVirtualBytes=$processVirtualBytes, isLowMemory=$isLowMemory)"
+  }
+}
 private open class MessagesPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -442,6 +495,11 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
           PlatformCpuInfo.fromList(it)
         }
       }
+      133.toByte() -> {
+        (readValue(buffer) as? List<Any?>)?.let {
+          PlatformMemoryInfo.fromList(it)
+        }
+      }
       else -> super.readValueOfType(type, buffer)
     }
   }
@@ -463,6 +521,10 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
         stream.write(132)
         writeValue(stream, value.toList())
       }
+      is PlatformMemoryInfo -> {
+        stream.write(133)
+        writeValue(stream, value.toList())
+      }
       else -> super.writeValue(stream, value)
     }
   }
@@ -475,6 +537,7 @@ interface InsideScoopHostApi {
   fun getOsInfo(): PlatformOsInfo
   fun getDeviceInfo(): PlatformDeviceInfo
   fun getCpuInfo(): PlatformCpuInfo
+  fun getMemoryInfo(): PlatformMemoryInfo
 
   companion object {
     /** The codec used by InsideScoopHostApi. */
@@ -551,6 +614,21 @@ interface InsideScoopHostApi {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
               listOf(api.getCpuInfo())
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getMemoryInfo$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.getMemoryInfo())
             } catch (exception: Throwable) {
               MessagesPigeonUtils.wrapError(exception)
             }

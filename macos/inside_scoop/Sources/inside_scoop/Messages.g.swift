@@ -424,6 +424,61 @@ struct PlatformCpuInfo: Hashable, CustomStringConvertible {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct PlatformMemoryInfo: Hashable, CustomStringConvertible {
+  var totalPhysicalBytes: Int64
+  var availablePhysicalBytes: Int64
+  var processResidentBytes: Int64? = nil
+  var processVirtualBytes: Int64? = nil
+  var isLowMemory: Bool
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> PlatformMemoryInfo? {
+    let totalPhysicalBytes = pigeonVar_list[0] as! Int64
+    let availablePhysicalBytes = pigeonVar_list[1] as! Int64
+    let processResidentBytes: Int64? = nilOrValue(pigeonVar_list[2])
+    let processVirtualBytes: Int64? = nilOrValue(pigeonVar_list[3])
+    let isLowMemory = pigeonVar_list[4] as! Bool
+
+    return PlatformMemoryInfo(
+      totalPhysicalBytes: totalPhysicalBytes,
+      availablePhysicalBytes: availablePhysicalBytes,
+      processResidentBytes: processResidentBytes,
+      processVirtualBytes: processVirtualBytes,
+      isLowMemory: isLowMemory
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      totalPhysicalBytes,
+      availablePhysicalBytes,
+      processResidentBytes,
+      processVirtualBytes,
+      isLowMemory,
+    ]
+  }
+  static func == (lhs: PlatformMemoryInfo, rhs: PlatformMemoryInfo) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return MessagesPigeonInternal.deepEquals(lhs.totalPhysicalBytes, rhs.totalPhysicalBytes) && MessagesPigeonInternal.deepEquals(lhs.availablePhysicalBytes, rhs.availablePhysicalBytes) && MessagesPigeonInternal.deepEquals(lhs.processResidentBytes, rhs.processResidentBytes) && MessagesPigeonInternal.deepEquals(lhs.processVirtualBytes, rhs.processVirtualBytes) && MessagesPigeonInternal.deepEquals(lhs.isLowMemory, rhs.isLowMemory)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("PlatformMemoryInfo")
+    MessagesPigeonInternal.deepHash(value: totalPhysicalBytes, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: availablePhysicalBytes, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: processResidentBytes, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: processVirtualBytes, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: isLowMemory, hasher: &hasher)
+  }
+
+  public var description: String {
+    return "PlatformMemoryInfo(totalPhysicalBytes: \(String(describing: totalPhysicalBytes)), availablePhysicalBytes: \(String(describing: availablePhysicalBytes)), processResidentBytes: \(String(describing: processResidentBytes)), processVirtualBytes: \(String(describing: processVirtualBytes)), isLowMemory: \(String(describing: isLowMemory)))"
+  }
+}
+
 private class MessagesPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -435,6 +490,8 @@ private class MessagesPigeonCodecReader: FlutterStandardReader {
       return PlatformDeviceInfo.fromList(self.readValue() as! [Any?])
     case 132:
       return PlatformCpuInfo.fromList(self.readValue() as! [Any?])
+    case 133:
+      return PlatformMemoryInfo.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -454,6 +511,9 @@ private class MessagesPigeonCodecWriter: FlutterStandardWriter {
       super.writeValue(value.toList())
     } else if let value = value as? PlatformCpuInfo {
       super.writeByte(132)
+      super.writeValue(value.toList())
+    } else if let value = value as? PlatformMemoryInfo {
+      super.writeByte(133)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -482,6 +542,7 @@ protocol InsideScoopHostApi {
   func getOsInfo() throws -> PlatformOsInfo
   func getDeviceInfo() throws -> PlatformDeviceInfo
   func getCpuInfo() throws -> PlatformCpuInfo
+  func getMemoryInfo() throws -> PlatformMemoryInfo
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -554,6 +615,19 @@ class InsideScoopHostApiSetup {
       }
     } else {
       getCpuInfoChannel.setMessageHandler(nil)
+    }
+    let getMemoryInfoChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getMemoryInfo\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getMemoryInfoChannel.setMessageHandler { _, reply in
+        do {
+          let result = try api.getMemoryInfo()
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      getMemoryInfoChannel.setMessageHandler(nil)
     }
   }
 }

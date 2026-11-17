@@ -52,6 +52,15 @@ class MockInsideScoopPlatform
       maxClockSpeedMhz: 3200,
     ),
   );
+
+  @override
+  Future<MemoryInfo> getMemoryInfo() => Future.value(
+    const MemoryInfo(
+      totalPhysicalBytes: 8589934592,
+      availablePhysicalBytes: 4294967296,
+      isLowMemory: false,
+    ),
+  );
 }
 
 void main() {
@@ -113,5 +122,17 @@ void main() {
     expect(result.valueOrNull?.architecture, equals('arm64'));
     expect(result.valueOrNull?.modelName, equals('MockChip'));
     expect(result.valueOrNull?.logicalCores, equals(8));
+  });
+
+  test('memory.info returns MemoryInfo from platform instance', () async {
+    final InsideScoop insideScoopPlugin = InsideScoop();
+    final MockInsideScoopPlatform fakePlatform = MockInsideScoopPlatform();
+    InsideScoopPlatform.instance = fakePlatform;
+
+    final result = await insideScoopPlugin.memory.info();
+    expect(result.isAvailable, isTrue);
+    expect(result.valueOrNull?.totalPhysicalBytes, equals(8589934592));
+    expect(result.valueOrNull?.availablePhysicalBytes, equals(4294967296));
+    expect(result.valueOrNull?.isLowMemory, isFalse);
   });
 }

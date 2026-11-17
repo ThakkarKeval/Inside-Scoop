@@ -1,6 +1,6 @@
 # Progress Tracker: inside_scoop
 
-## Current Phase: Phase 4 (CPU Information)
+## Current Phase: Phase 5 (Memory Information)
 
 | Phase | Description | Status | Tests | Notes |
 |---|---|:---:|:---:|---|
@@ -9,8 +9,8 @@
 | **Phase 2** | Device & OS Metadata | Completed | Passed (42 tests) | OS, device model, manufacturer, arch, category, physical |
 | **Phase 3** | Capability Detection | Completed | Passed (49 tests) | Runtime capability query & platform restrictions |
 | **Phase 4** | CPU Information | Completed | Passed (55 tests) | Architecture, core counts, CPU model, clock frequency |
-| **Phase 5** | Memory Information | Next | Pending | RAM metrics, process memory |
-| **Phase 6** | Storage Information | Not Started | — | Disk metrics, app storage, quota |
+| **Phase 5** | Memory Information | Completed | Passed (62 tests) | RAM totals, available, process memory, low memory |
+| **Phase 6** | Storage Information | Next | Pending | Disk metrics, app storage, quota |
 | **Phase 7** | GPU Information | Not Started | — | GPU vendor, renderer, VRAM |
 | **Phase 8** | Battery & Power | Not Started | — | Level, charging, power state |
 | **Phase 9** | Network Information | Not Started | — | Interfaces, connection categories |

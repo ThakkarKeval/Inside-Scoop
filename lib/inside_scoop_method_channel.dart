@@ -2,6 +2,7 @@ import 'inside_scoop_platform_interface.dart';
 import 'src/core/models/app_info.dart';
 import 'src/core/models/cpu_info.dart';
 import 'src/core/models/device_info.dart';
+import 'src/core/models/memory_info.dart';
 import 'src/core/models/os_info.dart';
 import 'src/messages.g.dart';
 
@@ -65,6 +66,18 @@ class MethodChannelInsideScoop extends InsideScoopPlatform {
       maxClockSpeedMhz: platformCpu.maxClockSpeedMhz,
       systemUtilization: platformCpu.systemUtilization,
       processUtilization: platformCpu.processUtilization,
+    );
+  }
+
+  @override
+  Future<MemoryInfo> getMemoryInfo() async {
+    final platformMemory = await _hostApi.getMemoryInfo();
+    return MemoryInfo(
+      totalPhysicalBytes: platformMemory.totalPhysicalBytes,
+      availablePhysicalBytes: platformMemory.availablePhysicalBytes,
+      processResidentBytes: platformMemory.processResidentBytes,
+      processVirtualBytes: platformMemory.processVirtualBytes,
+      isLowMemory: platformMemory.isLowMemory,
     );
   }
 }

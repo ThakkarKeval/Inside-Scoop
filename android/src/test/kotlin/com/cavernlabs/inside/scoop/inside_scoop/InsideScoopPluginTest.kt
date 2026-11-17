@@ -48,4 +48,12 @@ internal class InsideScoopPluginTest {
         assertNotNull(cpuInfo.architecture)
         assertEquals(true, cpuInfo.logicalCores >= 1L)
     }
+
+    @Test
+    fun getMemoryInfo_returnsExpectedMemoryMetadata() {
+        val plugin = InsideScoopPlugin()
+        val memoryInfo = plugin.getMemoryInfo()
+        assertEquals(true, memoryInfo.totalPhysicalBytes > 0L)
+        assertEquals(true, memoryInfo.availablePhysicalBytes > 0L)
+    }
 }

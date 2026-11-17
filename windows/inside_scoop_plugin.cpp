@@ -1,6 +1,7 @@
 #include "inside_scoop_plugin.h"
 
 #include <windows.h>
+#include <psapi.h>
 #include <VersionHelpers.h>
 
 #include <memory>
@@ -264,6 +265,38 @@ ErrorOr<PlatformCpuInfo> InsideScoopPlugin::GetCpuInfo() {
   }
 
   return cpu_info;
+}
+
+ErrorOr<PlatformMemoryInfo> InsideScoopPlugin::GetMemoryInfo() {
+  MEMORYSTATUSEX statex;
+  statex.dwLength = sizeof(statex);
+  int64_t total_phys = 0;
+  int64_t avail_phys = 0;
+  bool is_low_mem = false;
+
+  if (GlobalMemoryStatusEx(&statex)) {
+    total_phys = static_cast<int64_t>(statex.ullTotalPhys);
+    avail_phys = static_cast<int64_t>(statex.ullAvailPhys);
+    is_low_mem = (statex.dwMemoryLoad >= 90);
+  }
+
+  PROCESS_MEMORY_COUNTERS pmc;
+  int64_t resident_bytes = 0;
+  int64_t virtual_bytes = 0;
+  if (K32GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc))) {
+    resident_bytes = static_cast<int64_t>(pmc.WorkingSetSize);
+    virtual_bytes = static_cast<int64_t>(pmc.PagefileUsage);
+  }
+
+  PlatformMemoryInfo mem_info(total_phys, avail_phys, is_low_mem);
+  if (resident_bytes > 0) {
+    mem_info.set_process_resident_bytes(resident_bytes);
+  }
+  if (virtual_bytes > 0) {
+    mem_info.set_process_virtual_bytes(virtual_bytes);
+  }
+
+  return mem_info;
 }
 
 }  // namespace inside_scoop

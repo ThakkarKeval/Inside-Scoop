@@ -21,6 +21,7 @@ class _MyAppState extends State<MyApp> {
   OsInfo? _osInfo;
   DeviceInfo? _deviceInfo;
   CpuInfo? _cpuInfo;
+  MemoryInfo? _memoryInfo;
   Map<ScoopFeature, ScoopCapabilityInfo> _capabilities = {};
   final _insideScoopPlugin = InsideScoop();
 
@@ -44,6 +45,7 @@ class _MyAppState extends State<MyApp> {
     final osResult = await _insideScoopPlugin.os.info();
     final deviceResult = await _insideScoopPlugin.device.info();
     final cpuResult = await _insideScoopPlugin.cpu.info();
+    final memoryResult = await _insideScoopPlugin.memory.info();
     final capabilities = await _insideScoopPlugin.capabilities.getAll();
 
     if (!mounted) return;
@@ -54,6 +56,7 @@ class _MyAppState extends State<MyApp> {
       _osInfo = osResult.valueOrNull;
       _deviceInfo = deviceResult.valueOrNull;
       _cpuInfo = cpuResult.valueOrNull;
+      _memoryInfo = memoryResult.valueOrNull;
       _capabilities = capabilities;
     });
   }
@@ -115,6 +118,19 @@ class _MyAppState extends State<MyApp> {
                   Text('Physical Cores: ${_cpuInfo!.physicalCores}'),
                 if (_cpuInfo!.maxClockSpeedMhz != null)
                   Text('Clock Speed: ${_cpuInfo!.maxClockSpeedMhz} MHz'),
+                const SizedBox(height: 12),
+              ],
+              if (_memoryInfo != null) ...[
+                const Text(
+                  'System Memory (RAM)',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text('Total: ${_memoryInfo!.totalPhysicalMb} MB (${_memoryInfo!.totalPhysicalGb.toStringAsFixed(1)} GB)'),
+                Text('Available: ${_memoryInfo!.availablePhysicalMb} MB (${_memoryInfo!.availablePhysicalGb.toStringAsFixed(1)} GB)'),
+                Text('Used: ${_memoryInfo!.usedPhysicalMb} MB (${_memoryInfo!.usagePercentage.toStringAsFixed(1)}%)'),
+                Text('Low Memory Warning: ${_memoryInfo!.isLowMemory}'),
+                if (_memoryInfo!.processResidentBytes != null)
+                  Text('App Resident: ${(_memoryInfo!.processResidentBytes! / (1024 * 1024)).toStringAsFixed(1)} MB'),
                 const SizedBox(height: 12),
               ],
               if (_capabilities.isNotEmpty) ...[

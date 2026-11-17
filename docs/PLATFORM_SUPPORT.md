@@ -60,3 +60,10 @@
 - **macOS**: `sysctlbyname("machdep.cpu.brand_string")`, `hw.logicalcpu`, `hw.physicalcpu`, and `hw.cpufrequency`.
 - **Windows**: Win32 `GetNativeSystemInfo`, `GetLogicalProcessorInformationEx` for physical cores, registry `CentralProcessor\0` for processor model name and clock speed.
 - **Web**: `window.navigator.hardwareConcurrency` logical cores, architecture inference via `userAgent`, with unsupported fields properly set to `null` to respect browser security boundaries.
+
+### Phase 5: Memory Information (`MemoryInfo`)
+- **Android**: `ActivityManager.MemoryInfo` for total memory, available memory, and low memory warning flag; JVM runtime memory for process resident memory, and `/proc/meminfo` fallback.
+- **iOS**: `ProcessInfo.processInfo.physicalMemory` for total RAM, Mach `host_statistics64` (`HOST_VM_INFO64`) for available memory, and Mach `mach_task_basic_info` for resident/virtual process sizes.
+- **macOS**: `ProcessInfo.processInfo.physicalMemory` for total RAM, Mach `host_statistics64` (`HOST_VM_INFO64`) for available memory, and Mach `mach_task_basic_info` for resident/virtual process sizes.
+- **Windows**: Win32 `GlobalMemoryStatusEx` for total/available physical RAM and memory load pressure; `K32GetProcessMemoryInfo` for working set size (resident) and pagefile usage (virtual).
+- **Web**: `navigator.deviceMemory` for approximate hardware memory, with low memory flags and safe fallback to prevent browser side-channel leakage.

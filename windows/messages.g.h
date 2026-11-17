@@ -285,6 +285,59 @@ class PlatformCpuInfo {
 };
 
 
+// Generated class from Pigeon that represents data sent in messages.
+class PlatformMemoryInfo {
+ public:
+  // Constructs an object setting all non-nullable fields.
+  explicit PlatformMemoryInfo(
+    int64_t total_physical_bytes,
+    int64_t available_physical_bytes,
+    bool is_low_memory);
+
+  // Constructs an object setting all fields.
+  explicit PlatformMemoryInfo(
+    int64_t total_physical_bytes,
+    int64_t available_physical_bytes,
+    const int64_t* process_resident_bytes,
+    const int64_t* process_virtual_bytes,
+    bool is_low_memory);
+
+  int64_t total_physical_bytes() const;
+  void set_total_physical_bytes(int64_t value_arg);
+
+  int64_t available_physical_bytes() const;
+  void set_available_physical_bytes(int64_t value_arg);
+
+  const int64_t* process_resident_bytes() const;
+  void set_process_resident_bytes(const int64_t* value_arg);
+  void set_process_resident_bytes(int64_t value_arg);
+
+  const int64_t* process_virtual_bytes() const;
+  void set_process_virtual_bytes(const int64_t* value_arg);
+  void set_process_virtual_bytes(int64_t value_arg);
+
+  bool is_low_memory() const;
+  void set_is_low_memory(bool value_arg);
+
+  bool operator==(const PlatformMemoryInfo& other) const;
+  bool operator!=(const PlatformMemoryInfo& other) const;
+  /// Returns a hash code value for the object. This method is supported for the benefit of hash tables.
+  size_t Hash() const;
+  /// Stream output operator for formatted string representation.
+  friend std::ostream& operator<<(std::ostream& os, const PlatformMemoryInfo& obj);
+ private:
+  static PlatformMemoryInfo FromEncodableList(const ::flutter::EncodableList& list);
+  ::flutter::EncodableList ToEncodableList() const;
+  friend class InsideScoopHostApi;
+  friend class PigeonInternalCodecSerializer;
+  int64_t total_physical_bytes_;
+  int64_t available_physical_bytes_;
+  std::optional<int64_t> process_resident_bytes_;
+  std::optional<int64_t> process_virtual_bytes_;
+  bool is_low_memory_;
+};
+
+
 class PigeonInternalCodecSerializer : public ::flutter::StandardCodecSerializer {
  public:
   PigeonInternalCodecSerializer();
@@ -313,6 +366,7 @@ class InsideScoopHostApi {
   virtual ErrorOr<PlatformOsInfo> GetOsInfo() = 0;
   virtual ErrorOr<PlatformDeviceInfo> GetDeviceInfo() = 0;
   virtual ErrorOr<PlatformCpuInfo> GetCpuInfo() = 0;
+  virtual ErrorOr<PlatformMemoryInfo> GetMemoryInfo() = 0;
 
   // The codec used by InsideScoopHostApi.
   static const ::flutter::StandardMessageCodec& GetCodec();

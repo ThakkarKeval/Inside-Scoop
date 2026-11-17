@@ -139,4 +139,44 @@ public class InsideScoopPlugin: NSObject, FlutterPlugin, InsideScoopHostApi {
       processUtilization: nil
     )
   }
+
+  func getMemoryInfo() throws -> PlatformMemoryInfo {
+    let totalMem = Int64(ProcessInfo.processInfo.physicalMemory)
+    var pageSize: vm_size_t = 0
+    host_page_size(mach_host_self(), &pageSize)
+
+    var count = mach_msg_type_number_t(MemoryLayout<vm_statistics64_data_t>.size / MemoryLayout<integer_t>.size)
+    var vmStats = vm_statistics64_data_t()
+    let kernReturn = withUnsafeMutablePointer(to: &vmStats) {
+      $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
+        host_statistics64(mach_host_self(), HOST_VM_INFO64, $0, &count)
+      }
+    }
+
+    var availableMem: Int64 = totalMem / 2
+    if kernReturn == KERN_SUCCESS && pageSize > 0 {
+      let freeBytes = Int64(vmStats.free_count) * Int64(pageSize)
+      let inactiveBytes = Int64(vmStats.inactive_count) * Int64(pageSize)
+      availableMem = freeBytes + inactiveBytes
+    }
+
+    var taskInfo = mach_task_basic_info()
+    var taskCount = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size / MemoryLayout<integer_t>.size)
+    let taskReturn = withUnsafeMutablePointer(to: &taskInfo) {
+      $0.withMemoryRebound(to: integer_t.self, capacity: Int(taskCount)) {
+        task_info(mach_task_self_, task_flavor_t(MACH_TASK_BASIC_INFO), $0, &taskCount)
+      }
+    }
+
+    let residentBytes: Int64? = taskReturn == KERN_SUCCESS ? Int64(taskInfo.resident_size) : nil
+    let virtualBytes: Int64? = taskReturn == KERN_SUCCESS ? Int64(taskInfo.virtual_size) : nil
+
+    return PlatformMemoryInfo(
+      totalPhysicalBytes: totalMem,
+      availablePhysicalBytes: availableMem,
+      processResidentBytes: residentBytes,
+      processVirtualBytes: virtualBytes,
+      isLowMemory: availableMem < (totalMem / 10)
+    )
+  }
 }

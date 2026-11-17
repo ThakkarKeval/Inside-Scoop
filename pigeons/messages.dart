@@ -90,6 +90,22 @@ class PlatformCpuInfo {
   final double? processUtilization;
 }
 
+class PlatformMemoryInfo {
+  PlatformMemoryInfo({
+    required this.totalPhysicalBytes,
+    required this.availablePhysicalBytes,
+    this.processResidentBytes,
+    this.processVirtualBytes,
+    required this.isLowMemory,
+  });
+
+  final int totalPhysicalBytes;
+  final int availablePhysicalBytes;
+  final int? processResidentBytes;
+  final int? processVirtualBytes;
+  final bool isLowMemory;
+}
+
 @HostApi()
 abstract class InsideScoopHostApi {
   String? getPlatformVersion();
@@ -97,4 +113,5 @@ abstract class InsideScoopHostApi {
   PlatformOsInfo getOsInfo();
   PlatformDeviceInfo getDeviceInfo();
   PlatformCpuInfo getCpuInfo();
+  PlatformMemoryInfo getMemoryInfo();
 }

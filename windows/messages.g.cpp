@@ -985,6 +985,158 @@ size_t PigeonInternalDeepHash(const PlatformCpuInfo& v) {
   return v.Hash();
 }
 
+// PlatformMemoryInfo
+
+PlatformMemoryInfo::PlatformMemoryInfo(
+  int64_t total_physical_bytes,
+  int64_t available_physical_bytes,
+  bool is_low_memory)
+ : total_physical_bytes_(total_physical_bytes),
+    available_physical_bytes_(available_physical_bytes),
+    is_low_memory_(is_low_memory) {}
+
+PlatformMemoryInfo::PlatformMemoryInfo(
+  int64_t total_physical_bytes,
+  int64_t available_physical_bytes,
+  const int64_t* process_resident_bytes,
+  const int64_t* process_virtual_bytes,
+  bool is_low_memory)
+ : total_physical_bytes_(total_physical_bytes),
+    available_physical_bytes_(available_physical_bytes),
+    process_resident_bytes_(process_resident_bytes ? std::optional<int64_t>(*process_resident_bytes) : std::nullopt),
+    process_virtual_bytes_(process_virtual_bytes ? std::optional<int64_t>(*process_virtual_bytes) : std::nullopt),
+    is_low_memory_(is_low_memory) {}
+
+int64_t PlatformMemoryInfo::total_physical_bytes() const {
+  return total_physical_bytes_;
+}
+
+void PlatformMemoryInfo::set_total_physical_bytes(int64_t value_arg) {
+  total_physical_bytes_ = value_arg;
+}
+
+
+int64_t PlatformMemoryInfo::available_physical_bytes() const {
+  return available_physical_bytes_;
+}
+
+void PlatformMemoryInfo::set_available_physical_bytes(int64_t value_arg) {
+  available_physical_bytes_ = value_arg;
+}
+
+
+const int64_t* PlatformMemoryInfo::process_resident_bytes() const {
+  return process_resident_bytes_ ? &(*process_resident_bytes_) : nullptr;
+}
+
+void PlatformMemoryInfo::set_process_resident_bytes(const int64_t* value_arg) {
+  process_resident_bytes_ = value_arg ? std::optional<int64_t>(*value_arg) : std::nullopt;
+}
+
+void PlatformMemoryInfo::set_process_resident_bytes(int64_t value_arg) {
+  process_resident_bytes_ = value_arg;
+}
+
+
+const int64_t* PlatformMemoryInfo::process_virtual_bytes() const {
+  return process_virtual_bytes_ ? &(*process_virtual_bytes_) : nullptr;
+}
+
+void PlatformMemoryInfo::set_process_virtual_bytes(const int64_t* value_arg) {
+  process_virtual_bytes_ = value_arg ? std::optional<int64_t>(*value_arg) : std::nullopt;
+}
+
+void PlatformMemoryInfo::set_process_virtual_bytes(int64_t value_arg) {
+  process_virtual_bytes_ = value_arg;
+}
+
+
+bool PlatformMemoryInfo::is_low_memory() const {
+  return is_low_memory_;
+}
+
+void PlatformMemoryInfo::set_is_low_memory(bool value_arg) {
+  is_low_memory_ = value_arg;
+}
+
+
+EncodableList PlatformMemoryInfo::ToEncodableList() const {
+  EncodableList list;
+  list.reserve(5);
+  list.push_back(EncodableValue(total_physical_bytes_));
+  list.push_back(EncodableValue(available_physical_bytes_));
+  list.push_back(process_resident_bytes_ ? EncodableValue(*process_resident_bytes_) : EncodableValue());
+  list.push_back(process_virtual_bytes_ ? EncodableValue(*process_virtual_bytes_) : EncodableValue());
+  list.push_back(EncodableValue(is_low_memory_));
+  return list;
+}
+
+PlatformMemoryInfo PlatformMemoryInfo::FromEncodableList(const EncodableList& list) {
+  PlatformMemoryInfo decoded(
+    std::get<int64_t>(list[0]),
+    std::get<int64_t>(list[1]),
+    std::get<bool>(list[4]));
+  auto& encodable_process_resident_bytes = list[2];
+  if (!encodable_process_resident_bytes.IsNull()) {
+    decoded.set_process_resident_bytes(std::get<int64_t>(encodable_process_resident_bytes));
+  }
+  auto& encodable_process_virtual_bytes = list[3];
+  if (!encodable_process_virtual_bytes.IsNull()) {
+    decoded.set_process_virtual_bytes(std::get<int64_t>(encodable_process_virtual_bytes));
+  }
+  return decoded;
+}
+
+bool PlatformMemoryInfo::operator==(const PlatformMemoryInfo& other) const {
+  return PigeonInternalDeepEquals(total_physical_bytes_, other.total_physical_bytes_) && PigeonInternalDeepEquals(available_physical_bytes_, other.available_physical_bytes_) && PigeonInternalDeepEquals(process_resident_bytes_, other.process_resident_bytes_) && PigeonInternalDeepEquals(process_virtual_bytes_, other.process_virtual_bytes_) && PigeonInternalDeepEquals(is_low_memory_, other.is_low_memory_);
+}
+
+bool PlatformMemoryInfo::operator!=(const PlatformMemoryInfo& other) const {
+  return !(*this == other);
+}
+
+size_t PlatformMemoryInfo::Hash() const {
+  size_t result = 1;
+  result = result * 31 + PigeonInternalDeepHash(total_physical_bytes_);
+  result = result * 31 + PigeonInternalDeepHash(available_physical_bytes_);
+  result = result * 31 + PigeonInternalDeepHash(process_resident_bytes_);
+  result = result * 31 + PigeonInternalDeepHash(process_virtual_bytes_);
+  result = result * 31 + PigeonInternalDeepHash(is_low_memory_);
+  return result;
+}
+
+std::ostream& operator<<(
+  std::ostream& os,
+  const PlatformMemoryInfo& obj) {
+  os << "PlatformMemoryInfo(";
+  os << "total_physical_bytes: ";
+  os << PigeonInternalToString(obj.total_physical_bytes_);
+  os << ", available_physical_bytes: ";
+  os << PigeonInternalToString(obj.available_physical_bytes_);
+  os << ", process_resident_bytes: ";
+  if (obj.process_resident_bytes_) {
+    os << PigeonInternalToString(*obj.process_resident_bytes_);
+  }
+  else {
+    os << "null";
+  }
+  os << ", process_virtual_bytes: ";
+  if (obj.process_virtual_bytes_) {
+    os << PigeonInternalToString(*obj.process_virtual_bytes_);
+  }
+  else {
+    os << "null";
+  }
+  os << ", is_low_memory: ";
+  os << PigeonInternalToString(obj.is_low_memory_);
+  os << ")";
+  return os;
+}
+
+size_t PigeonInternalDeepHash(const PlatformMemoryInfo& v) {
+  return v.Hash();
+}
+
 
 PigeonInternalCodecSerializer::PigeonInternalCodecSerializer() {}
 
@@ -1003,6 +1155,9 @@ EncodableValue PigeonInternalCodecSerializer::ReadValueOfType(
       }
     case 132: {
         return CustomEncodableValue(PlatformCpuInfo::FromEncodableList(std::get<EncodableList>(ReadValue(stream))));
+      }
+    case 133: {
+        return CustomEncodableValue(PlatformMemoryInfo::FromEncodableList(std::get<EncodableList>(ReadValue(stream))));
       }
     default:
       return ::flutter::StandardCodecSerializer::ReadValueOfType(type, stream);
@@ -1031,6 +1186,11 @@ void PigeonInternalCodecSerializer::WriteValue(
     if (custom_value->type() == typeid(PlatformCpuInfo)) {
       stream->WriteByte(132);
       WriteValue(EncodableValue(std::any_cast<PlatformCpuInfo>(*custom_value).ToEncodableList()), stream);
+      return;
+    }
+    if (custom_value->type() == typeid(PlatformMemoryInfo)) {
+      stream->WriteByte(133);
+      WriteValue(EncodableValue(std::any_cast<PlatformMemoryInfo>(*custom_value).ToEncodableList()), stream);
       return;
     }
   }
@@ -1149,6 +1309,27 @@ void InsideScoopHostApi::SetUp(
       channel.SetMessageHandler([api](const EncodableValue& message, const ::flutter::MessageReply<EncodableValue>& reply) {
         try {
           ErrorOr<PlatformCpuInfo> output = api->GetCpuInfo();
+          if (output.has_error()) {
+            reply(WrapError(output.error()));
+            return;
+          }
+          EncodableList wrapped;
+          wrapped.push_back(CustomEncodableValue(std::move(output).TakeValue()));
+          reply(EncodableValue(std::move(wrapped)));
+        } catch (const std::exception& exception) {
+          reply(WrapError(exception.what()));
+        }
+      });
+    } else {
+      channel.SetMessageHandler(nullptr);
+    }
+  }
+  {
+    BasicMessageChannel<> channel(binary_messenger, "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getMemoryInfo" + prepended_suffix, &GetCodec());
+    if (api != nullptr) {
+      channel.SetMessageHandler([api](const EncodableValue& message, const ::flutter::MessageReply<EncodableValue>& reply) {
+        try {
+          ErrorOr<PlatformMemoryInfo> output = api->GetMemoryInfo();
           if (output.has_error()) {
             reply(WrapError(output.error()));
             return;

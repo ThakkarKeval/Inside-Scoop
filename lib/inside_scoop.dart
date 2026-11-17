@@ -3,6 +3,7 @@ import 'src/features/app/app_service.dart';
 import 'src/features/capabilities/capabilities_service.dart';
 import 'src/features/cpu/cpu_service.dart';
 import 'src/features/device/device_service.dart';
+import 'src/features/memory/memory_service.dart';
 import 'src/features/os/os_service.dart';
 
 export 'src/core/capabilities/capability.dart';
@@ -11,11 +12,13 @@ export 'src/core/errors/scoop_result.dart';
 export 'src/core/models/app_info.dart';
 export 'src/core/models/cpu_info.dart';
 export 'src/core/models/device_info.dart';
+export 'src/core/models/memory_info.dart';
 export 'src/core/models/os_info.dart';
 export 'src/features/app/app_service.dart';
 export 'src/features/capabilities/capabilities_service.dart';
 export 'src/features/cpu/cpu_service.dart';
 export 'src/features/device/device_service.dart';
+export 'src/features/memory/memory_service.dart';
 export 'src/features/os/os_service.dart';
 
 /// The primary entry point for inside_scoop system information APIs.
@@ -26,7 +29,8 @@ class InsideScoop {
       os = OsService(platform),
       device = DeviceService(platform),
       capabilities = CapabilitiesService(platform),
-      cpu = CpuService(platform);
+      cpu = CpuService(platform),
+      memory = MemoryService(platform);
 
   final InsideScoopPlatform? _platform;
 
@@ -47,6 +51,9 @@ class InsideScoop {
 
   /// Processor specifications and CPU utilization service.
   final CpuService cpu;
+
+  /// System physical memory and process RAM consumption service.
+  final MemoryService memory;
 
   /// Retrieves the platform version string.
   Future<String?> getPlatformVersion() {
