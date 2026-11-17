@@ -20,6 +20,7 @@ class _MyAppState extends State<MyApp> {
   AppInfo? _appInfo;
   OsInfo? _osInfo;
   DeviceInfo? _deviceInfo;
+  CpuInfo? _cpuInfo;
   Map<ScoopFeature, ScoopCapabilityInfo> _capabilities = {};
   final _insideScoopPlugin = InsideScoop();
 
@@ -42,6 +43,7 @@ class _MyAppState extends State<MyApp> {
     final appResult = await _insideScoopPlugin.app.info();
     final osResult = await _insideScoopPlugin.os.info();
     final deviceResult = await _insideScoopPlugin.device.info();
+    final cpuResult = await _insideScoopPlugin.cpu.info();
     final capabilities = await _insideScoopPlugin.capabilities.getAll();
 
     if (!mounted) return;
@@ -51,6 +53,7 @@ class _MyAppState extends State<MyApp> {
       _appInfo = appResult.valueOrNull;
       _osInfo = osResult.valueOrNull;
       _deviceInfo = deviceResult.valueOrNull;
+      _cpuInfo = cpuResult.valueOrNull;
       _capabilities = capabilities;
     });
   }
@@ -97,6 +100,21 @@ class _MyAppState extends State<MyApp> {
                 Text('Category: ${_deviceInfo!.category.name}'),
                 Text('Physical: ${_deviceInfo!.isPhysicalDevice}'),
                 Text('ABIs: ${_deviceInfo!.supportedAbis.join(", ")}'),
+                const SizedBox(height: 12),
+              ],
+              if (_cpuInfo != null) ...[
+                const Text(
+                  'Processor / CPU Metadata',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text('Architecture: ${_cpuInfo!.architecture}'),
+                if (_cpuInfo!.modelName != null)
+                  Text('Model: ${_cpuInfo!.modelName}'),
+                Text('Logical Cores: ${_cpuInfo!.logicalCores}'),
+                if (_cpuInfo!.physicalCores != null)
+                  Text('Physical Cores: ${_cpuInfo!.physicalCores}'),
+                if (_cpuInfo!.maxClockSpeedMhz != null)
+                  Text('Clock Speed: ${_cpuInfo!.maxClockSpeedMhz} MHz'),
                 const SizedBox(height: 12),
               ],
               if (_capabilities.isNotEmpty) ...[

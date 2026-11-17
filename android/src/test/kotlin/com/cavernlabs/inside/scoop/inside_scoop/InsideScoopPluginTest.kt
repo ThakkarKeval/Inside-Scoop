@@ -40,4 +40,12 @@ internal class InsideScoopPluginTest {
         assertEquals(android.os.Build.BRAND ?: "", deviceInfo.brand)
         assertNotNull(deviceInfo.supportedAbis)
     }
+
+    @Test
+    fun getCpuInfo_returnsExpectedCpuMetadata() {
+        val plugin = InsideScoopPlugin()
+        val cpuInfo = plugin.getCpuInfo()
+        assertNotNull(cpuInfo.architecture)
+        assertEquals(true, cpuInfo.logicalCores >= 1L)
+    }
 }

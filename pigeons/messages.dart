@@ -70,10 +70,31 @@ class PlatformDeviceInfo {
   final List<String?> supportedAbis;
 }
 
+class PlatformCpuInfo {
+  PlatformCpuInfo({
+    required this.architecture,
+    this.modelName,
+    this.physicalCores,
+    required this.logicalCores,
+    this.maxClockSpeedMhz,
+    this.systemUtilization,
+    this.processUtilization,
+  });
+
+  final String architecture;
+  final String? modelName;
+  final int? physicalCores;
+  final int logicalCores;
+  final int? maxClockSpeedMhz;
+  final double? systemUtilization;
+  final double? processUtilization;
+}
+
 @HostApi()
 abstract class InsideScoopHostApi {
   String? getPlatformVersion();
   PlatformAppInfo getAppInfo();
   PlatformOsInfo getOsInfo();
   PlatformDeviceInfo getDeviceInfo();
+  PlatformCpuInfo getCpuInfo();
 }

@@ -767,6 +767,224 @@ size_t PigeonInternalDeepHash(const PlatformDeviceInfo& v) {
   return v.Hash();
 }
 
+// PlatformCpuInfo
+
+PlatformCpuInfo::PlatformCpuInfo(
+  const std::string& architecture,
+  int64_t logical_cores)
+ : architecture_(architecture),
+    logical_cores_(logical_cores) {}
+
+PlatformCpuInfo::PlatformCpuInfo(
+  const std::string& architecture,
+  const std::string* model_name,
+  const int64_t* physical_cores,
+  int64_t logical_cores,
+  const int64_t* max_clock_speed_mhz,
+  const double* system_utilization,
+  const double* process_utilization)
+ : architecture_(architecture),
+    model_name_(model_name ? std::optional<std::string>(*model_name) : std::nullopt),
+    physical_cores_(physical_cores ? std::optional<int64_t>(*physical_cores) : std::nullopt),
+    logical_cores_(logical_cores),
+    max_clock_speed_mhz_(max_clock_speed_mhz ? std::optional<int64_t>(*max_clock_speed_mhz) : std::nullopt),
+    system_utilization_(system_utilization ? std::optional<double>(*system_utilization) : std::nullopt),
+    process_utilization_(process_utilization ? std::optional<double>(*process_utilization) : std::nullopt) {}
+
+const std::string& PlatformCpuInfo::architecture() const {
+  return architecture_;
+}
+
+void PlatformCpuInfo::set_architecture(std::string_view value_arg) {
+  architecture_ = value_arg;
+}
+
+
+const std::string* PlatformCpuInfo::model_name() const {
+  return model_name_ ? &(*model_name_) : nullptr;
+}
+
+void PlatformCpuInfo::set_model_name(const std::string_view* value_arg) {
+  model_name_ = value_arg ? std::optional<std::string>(*value_arg) : std::nullopt;
+}
+
+void PlatformCpuInfo::set_model_name(std::string_view value_arg) {
+  model_name_ = value_arg;
+}
+
+
+const int64_t* PlatformCpuInfo::physical_cores() const {
+  return physical_cores_ ? &(*physical_cores_) : nullptr;
+}
+
+void PlatformCpuInfo::set_physical_cores(const int64_t* value_arg) {
+  physical_cores_ = value_arg ? std::optional<int64_t>(*value_arg) : std::nullopt;
+}
+
+void PlatformCpuInfo::set_physical_cores(int64_t value_arg) {
+  physical_cores_ = value_arg;
+}
+
+
+int64_t PlatformCpuInfo::logical_cores() const {
+  return logical_cores_;
+}
+
+void PlatformCpuInfo::set_logical_cores(int64_t value_arg) {
+  logical_cores_ = value_arg;
+}
+
+
+const int64_t* PlatformCpuInfo::max_clock_speed_mhz() const {
+  return max_clock_speed_mhz_ ? &(*max_clock_speed_mhz_) : nullptr;
+}
+
+void PlatformCpuInfo::set_max_clock_speed_mhz(const int64_t* value_arg) {
+  max_clock_speed_mhz_ = value_arg ? std::optional<int64_t>(*value_arg) : std::nullopt;
+}
+
+void PlatformCpuInfo::set_max_clock_speed_mhz(int64_t value_arg) {
+  max_clock_speed_mhz_ = value_arg;
+}
+
+
+const double* PlatformCpuInfo::system_utilization() const {
+  return system_utilization_ ? &(*system_utilization_) : nullptr;
+}
+
+void PlatformCpuInfo::set_system_utilization(const double* value_arg) {
+  system_utilization_ = value_arg ? std::optional<double>(*value_arg) : std::nullopt;
+}
+
+void PlatformCpuInfo::set_system_utilization(double value_arg) {
+  system_utilization_ = value_arg;
+}
+
+
+const double* PlatformCpuInfo::process_utilization() const {
+  return process_utilization_ ? &(*process_utilization_) : nullptr;
+}
+
+void PlatformCpuInfo::set_process_utilization(const double* value_arg) {
+  process_utilization_ = value_arg ? std::optional<double>(*value_arg) : std::nullopt;
+}
+
+void PlatformCpuInfo::set_process_utilization(double value_arg) {
+  process_utilization_ = value_arg;
+}
+
+
+EncodableList PlatformCpuInfo::ToEncodableList() const {
+  EncodableList list;
+  list.reserve(7);
+  list.push_back(EncodableValue(architecture_));
+  list.push_back(model_name_ ? EncodableValue(*model_name_) : EncodableValue());
+  list.push_back(physical_cores_ ? EncodableValue(*physical_cores_) : EncodableValue());
+  list.push_back(EncodableValue(logical_cores_));
+  list.push_back(max_clock_speed_mhz_ ? EncodableValue(*max_clock_speed_mhz_) : EncodableValue());
+  list.push_back(system_utilization_ ? EncodableValue(*system_utilization_) : EncodableValue());
+  list.push_back(process_utilization_ ? EncodableValue(*process_utilization_) : EncodableValue());
+  return list;
+}
+
+PlatformCpuInfo PlatformCpuInfo::FromEncodableList(const EncodableList& list) {
+  PlatformCpuInfo decoded(
+    std::get<std::string>(list[0]),
+    std::get<int64_t>(list[3]));
+  auto& encodable_model_name = list[1];
+  if (!encodable_model_name.IsNull()) {
+    decoded.set_model_name(std::get<std::string>(encodable_model_name));
+  }
+  auto& encodable_physical_cores = list[2];
+  if (!encodable_physical_cores.IsNull()) {
+    decoded.set_physical_cores(std::get<int64_t>(encodable_physical_cores));
+  }
+  auto& encodable_max_clock_speed_mhz = list[4];
+  if (!encodable_max_clock_speed_mhz.IsNull()) {
+    decoded.set_max_clock_speed_mhz(std::get<int64_t>(encodable_max_clock_speed_mhz));
+  }
+  auto& encodable_system_utilization = list[5];
+  if (!encodable_system_utilization.IsNull()) {
+    decoded.set_system_utilization(std::get<double>(encodable_system_utilization));
+  }
+  auto& encodable_process_utilization = list[6];
+  if (!encodable_process_utilization.IsNull()) {
+    decoded.set_process_utilization(std::get<double>(encodable_process_utilization));
+  }
+  return decoded;
+}
+
+bool PlatformCpuInfo::operator==(const PlatformCpuInfo& other) const {
+  return PigeonInternalDeepEquals(architecture_, other.architecture_) && PigeonInternalDeepEquals(model_name_, other.model_name_) && PigeonInternalDeepEquals(physical_cores_, other.physical_cores_) && PigeonInternalDeepEquals(logical_cores_, other.logical_cores_) && PigeonInternalDeepEquals(max_clock_speed_mhz_, other.max_clock_speed_mhz_) && PigeonInternalDeepEquals(system_utilization_, other.system_utilization_) && PigeonInternalDeepEquals(process_utilization_, other.process_utilization_);
+}
+
+bool PlatformCpuInfo::operator!=(const PlatformCpuInfo& other) const {
+  return !(*this == other);
+}
+
+size_t PlatformCpuInfo::Hash() const {
+  size_t result = 1;
+  result = result * 31 + PigeonInternalDeepHash(architecture_);
+  result = result * 31 + PigeonInternalDeepHash(model_name_);
+  result = result * 31 + PigeonInternalDeepHash(physical_cores_);
+  result = result * 31 + PigeonInternalDeepHash(logical_cores_);
+  result = result * 31 + PigeonInternalDeepHash(max_clock_speed_mhz_);
+  result = result * 31 + PigeonInternalDeepHash(system_utilization_);
+  result = result * 31 + PigeonInternalDeepHash(process_utilization_);
+  return result;
+}
+
+std::ostream& operator<<(
+  std::ostream& os,
+  const PlatformCpuInfo& obj) {
+  os << "PlatformCpuInfo(";
+  os << "architecture: ";
+  os << PigeonInternalToString(obj.architecture_);
+  os << ", model_name: ";
+  if (obj.model_name_) {
+    os << PigeonInternalToString(*obj.model_name_);
+  }
+  else {
+    os << "null";
+  }
+  os << ", physical_cores: ";
+  if (obj.physical_cores_) {
+    os << PigeonInternalToString(*obj.physical_cores_);
+  }
+  else {
+    os << "null";
+  }
+  os << ", logical_cores: ";
+  os << PigeonInternalToString(obj.logical_cores_);
+  os << ", max_clock_speed_mhz: ";
+  if (obj.max_clock_speed_mhz_) {
+    os << PigeonInternalToString(*obj.max_clock_speed_mhz_);
+  }
+  else {
+    os << "null";
+  }
+  os << ", system_utilization: ";
+  if (obj.system_utilization_) {
+    os << PigeonInternalToString(*obj.system_utilization_);
+  }
+  else {
+    os << "null";
+  }
+  os << ", process_utilization: ";
+  if (obj.process_utilization_) {
+    os << PigeonInternalToString(*obj.process_utilization_);
+  }
+  else {
+    os << "null";
+  }
+  os << ")";
+  return os;
+}
+
+size_t PigeonInternalDeepHash(const PlatformCpuInfo& v) {
+  return v.Hash();
+}
+
 
 PigeonInternalCodecSerializer::PigeonInternalCodecSerializer() {}
 
@@ -782,6 +1000,9 @@ EncodableValue PigeonInternalCodecSerializer::ReadValueOfType(
       }
     case 131: {
         return CustomEncodableValue(PlatformDeviceInfo::FromEncodableList(std::get<EncodableList>(ReadValue(stream))));
+      }
+    case 132: {
+        return CustomEncodableValue(PlatformCpuInfo::FromEncodableList(std::get<EncodableList>(ReadValue(stream))));
       }
     default:
       return ::flutter::StandardCodecSerializer::ReadValueOfType(type, stream);
@@ -805,6 +1026,11 @@ void PigeonInternalCodecSerializer::WriteValue(
     if (custom_value->type() == typeid(PlatformDeviceInfo)) {
       stream->WriteByte(131);
       WriteValue(EncodableValue(std::any_cast<PlatformDeviceInfo>(*custom_value).ToEncodableList()), stream);
+      return;
+    }
+    if (custom_value->type() == typeid(PlatformCpuInfo)) {
+      stream->WriteByte(132);
+      WriteValue(EncodableValue(std::any_cast<PlatformCpuInfo>(*custom_value).ToEncodableList()), stream);
       return;
     }
   }
@@ -902,6 +1128,27 @@ void InsideScoopHostApi::SetUp(
       channel.SetMessageHandler([api](const EncodableValue& message, const ::flutter::MessageReply<EncodableValue>& reply) {
         try {
           ErrorOr<PlatformDeviceInfo> output = api->GetDeviceInfo();
+          if (output.has_error()) {
+            reply(WrapError(output.error()));
+            return;
+          }
+          EncodableList wrapped;
+          wrapped.push_back(CustomEncodableValue(std::move(output).TakeValue()));
+          reply(EncodableValue(std::move(wrapped)));
+        } catch (const std::exception& exception) {
+          reply(WrapError(exception.what()));
+        }
+      });
+    } else {
+      channel.SetMessageHandler(nullptr);
+    }
+  }
+  {
+    BasicMessageChannel<> channel(binary_messenger, "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getCpuInfo" + prepended_suffix, &GetCodec());
+    if (api != nullptr) {
+      channel.SetMessageHandler([api](const EncodableValue& message, const ::flutter::MessageReply<EncodableValue>& reply) {
+        try {
+          ErrorOr<PlatformCpuInfo> output = api->GetCpuInfo();
           if (output.has_error()) {
             reply(WrapError(output.error()));
             return;

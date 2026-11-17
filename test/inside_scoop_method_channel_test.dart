@@ -35,6 +35,17 @@ class FakeInsideScoopHostApi extends InsideScoopHostApi {
     isPhysicalDevice: true,
     supportedAbis: ['x86_64'],
   );
+
+  @override
+  Future<PlatformCpuInfo> getCpuInfo() async => PlatformCpuInfo(
+    architecture: 'x86_64',
+    modelName: 'Intel Core i7-1185G7',
+    physicalCores: 4,
+    logicalCores: 8,
+    maxClockSpeedMhz: 3000,
+    systemUtilization: 25.0,
+    processUtilization: 5.0,
+  );
 }
 
 void main() {
@@ -83,5 +94,19 @@ void main() {
     expect(deviceInfo.category, equals(DeviceCategory.laptop));
     expect(deviceInfo.isPhysicalDevice, isTrue);
     expect(deviceInfo.supportedAbis, contains('x86_64'));
+  });
+
+  test('getCpuInfo converts PlatformCpuInfo to CpuInfo', () async {
+    final platform = MethodChannelInsideScoop(
+      hostApi: FakeInsideScoopHostApi(),
+    );
+    final cpuInfo = await platform.getCpuInfo();
+    expect(cpuInfo.architecture, equals('x86_64'));
+    expect(cpuInfo.modelName, equals('Intel Core i7-1185G7'));
+    expect(cpuInfo.physicalCores, equals(4));
+    expect(cpuInfo.logicalCores, equals(8));
+    expect(cpuInfo.maxClockSpeedMhz, equals(3000));
+    expect(cpuInfo.systemUtilization, equals(25.0));
+    expect(cpuInfo.processUtilization, equals(5.0));
   });
 }

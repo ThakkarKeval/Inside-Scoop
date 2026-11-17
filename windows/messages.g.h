@@ -220,6 +220,71 @@ class PlatformDeviceInfo {
 };
 
 
+// Generated class from Pigeon that represents data sent in messages.
+class PlatformCpuInfo {
+ public:
+  // Constructs an object setting all non-nullable fields.
+  explicit PlatformCpuInfo(
+    const std::string& architecture,
+    int64_t logical_cores);
+
+  // Constructs an object setting all fields.
+  explicit PlatformCpuInfo(
+    const std::string& architecture,
+    const std::string* model_name,
+    const int64_t* physical_cores,
+    int64_t logical_cores,
+    const int64_t* max_clock_speed_mhz,
+    const double* system_utilization,
+    const double* process_utilization);
+
+  const std::string& architecture() const;
+  void set_architecture(std::string_view value_arg);
+
+  const std::string* model_name() const;
+  void set_model_name(const std::string_view* value_arg);
+  void set_model_name(std::string_view value_arg);
+
+  const int64_t* physical_cores() const;
+  void set_physical_cores(const int64_t* value_arg);
+  void set_physical_cores(int64_t value_arg);
+
+  int64_t logical_cores() const;
+  void set_logical_cores(int64_t value_arg);
+
+  const int64_t* max_clock_speed_mhz() const;
+  void set_max_clock_speed_mhz(const int64_t* value_arg);
+  void set_max_clock_speed_mhz(int64_t value_arg);
+
+  const double* system_utilization() const;
+  void set_system_utilization(const double* value_arg);
+  void set_system_utilization(double value_arg);
+
+  const double* process_utilization() const;
+  void set_process_utilization(const double* value_arg);
+  void set_process_utilization(double value_arg);
+
+  bool operator==(const PlatformCpuInfo& other) const;
+  bool operator!=(const PlatformCpuInfo& other) const;
+  /// Returns a hash code value for the object. This method is supported for the benefit of hash tables.
+  size_t Hash() const;
+  /// Stream output operator for formatted string representation.
+  friend std::ostream& operator<<(std::ostream& os, const PlatformCpuInfo& obj);
+ private:
+  static PlatformCpuInfo FromEncodableList(const ::flutter::EncodableList& list);
+  ::flutter::EncodableList ToEncodableList() const;
+  friend class InsideScoopHostApi;
+  friend class PigeonInternalCodecSerializer;
+  std::string architecture_;
+  std::optional<std::string> model_name_;
+  std::optional<int64_t> physical_cores_;
+  int64_t logical_cores_;
+  std::optional<int64_t> max_clock_speed_mhz_;
+  std::optional<double> system_utilization_;
+  std::optional<double> process_utilization_;
+};
+
+
 class PigeonInternalCodecSerializer : public ::flutter::StandardCodecSerializer {
  public:
   PigeonInternalCodecSerializer();
@@ -247,6 +312,7 @@ class InsideScoopHostApi {
   virtual ErrorOr<PlatformAppInfo> GetAppInfo() = 0;
   virtual ErrorOr<PlatformOsInfo> GetOsInfo() = 0;
   virtual ErrorOr<PlatformDeviceInfo> GetDeviceInfo() = 0;
+  virtual ErrorOr<PlatformCpuInfo> GetCpuInfo() = 0;
 
   // The codec used by InsideScoopHostApi.
   static const ::flutter::StandardMessageCodec& GetCodec();

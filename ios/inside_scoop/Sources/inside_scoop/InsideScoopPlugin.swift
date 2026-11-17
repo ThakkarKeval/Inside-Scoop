@@ -105,4 +105,47 @@ public class InsideScoopPlugin: NSObject, FlutterPlugin, InsideScoopHostApi {
       supportedAbis: supportedAbis
     )
   }
+
+  func getCpuInfo() throws -> PlatformCpuInfo {
+    var size = 0
+    sysctlbyname("hw.machine", nil, &size, nil, 0)
+    var machineBytes = [CChar](repeating: 0, count: size)
+    sysctlbyname("hw.machine", &machineBytes, &size, nil, 0)
+    let machine = String(cString: machineBytes)
+
+    var logicalCores: Int32 = 0
+    var logicalSize = MemoryLayout<Int32>.size
+    sysctlbyname("hw.logicalcpu", &logicalCores, &logicalSize, nil, 0)
+    if logicalCores <= 0 {
+      logicalCores = Int32(ProcessInfo.processInfo.activeProcessorCount)
+    }
+
+    var physicalCores: Int32 = 0
+    var physicalSize = MemoryLayout<Int32>.size
+    sysctlbyname("hw.physicalcpu", &physicalCores, &physicalSize, nil, 0)
+
+    var freq: Int64 = 0
+    var freqSize = MemoryLayout<Int64>.size
+    sysctlbyname("hw.cpufrequency", &freq, &freqSize, nil, 0)
+    let maxClockSpeedMhz: Int64? = freq > 0 ? freq / 1_000_000 : nil
+
+    var arch = "unknown"
+    #if arch(arm64)
+    arch = "arm64"
+    #elseif arch(x86_64)
+    arch = "x86_64"
+    #elseif arch(arm)
+    arch = "arm"
+    #endif
+
+    return PlatformCpuInfo(
+      architecture: arch,
+      modelName: machine.isEmpty ? nil : "Apple Silicon (\(machine))",
+      physicalCores: physicalCores > 0 ? Int64(physicalCores) : nil,
+      logicalCores: Int64(logicalCores),
+      maxClockSpeedMhz: maxClockSpeedMhz,
+      systemUtilization: nil,
+      processUtilization: nil
+    )
+  }
 }

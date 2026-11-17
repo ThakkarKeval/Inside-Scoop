@@ -53,3 +53,10 @@
 - Dynamic runtime capability inspection mapping each `ScoopFeature` to `ScoopCapabilityState` (`supported`, `unsupported`, `requiresPermission`, `restricted`) with contextual descriptions.
 - Accurately models Android SELinux sandboxing (`cpuUtilization` restricted on Android 8.0+) and permission requirements (`networkInfo` requires `ACCESS_NETWORK_STATE`).
 - Accurately models browser sandbox restrictions (unsupported CPU utilization and battery status, restricted hardware specifications, memory, and network info).
+
+### Phase 4: CPU Information (`CpuInfo`)
+- **Android**: `Build.SUPPORTED_ABIS`, `Build.SOC_MODEL` (API 31+) / `/proc/cpuinfo` / `Build.HARDWARE` model name, `Runtime.getRuntime().availableProcessors()` logical cores, physical core topology via `/sys/devices/system/cpu/cpu*/topology/core_id`, and clock speed via `/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq`.
+- **iOS**: `sysctlbyname("hw.machine")`, `hw.logicalcpu`, `hw.physicalcpu`, and `hw.cpufrequency`.
+- **macOS**: `sysctlbyname("machdep.cpu.brand_string")`, `hw.logicalcpu`, `hw.physicalcpu`, and `hw.cpufrequency`.
+- **Windows**: Win32 `GetNativeSystemInfo`, `GetLogicalProcessorInformationEx` for physical cores, registry `CentralProcessor\0` for processor model name and clock speed.
+- **Web**: `window.navigator.hardwareConcurrency` logical cores, architecture inference via `userAgent`, with unsupported fields properly set to `null` to respect browser security boundaries.

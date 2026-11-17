@@ -1,6 +1,7 @@
 import 'inside_scoop_platform_interface.dart';
 import 'src/features/app/app_service.dart';
 import 'src/features/capabilities/capabilities_service.dart';
+import 'src/features/cpu/cpu_service.dart';
 import 'src/features/device/device_service.dart';
 import 'src/features/os/os_service.dart';
 
@@ -8,10 +9,12 @@ export 'src/core/capabilities/capability.dart';
 export 'src/core/errors/scoop_exception.dart';
 export 'src/core/errors/scoop_result.dart';
 export 'src/core/models/app_info.dart';
+export 'src/core/models/cpu_info.dart';
 export 'src/core/models/device_info.dart';
 export 'src/core/models/os_info.dart';
 export 'src/features/app/app_service.dart';
 export 'src/features/capabilities/capabilities_service.dart';
+export 'src/features/cpu/cpu_service.dart';
 export 'src/features/device/device_service.dart';
 export 'src/features/os/os_service.dart';
 
@@ -22,7 +25,8 @@ class InsideScoop {
       app = AppService(platform),
       os = OsService(platform),
       device = DeviceService(platform),
-      capabilities = CapabilitiesService(platform);
+      capabilities = CapabilitiesService(platform),
+      cpu = CpuService(platform);
 
   final InsideScoopPlatform? _platform;
 
@@ -40,6 +44,9 @@ class InsideScoop {
 
   /// System and feature capability detection service.
   final CapabilitiesService capabilities;
+
+  /// Processor specifications and CPU utilization service.
+  final CpuService cpu;
 
   /// Retrieves the platform version string.
   Future<String?> getPlatformVersion() {

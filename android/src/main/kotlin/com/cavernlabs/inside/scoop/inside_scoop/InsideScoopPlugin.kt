@@ -152,6 +152,99 @@ class InsideScoopPlugin(private var context: Context? = null) : FlutterPlugin, I
         )
     }
 
+    override fun getCpuInfo(): PlatformCpuInfo {
+        val arch = (Build.SUPPORTED_ABIS?.firstOrNull()) ?: System.getProperty("os.arch") ?: "unknown"
+        val logicalCores = java.lang.Runtime.getRuntime().availableProcessors().toLong()
+        val physicalCores = getPhysicalCores()
+
+        val socModel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            Build.SOC_MODEL?.takeIf { it.isNotBlank() }
+        } else null
+        val rawHardware: String? = Build.HARDWARE
+        val modelName = socModel ?: readCpuModelName() ?: rawHardware?.takeIf { it.isNotBlank() }
+        val maxClockSpeed = getMaxClockSpeedMhz()
+
+        return PlatformCpuInfo(
+            architecture = arch,
+            modelName = modelName,
+            physicalCores = physicalCores,
+            logicalCores = if (logicalCores > 0L) logicalCores else 1L,
+            maxClockSpeedMhz = maxClockSpeed,
+            systemUtilization = null,
+            processUtilization = null
+        )
+    }
+
+    private fun getPhysicalCores(): Long? {
+        return try {
+            val coreIds = java.util.HashSet<String>()
+            val cpuDir = java.io.File("/sys/devices/system/cpu")
+            val cpuFiles = cpuDir.listFiles(java.io.FileFilter { f ->
+                f.isDirectory && f.name.startsWith("cpu") && f.name.substring(3).all { it.isDigit() }
+            })
+            if (cpuFiles != null && cpuFiles.isNotEmpty()) {
+                for (dir in cpuFiles) {
+                    val coreIdFile = java.io.File(dir, "topology/core_id")
+                    if (coreIdFile.exists() && coreIdFile.canRead()) {
+                        val id = coreIdFile.readText().trim()
+                        if (id.isNotBlank()) {
+                            coreIds.add(id)
+                        }
+                    }
+                }
+                if (coreIds.isNotEmpty()) {
+                    return coreIds.size.toLong()
+                }
+            }
+            null
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun readCpuModelName(): String? {
+        return try {
+            val file = java.io.File("/proc/cpuinfo")
+            if (!file.exists() || !file.canRead()) return null
+            val reader = file.bufferedReader()
+            var result: String? = null
+            reader.useLines { lines ->
+                for (line in lines) {
+                    val lower = line.lowercase()
+                    if (lower.startsWith("hardware") || lower.startsWith("model name") || lower.startsWith("processor")) {
+                        val parts = line.split(":")
+                        if (parts.size > 1) {
+                            val value = parts[1].trim()
+                            if (value.isNotBlank() && !value.all { it.isDigit() }) {
+                                result = value
+                                break
+                            }
+                        }
+                    }
+                }
+            }
+            result
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun getMaxClockSpeedMhz(): Long? {
+        return try {
+            val freqFile = java.io.File("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq")
+            if (freqFile.exists() && freqFile.canRead()) {
+                val text = freqFile.readText().trim()
+                val khz = text.toLongOrNull()
+                if (khz != null && khz > 0L) {
+                    return khz / 1000L
+                }
+            }
+            null
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     private fun getCertificateSignature(packageInfo: PackageInfo): String? {
         return try {
             val signatures = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {

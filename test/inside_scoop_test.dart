@@ -41,6 +41,17 @@ class MockInsideScoopPlatform
       supportedAbis: ['arm64'],
     ),
   );
+
+  @override
+  Future<CpuInfo> getCpuInfo() => Future.value(
+    const CpuInfo(
+      architecture: 'arm64',
+      modelName: 'MockChip',
+      physicalCores: 8,
+      logicalCores: 8,
+      maxClockSpeedMhz: 3200,
+    ),
+  );
 }
 
 void main() {
@@ -90,5 +101,17 @@ void main() {
     expect(result.isAvailable, isTrue);
     expect(result.valueOrNull?.model, equals('MockDevice'));
     expect(result.valueOrNull?.category, equals(DeviceCategory.phone));
+  });
+
+  test('cpu.info returns CpuInfo from platform instance', () async {
+    final InsideScoop insideScoopPlugin = InsideScoop();
+    final MockInsideScoopPlatform fakePlatform = MockInsideScoopPlatform();
+    InsideScoopPlatform.instance = fakePlatform;
+
+    final result = await insideScoopPlugin.cpu.info();
+    expect(result.isAvailable, isTrue);
+    expect(result.valueOrNull?.architecture, equals('arm64'));
+    expect(result.valueOrNull?.modelName, equals('MockChip'));
+    expect(result.valueOrNull?.logicalCores, equals(8));
   });
 }

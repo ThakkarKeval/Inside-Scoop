@@ -4,6 +4,7 @@ import 'package:web/web.dart' as web;
 
 import 'inside_scoop_platform_interface.dart';
 import 'src/core/models/app_info.dart';
+import 'src/core/models/cpu_info.dart';
 import 'src/core/models/device_info.dart';
 import 'src/core/models/os_info.dart';
 
@@ -60,6 +61,31 @@ class InsideScoopWeb extends InsideScoopPlatform {
       category: category,
       isPhysicalDevice: true,
       supportedAbis: const <String>['wasm', 'javascript'],
+    );
+  }
+
+  @override
+  Future<CpuInfo> getCpuInfo() async {
+    final concurrency = web.window.navigator.hardwareConcurrency;
+    final ua = web.window.navigator.userAgent.toLowerCase();
+    String arch = 'unknown';
+    if (ua.contains('arm64') || ua.contains('aarch64')) {
+      arch = 'arm64';
+    } else if (ua.contains('x86_64') ||
+        ua.contains('win64') ||
+        ua.contains('x64') ||
+        ua.contains('amd64')) {
+      arch = 'x86_64';
+    }
+
+    return CpuInfo(
+      architecture: arch,
+      modelName: null,
+      physicalCores: null,
+      logicalCores: concurrency > 0 ? concurrency : 1,
+      maxClockSpeedMhz: null,
+      systemUtilization: null,
+      processUtilization: null,
     );
   }
 }

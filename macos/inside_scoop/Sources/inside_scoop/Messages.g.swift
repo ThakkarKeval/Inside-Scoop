@@ -359,6 +359,71 @@ struct PlatformDeviceInfo: Hashable, CustomStringConvertible {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct PlatformCpuInfo: Hashable, CustomStringConvertible {
+  var architecture: String
+  var modelName: String? = nil
+  var physicalCores: Int64? = nil
+  var logicalCores: Int64
+  var maxClockSpeedMhz: Int64? = nil
+  var systemUtilization: Double? = nil
+  var processUtilization: Double? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> PlatformCpuInfo? {
+    let architecture = pigeonVar_list[0] as! String
+    let modelName: String? = nilOrValue(pigeonVar_list[1])
+    let physicalCores: Int64? = nilOrValue(pigeonVar_list[2])
+    let logicalCores = pigeonVar_list[3] as! Int64
+    let maxClockSpeedMhz: Int64? = nilOrValue(pigeonVar_list[4])
+    let systemUtilization: Double? = nilOrValue(pigeonVar_list[5])
+    let processUtilization: Double? = nilOrValue(pigeonVar_list[6])
+
+    return PlatformCpuInfo(
+      architecture: architecture,
+      modelName: modelName,
+      physicalCores: physicalCores,
+      logicalCores: logicalCores,
+      maxClockSpeedMhz: maxClockSpeedMhz,
+      systemUtilization: systemUtilization,
+      processUtilization: processUtilization
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      architecture,
+      modelName,
+      physicalCores,
+      logicalCores,
+      maxClockSpeedMhz,
+      systemUtilization,
+      processUtilization,
+    ]
+  }
+  static func == (lhs: PlatformCpuInfo, rhs: PlatformCpuInfo) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return MessagesPigeonInternal.deepEquals(lhs.architecture, rhs.architecture) && MessagesPigeonInternal.deepEquals(lhs.modelName, rhs.modelName) && MessagesPigeonInternal.deepEquals(lhs.physicalCores, rhs.physicalCores) && MessagesPigeonInternal.deepEquals(lhs.logicalCores, rhs.logicalCores) && MessagesPigeonInternal.deepEquals(lhs.maxClockSpeedMhz, rhs.maxClockSpeedMhz) && MessagesPigeonInternal.deepEquals(lhs.systemUtilization, rhs.systemUtilization) && MessagesPigeonInternal.deepEquals(lhs.processUtilization, rhs.processUtilization)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("PlatformCpuInfo")
+    MessagesPigeonInternal.deepHash(value: architecture, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: modelName, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: physicalCores, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: logicalCores, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: maxClockSpeedMhz, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: systemUtilization, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: processUtilization, hasher: &hasher)
+  }
+
+  public var description: String {
+    return "PlatformCpuInfo(architecture: \(String(describing: architecture)), modelName: \(String(describing: modelName)), physicalCores: \(String(describing: physicalCores)), logicalCores: \(String(describing: logicalCores)), maxClockSpeedMhz: \(String(describing: maxClockSpeedMhz)), systemUtilization: \(String(describing: systemUtilization)), processUtilization: \(String(describing: processUtilization)))"
+  }
+}
+
 private class MessagesPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -368,6 +433,8 @@ private class MessagesPigeonCodecReader: FlutterStandardReader {
       return PlatformOsInfo.fromList(self.readValue() as! [Any?])
     case 131:
       return PlatformDeviceInfo.fromList(self.readValue() as! [Any?])
+    case 132:
+      return PlatformCpuInfo.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -384,6 +451,9 @@ private class MessagesPigeonCodecWriter: FlutterStandardWriter {
       super.writeValue(value.toList())
     } else if let value = value as? PlatformDeviceInfo {
       super.writeByte(131)
+      super.writeValue(value.toList())
+    } else if let value = value as? PlatformCpuInfo {
+      super.writeByte(132)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -411,6 +481,7 @@ protocol InsideScoopHostApi {
   func getAppInfo() throws -> PlatformAppInfo
   func getOsInfo() throws -> PlatformOsInfo
   func getDeviceInfo() throws -> PlatformDeviceInfo
+  func getCpuInfo() throws -> PlatformCpuInfo
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -470,6 +541,19 @@ class InsideScoopHostApiSetup {
       }
     } else {
       getDeviceInfoChannel.setMessageHandler(nil)
+    }
+    let getCpuInfoChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getCpuInfo\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getCpuInfoChannel.setMessageHandler { _, reply in
+        do {
+          let result = try api.getCpuInfo()
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      getCpuInfoChannel.setMessageHandler(nil)
     }
   }
 }

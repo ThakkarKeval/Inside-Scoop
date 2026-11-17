@@ -10,9 +10,9 @@ import 'package:flutter/services.dart';
 import 'package:meta/meta.dart' show immutable, protected, visibleForTesting;
 
 Object? _extractReplyValueOrThrow(
-  List<Object?>? replyList,
-  String channelName, {
-  required bool isNullValid,
+    List<Object?>? replyList,
+    String channelName, {
+    required bool isNullValid,
 }) {
   if (replyList == null) {
     throw PlatformException(
@@ -46,9 +46,8 @@ bool _deepEquals(Object? a, Object? b) {
   }
   if (a is List && b is List) {
     return a.length == b.length &&
-        a.indexed.every(
-          ((int, dynamic) item) => _deepEquals(item.$2, b[item.$1]),
-        );
+        a.indexed
+            .every(((int, dynamic) item) => _deepEquals(item.$2, b[item.$1]));
   }
   if (a is Map && b is Map) {
     if (a.length != b.length) {
@@ -97,6 +96,7 @@ int _deepHash(Object? value) {
   return value.hashCode;
 }
 
+
 class PlatformAppInfo {
   PlatformAppInfo({
     required this.appName,
@@ -131,8 +131,7 @@ class PlatformAppInfo {
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
   static PlatformAppInfo decode(Object result) {
     result as List<Object?>;
@@ -155,12 +154,7 @@ class PlatformAppInfo {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(appName, other.appName) &&
-        _deepEquals(packageName, other.packageName) &&
-        _deepEquals(version, other.version) &&
-        _deepEquals(buildNumber, other.buildNumber) &&
-        _deepEquals(buildSignature, other.buildSignature) &&
-        _deepEquals(installerStore, other.installerStore);
+    return _deepEquals(appName, other.appName) && _deepEquals(packageName, other.packageName) && _deepEquals(version, other.version) && _deepEquals(buildNumber, other.buildNumber) && _deepEquals(buildSignature, other.buildSignature) && _deepEquals(installerStore, other.installerStore);
   }
 
   @override
@@ -193,12 +187,17 @@ class PlatformOsInfo {
   String? kernelVersion;
 
   List<Object?> _toList() {
-    return <Object?>[name, version, buildNumber, architecture, kernelVersion];
+    return <Object?>[
+      name,
+      version,
+      buildNumber,
+      architecture,
+      kernelVersion,
+    ];
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
   static PlatformOsInfo decode(Object result) {
     result as List<Object?>;
@@ -220,11 +219,7 @@ class PlatformOsInfo {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(name, other.name) &&
-        _deepEquals(version, other.version) &&
-        _deepEquals(buildNumber, other.buildNumber) &&
-        _deepEquals(architecture, other.architecture) &&
-        _deepEquals(kernelVersion, other.kernelVersion);
+    return _deepEquals(name, other.name) && _deepEquals(version, other.version) && _deepEquals(buildNumber, other.buildNumber) && _deepEquals(architecture, other.architecture) && _deepEquals(kernelVersion, other.kernelVersion);
   }
 
   @override
@@ -271,8 +266,7 @@ class PlatformDeviceInfo {
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
   static PlatformDeviceInfo decode(Object result) {
     result as List<Object?>;
@@ -295,12 +289,7 @@ class PlatformDeviceInfo {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(model, other.model) &&
-        _deepEquals(manufacturer, other.manufacturer) &&
-        _deepEquals(brand, other.brand) &&
-        _deepEquals(categoryIndex, other.categoryIndex) &&
-        _deepEquals(isPhysicalDevice, other.isPhysicalDevice) &&
-        _deepEquals(supportedAbis, other.supportedAbis);
+    return _deepEquals(model, other.model) && _deepEquals(manufacturer, other.manufacturer) && _deepEquals(brand, other.brand) && _deepEquals(categoryIndex, other.categoryIndex) && _deepEquals(isPhysicalDevice, other.isPhysicalDevice) && _deepEquals(supportedAbis, other.supportedAbis);
   }
 
   @override
@@ -313,6 +302,82 @@ class PlatformDeviceInfo {
   }
 }
 
+class PlatformCpuInfo {
+  PlatformCpuInfo({
+    required this.architecture,
+    this.modelName,
+    this.physicalCores,
+    required this.logicalCores,
+    this.maxClockSpeedMhz,
+    this.systemUtilization,
+    this.processUtilization,
+  });
+
+  String architecture;
+
+  String? modelName;
+
+  int? physicalCores;
+
+  int logicalCores;
+
+  int? maxClockSpeedMhz;
+
+  double? systemUtilization;
+
+  double? processUtilization;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      architecture,
+      modelName,
+      physicalCores,
+      logicalCores,
+      maxClockSpeedMhz,
+      systemUtilization,
+      processUtilization,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static PlatformCpuInfo decode(Object result) {
+    result as List<Object?>;
+    return PlatformCpuInfo(
+      architecture: result[0]! as String,
+      modelName: result[1] as String?,
+      physicalCores: result[2] as int?,
+      logicalCores: result[3]! as int,
+      maxClockSpeedMhz: result[4] as int?,
+      systemUtilization: result[5] as double?,
+      processUtilization: result[6] as double?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! PlatformCpuInfo || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(architecture, other.architecture) && _deepEquals(modelName, other.modelName) && _deepEquals(physicalCores, other.physicalCores) && _deepEquals(logicalCores, other.logicalCores) && _deepEquals(maxClockSpeedMhz, other.maxClockSpeedMhz) && _deepEquals(systemUtilization, other.systemUtilization) && _deepEquals(processUtilization, other.processUtilization);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'PlatformCpuInfo(architecture: $architecture, modelName: $modelName, physicalCores: $physicalCores, logicalCores: $logicalCores, maxClockSpeedMhz: $maxClockSpeedMhz, systemUtilization: $systemUtilization, processUtilization: $processUtilization)';
+  }
+}
+
+
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -320,14 +385,17 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
-    } else if (value is PlatformAppInfo) {
+    }    else if (value is PlatformAppInfo) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    } else if (value is PlatformOsInfo) {
+    }    else if (value is PlatformOsInfo) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    } else if (value is PlatformDeviceInfo) {
+    }    else if (value is PlatformDeviceInfo) {
       buffer.putUint8(131);
+      writeValue(buffer, value.encode());
+    }    else if (value is PlatformCpuInfo) {
+      buffer.putUint8(132);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -343,6 +411,8 @@ class _PigeonCodec extends StandardMessageCodec {
         return PlatformOsInfo.decode(readValue(buffer)!);
       case 131:
         return PlatformDeviceInfo.decode(readValue(buffer)!);
+      case 132:
+        return PlatformCpuInfo.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -354,21 +424,20 @@ class InsideScoopHostApi {
   /// available for dependency injection. If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
   InsideScoopHostApi({
-    BinaryMessenger? binaryMessenger,
-    String messageChannelSuffix = '',
-  }) : pigeonVar_binaryMessenger = binaryMessenger,
-       pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty
-           ? '.$messageChannelSuffix'
-           : '';
+      BinaryMessenger? binaryMessenger, 
+      String messageChannelSuffix = '', 
+      })
+      : pigeonVar_binaryMessenger = binaryMessenger,
+        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
 
   final BinaryMessenger? pigeonVar_binaryMessenger;
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
 
   final String pigeonVar_messageChannelSuffix;
 
+
   Future<String?> getPlatformVersion() async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getPlatformVersion$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName = 'dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getPlatformVersion$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -377,16 +446,16 @@ class InsideScoopHostApi {
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: true,
-    );
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
     return pigeonVar_replyValue as String?;
   }
 
   Future<PlatformAppInfo> getAppInfo() async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getAppInfo$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName = 'dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getAppInfo$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -395,16 +464,16 @@ class InsideScoopHostApi {
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: false,
-    );
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
     return pigeonVar_replyValue! as PlatformAppInfo;
   }
 
   Future<PlatformOsInfo> getOsInfo() async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getOsInfo$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName = 'dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getOsInfo$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -413,16 +482,16 @@ class InsideScoopHostApi {
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: false,
-    );
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
     return pigeonVar_replyValue! as PlatformOsInfo;
   }
 
   Future<PlatformDeviceInfo> getDeviceInfo() async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getDeviceInfo$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName = 'dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getDeviceInfo$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -431,10 +500,29 @@ class InsideScoopHostApi {
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: false,
-    );
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
     return pigeonVar_replyValue! as PlatformDeviceInfo;
+  }
+
+  Future<PlatformCpuInfo> getCpuInfo() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getCpuInfo$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return pigeonVar_replyValue! as PlatformCpuInfo;
   }
 }

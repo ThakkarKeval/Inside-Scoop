@@ -1,5 +1,6 @@
 import 'inside_scoop_platform_interface.dart';
 import 'src/core/models/app_info.dart';
+import 'src/core/models/cpu_info.dart';
 import 'src/core/models/device_info.dart';
 import 'src/core/models/os_info.dart';
 import 'src/messages.g.dart';
@@ -50,6 +51,20 @@ class MethodChannelInsideScoop extends InsideScoopPlatform {
       category: DeviceCategory.fromIndex(platformDevice.categoryIndex),
       isPhysicalDevice: platformDevice.isPhysicalDevice,
       supportedAbis: platformDevice.supportedAbis.whereType<String>().toList(),
+    );
+  }
+
+  @override
+  Future<CpuInfo> getCpuInfo() async {
+    final platformCpu = await _hostApi.getCpuInfo();
+    return CpuInfo(
+      architecture: platformCpu.architecture,
+      modelName: platformCpu.modelName,
+      physicalCores: platformCpu.physicalCores,
+      logicalCores: platformCpu.logicalCores,
+      maxClockSpeedMhz: platformCpu.maxClockSpeedMhz,
+      systemUtilization: platformCpu.systemUtilization,
+      processUtilization: platformCpu.processUtilization,
     );
   }
 }

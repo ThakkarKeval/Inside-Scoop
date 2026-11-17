@@ -358,6 +358,67 @@ data class PlatformDeviceInfo (
     return "PlatformDeviceInfo(model=$model, manufacturer=$manufacturer, brand=$brand, categoryIndex=$categoryIndex, isPhysicalDevice=$isPhysicalDevice, supportedAbis=$supportedAbis)"
   }
 }
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class PlatformCpuInfo (
+  val architecture: String,
+  val modelName: String? = null,
+  val physicalCores: Long? = null,
+  val logicalCores: Long,
+  val maxClockSpeedMhz: Long? = null,
+  val systemUtilization: Double? = null,
+  val processUtilization: Double? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): PlatformCpuInfo {
+      val architecture = pigeonVar_list[0] as String
+      val modelName = pigeonVar_list[1] as String?
+      val physicalCores = pigeonVar_list[2] as Long?
+      val logicalCores = pigeonVar_list[3] as Long
+      val maxClockSpeedMhz = pigeonVar_list[4] as Long?
+      val systemUtilization = pigeonVar_list[5] as Double?
+      val processUtilization = pigeonVar_list[6] as Double?
+      return PlatformCpuInfo(architecture, modelName, physicalCores, logicalCores, maxClockSpeedMhz, systemUtilization, processUtilization)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      architecture,
+      modelName,
+      physicalCores,
+      logicalCores,
+      maxClockSpeedMhz,
+      systemUtilization,
+      processUtilization,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as PlatformCpuInfo
+    return MessagesPigeonUtils.deepEquals(this.architecture, other.architecture) && MessagesPigeonUtils.deepEquals(this.modelName, other.modelName) && MessagesPigeonUtils.deepEquals(this.physicalCores, other.physicalCores) && MessagesPigeonUtils.deepEquals(this.logicalCores, other.logicalCores) && MessagesPigeonUtils.deepEquals(this.maxClockSpeedMhz, other.maxClockSpeedMhz) && MessagesPigeonUtils.deepEquals(this.systemUtilization, other.systemUtilization) && MessagesPigeonUtils.deepEquals(this.processUtilization, other.processUtilization)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.architecture)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.modelName)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.physicalCores)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.logicalCores)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.maxClockSpeedMhz)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.systemUtilization)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.processUtilization)
+    return result
+  }
+  override fun toString(): String {
+    return "PlatformCpuInfo(architecture=$architecture, modelName=$modelName, physicalCores=$physicalCores, logicalCores=$logicalCores, maxClockSpeedMhz=$maxClockSpeedMhz, systemUtilization=$systemUtilization, processUtilization=$processUtilization)"
+  }
+}
 private open class MessagesPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -374,6 +435,11 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
       131.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
           PlatformDeviceInfo.fromList(it)
+        }
+      }
+      132.toByte() -> {
+        (readValue(buffer) as? List<Any?>)?.let {
+          PlatformCpuInfo.fromList(it)
         }
       }
       else -> super.readValueOfType(type, buffer)
@@ -393,6 +459,10 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
         stream.write(131)
         writeValue(stream, value.toList())
       }
+      is PlatformCpuInfo -> {
+        stream.write(132)
+        writeValue(stream, value.toList())
+      }
       else -> super.writeValue(stream, value)
     }
   }
@@ -404,6 +474,7 @@ interface InsideScoopHostApi {
   fun getAppInfo(): PlatformAppInfo
   fun getOsInfo(): PlatformOsInfo
   fun getDeviceInfo(): PlatformDeviceInfo
+  fun getCpuInfo(): PlatformCpuInfo
 
   companion object {
     /** The codec used by InsideScoopHostApi. */
@@ -465,6 +536,21 @@ interface InsideScoopHostApi {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
               listOf(api.getDeviceInfo())
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getCpuInfo$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.getCpuInfo())
             } catch (exception: Throwable) {
               MessagesPigeonUtils.wrapError(exception)
             }

@@ -2,6 +2,7 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'inside_scoop_method_channel.dart';
 import 'src/core/models/app_info.dart';
+import 'src/core/models/cpu_info.dart';
 import 'src/core/models/device_info.dart';
 import 'src/core/models/os_info.dart';
 
@@ -33,5 +34,9 @@ abstract class InsideScoopPlatform extends PlatformInterface {
 
   Future<DeviceInfo> getDeviceInfo() {
     throw UnimplementedError('getDeviceInfo() has not been implemented.');
+  }
+
+  Future<CpuInfo> getCpuInfo() {
+    throw UnimplementedError('getCpuInfo() has not been implemented.');
   }
 }

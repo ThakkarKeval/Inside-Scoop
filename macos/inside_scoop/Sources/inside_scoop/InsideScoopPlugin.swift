@@ -92,4 +92,51 @@ public class InsideScoopPlugin: NSObject, FlutterPlugin, InsideScoopHostApi {
       supportedAbis: supportedAbis
     )
   }
+
+  func getCpuInfo() throws -> PlatformCpuInfo {
+    var brandSize = 0
+    sysctlbyname("machdep.cpu.brand_string", nil, &brandSize, nil, 0)
+    var brandName: String? = nil
+    if brandSize > 0 {
+      var brandBytes = [CChar](repeating: 0, count: brandSize)
+      sysctlbyname("machdep.cpu.brand_string", &brandBytes, &brandSize, nil, 0)
+      let brandStr = String(cString: brandBytes).trimmingCharacters(in: .whitespacesAndNewlines)
+      if !brandStr.isEmpty {
+        brandName = brandStr
+      }
+    }
+
+    var logicalCores: Int32 = 0
+    var logicalSize = MemoryLayout<Int32>.size
+    sysctlbyname("hw.logicalcpu", &logicalCores, &logicalSize, nil, 0)
+    if logicalCores <= 0 {
+      logicalCores = Int32(ProcessInfo.processInfo.activeProcessorCount)
+    }
+
+    var physicalCores: Int32 = 0
+    var physicalSize = MemoryLayout<Int32>.size
+    sysctlbyname("hw.physicalcpu", &physicalCores, &physicalSize, nil, 0)
+
+    var freq: Int64 = 0
+    var freqSize = MemoryLayout<Int64>.size
+    sysctlbyname("hw.cpufrequency", &freq, &freqSize, nil, 0)
+    let maxClockSpeedMhz: Int64? = freq > 0 ? freq / 1_000_000 : nil
+
+    var arch = "unknown"
+    #if arch(arm64)
+    arch = "arm64"
+    #elseif arch(x86_64)
+    arch = "x86_64"
+    #endif
+
+    return PlatformCpuInfo(
+      architecture: arch,
+      modelName: brandName,
+      physicalCores: physicalCores > 0 ? Int64(physicalCores) : nil,
+      logicalCores: Int64(logicalCores),
+      maxClockSpeedMhz: maxClockSpeedMhz,
+      systemUtilization: nil,
+      processUtilization: nil
+    )
+  }
 }

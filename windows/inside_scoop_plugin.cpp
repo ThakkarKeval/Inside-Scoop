@@ -168,4 +168,102 @@ ErrorOr<PlatformDeviceInfo> InsideScoopPlugin::GetDeviceInfo() {
   return device_info;
 }
 
+ErrorOr<PlatformCpuInfo> InsideScoopPlugin::GetCpuInfo() {
+  SYSTEM_INFO si;
+  GetNativeSystemInfo(&si);
+
+  std::string arch = "unknown";
+  switch (si.wProcessorArchitecture) {
+    case PROCESSOR_ARCHITECTURE_AMD64:
+      arch = "x86_64";
+      break;
+    case PROCESSOR_ARCHITECTURE_ARM64:
+      arch = "arm64";
+      break;
+    case PROCESSOR_ARCHITECTURE_INTEL:
+      arch = "x86";
+      break;
+    case PROCESSOR_ARCHITECTURE_ARM:
+      arch = "arm";
+      break;
+    default:
+      arch = "unknown";
+      break;
+  }
+
+  int64_t logical_cores = si.dwNumberOfProcessors > 0 ? si.dwNumberOfProcessors : 1;
+  int64_t physical_cores_count = 0;
+  DWORD len = 0;
+  GetLogicalProcessorInformationEx(RelationProcessorCore, nullptr, &len);
+  if (len > 0) {
+    std::vector<BYTE> buffer(len);
+    if (GetLogicalProcessorInformationEx(
+            RelationProcessorCore,
+            reinterpret_cast<PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX>(buffer.data()),
+            &len)) {
+      DWORD offset = 0;
+      while (offset < len) {
+        auto info = reinterpret_cast<PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX>(buffer.data() + offset);
+        if (info->Relationship == RelationProcessorCore) {
+          physical_cores_count++;
+        }
+        offset += info->Size;
+      }
+    }
+  }
+
+  std::string model_name;
+  int64_t max_clock_mhz = 0;
+  HKEY hkey;
+  if (RegOpenKeyExW(
+          HKEY_LOCAL_MACHINE,
+          L"HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0",
+          0,
+          KEY_READ,
+          &hkey) == ERROR_SUCCESS) {
+    wchar_t brand_buf[256];
+    DWORD brand_size = sizeof(brand_buf);
+    if (RegQueryValueExW(
+            hkey,
+            L"ProcessorNameString",
+            nullptr,
+            nullptr,
+            reinterpret_cast<LPBYTE>(brand_buf),
+            &brand_size) == ERROR_SUCCESS) {
+      std::wstring wide_brand(brand_buf);
+      model_name = std::string(wide_brand.begin(), wide_brand.end());
+      size_t first = model_name.find_first_not_of(" \t\r\n");
+      if (first != std::string::npos) {
+        size_t last = model_name.find_last_not_of(" \t\r\n");
+        model_name = model_name.substr(first, (last - first + 1));
+      }
+    }
+    DWORD mhz = 0;
+    DWORD mhz_size = sizeof(mhz);
+    if (RegQueryValueExW(
+            hkey,
+            L"~MHz",
+            nullptr,
+            nullptr,
+            reinterpret_cast<LPBYTE>(&mhz),
+            &mhz_size) == ERROR_SUCCESS) {
+      max_clock_mhz = mhz;
+    }
+    RegCloseKey(hkey);
+  }
+
+  PlatformCpuInfo cpu_info(arch, logical_cores);
+  if (!model_name.empty()) {
+    cpu_info.set_model_name(model_name);
+  }
+  if (physical_cores_count > 0) {
+    cpu_info.set_physical_cores(physical_cores_count);
+  }
+  if (max_clock_mhz > 0) {
+    cpu_info.set_max_clock_speed_mhz(max_clock_mhz);
+  }
+
+  return cpu_info;
+}
+
 }  // namespace inside_scoop
