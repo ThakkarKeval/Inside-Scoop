@@ -67,6 +67,115 @@ enum MessagesPigeonInternal {
 
     return innerValue is NSNull
   }
+  static func doubleEquals(_ lhs: Double, _ rhs: Double) -> Bool {
+    return (lhs.isNaN && rhs.isNaN) || lhs == rhs
+  }
+
+  static func doubleHash(_ value: Double, _ hasher: inout Hasher) {
+    if value.isNaN {
+      hasher.combine(0x7FF8000000000000)
+    } else {
+      // Normalize -0.0 to 0.0
+      hasher.combine(value == 0 ? 0 : value)
+    }
+  }
+
+  static func deepEquals(_ lhs: Any?, _ rhs: Any?) -> Bool {
+    let cleanLhs = nilOrValue(lhs) as Any?
+    let cleanRhs = nilOrValue(rhs) as Any?
+    switch (cleanLhs, cleanRhs) {
+    case (nil, nil):
+      return true
+
+    case (nil, _), (_, nil):
+      return false
+
+    case (let lhs as AnyObject, let rhs as AnyObject) where lhs === rhs:
+      return true
+
+    case is (Void, Void):
+      return true
+
+    case (let lhsArray, let rhsArray) as ([Double], [Double]):
+      guard lhsArray.count == rhsArray.count else { return false }
+      for (index, element) in lhsArray.enumerated() {
+        if !doubleEquals(element, rhsArray[index]) {
+          return false
+        }
+      }
+      return true
+
+    case (let lhsArray, let rhsArray) as ([Any?], [Any?]):
+      guard lhsArray.count == rhsArray.count else { return false }
+      for (index, element) in lhsArray.enumerated() {
+        if !deepEquals(element, rhsArray[index]) {
+          return false
+        }
+      }
+      return true
+
+    case (let lhsDictionary, let rhsDictionary) as ([AnyHashable: Any?], [AnyHashable: Any?]):
+      guard lhsDictionary.count == rhsDictionary.count else { return false }
+      for (lhsKey, lhsValue) in lhsDictionary {
+        var found = false
+        for (rhsKey, rhsValue) in rhsDictionary {
+          if deepEquals(lhsKey, rhsKey) {
+            if deepEquals(lhsValue, rhsValue) {
+              found = true
+              break
+            } else {
+              return false
+            }
+          }
+        }
+        if !found { return false }
+      }
+      return true
+
+    case (let lhs as Double, let rhs as Double):
+      return doubleEquals(lhs, rhs)
+
+    case (let lhsHashable, let rhsHashable) as (AnyHashable, AnyHashable):
+      return lhsHashable == rhsHashable
+
+    default:
+      return false
+    }
+  }
+
+  static func deepHash(value: Any?, hasher: inout Hasher) {
+    let cleanValue = nilOrValue(value) as Any?
+    if let cleanValue = cleanValue {
+      if let doubleValue = cleanValue as? Double {
+        doubleHash(doubleValue, &hasher)
+      } else if let valueList = cleanValue as? [Any?] {
+        for item in valueList {
+          deepHash(value: item, hasher: &hasher)
+        }
+      } else if let valueList = cleanValue as? [Double] {
+        for item in valueList {
+          doubleHash(item, &hasher)
+        }
+      } else if let valueDict = cleanValue as? [AnyHashable: Any?] {
+        var result = 0
+        for (key, value) in valueDict {
+          var entryKeyHasher = Hasher()
+          deepHash(value: key, hasher: &entryKeyHasher)
+          var entryValueHasher = Hasher()
+          deepHash(value: value, hasher: &entryValueHasher)
+          result = result &+ ((entryKeyHasher.finalize() &* 31) ^ entryValueHasher.finalize())
+        }
+        hasher.combine(result)
+      } else if let hashableValue = cleanValue as? AnyHashable {
+        hasher.combine(hashableValue)
+      } else {
+        hasher.combine(String(describing: cleanValue))
+      }
+    } else {
+      hasher.combine(0)
+    }
+  }
+
 }
 
 private func nilOrValue<T>(_ value: Any?) -> T? {
@@ -75,10 +184,86 @@ private func nilOrValue<T>(_ value: Any?) -> T? {
 }
 
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct PlatformAppInfo: Hashable, CustomStringConvertible {
+  var appName: String
+  var packageName: String
+  var version: String
+  var buildNumber: String
+  var buildSignature: String? = nil
+  var installerStore: String? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> PlatformAppInfo? {
+    let appName = pigeonVar_list[0] as! String
+    let packageName = pigeonVar_list[1] as! String
+    let version = pigeonVar_list[2] as! String
+    let buildNumber = pigeonVar_list[3] as! String
+    let buildSignature: String? = nilOrValue(pigeonVar_list[4])
+    let installerStore: String? = nilOrValue(pigeonVar_list[5])
+
+    return PlatformAppInfo(
+      appName: appName,
+      packageName: packageName,
+      version: version,
+      buildNumber: buildNumber,
+      buildSignature: buildSignature,
+      installerStore: installerStore
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      appName,
+      packageName,
+      version,
+      buildNumber,
+      buildSignature,
+      installerStore,
+    ]
+  }
+  static func == (lhs: PlatformAppInfo, rhs: PlatformAppInfo) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return MessagesPigeonInternal.deepEquals(lhs.appName, rhs.appName) && MessagesPigeonInternal.deepEquals(lhs.packageName, rhs.packageName) && MessagesPigeonInternal.deepEquals(lhs.version, rhs.version) && MessagesPigeonInternal.deepEquals(lhs.buildNumber, rhs.buildNumber) && MessagesPigeonInternal.deepEquals(lhs.buildSignature, rhs.buildSignature) && MessagesPigeonInternal.deepEquals(lhs.installerStore, rhs.installerStore)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("PlatformAppInfo")
+    MessagesPigeonInternal.deepHash(value: appName, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: packageName, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: version, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: buildNumber, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: buildSignature, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: installerStore, hasher: &hasher)
+  }
+
+  public var description: String {
+    return "PlatformAppInfo(appName: \(String(describing: appName)), packageName: \(String(describing: packageName)), version: \(String(describing: version)), buildNumber: \(String(describing: buildNumber)), buildSignature: \(String(describing: buildSignature)), installerStore: \(String(describing: installerStore)))"
+  }
+}
+
 private class MessagesPigeonCodecReader: FlutterStandardReader {
+  override func readValue(ofType type: UInt8) -> Any? {
+    switch type {
+    case 129:
+      return PlatformAppInfo.fromList(self.readValue() as! [Any?])
+    default:
+      return super.readValue(ofType: type)
+    }
+  }
 }
 
 private class MessagesPigeonCodecWriter: FlutterStandardWriter {
+  override func writeValue(_ value: Any) {
+    if let value = value as? PlatformAppInfo {
+      super.writeByte(129)
+      super.writeValue(value.toList())
+    } else {
+      super.writeValue(value)
+    }
+  }
 }
 
 private class MessagesPigeonCodecReaderWriter: FlutterStandardReaderWriter {
@@ -98,6 +283,7 @@ class MessagesPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol InsideScoopHostApi {
   func getPlatformVersion() throws -> String?
+  func getAppInfo() throws -> PlatformAppInfo
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -118,6 +304,19 @@ class InsideScoopHostApiSetup {
       }
     } else {
       getPlatformVersionChannel.setMessageHandler(nil)
+    }
+    let getAppInfoChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getAppInfo\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getAppInfoChannel.setMessageHandler { _, reply in
+        do {
+          let result = try api.getAppInfo()
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      getAppInfoChannel.setMessageHandler(nil)
     }
   }
 }

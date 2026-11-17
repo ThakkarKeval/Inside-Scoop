@@ -34,6 +34,145 @@ Object? _extractReplyValueOrThrow(
   return replyList.firstOrNull;
 }
 
+bool _deepEquals(Object? a, Object? b) {
+  if (identical(a, b)) {
+    return true;
+  }
+  if (a is double && b is double) {
+    if (a.isNaN && b.isNaN) {
+      return true;
+    }
+    return a == b;
+  }
+  if (a is List && b is List) {
+    return a.length == b.length &&
+        a.indexed.every(
+          ((int, dynamic) item) => _deepEquals(item.$2, b[item.$1]),
+        );
+  }
+  if (a is Map && b is Map) {
+    if (a.length != b.length) {
+      return false;
+    }
+    for (final MapEntry<Object?, Object?> entryA in a.entries) {
+      bool found = false;
+      for (final MapEntry<Object?, Object?> entryB in b.entries) {
+        if (_deepEquals(entryA.key, entryB.key)) {
+          if (_deepEquals(entryA.value, entryB.value)) {
+            found = true;
+            break;
+          } else {
+            return false;
+          }
+        }
+      }
+      if (!found) {
+        return false;
+      }
+    }
+    return true;
+  }
+  return a == b;
+}
+
+int _deepHash(Object? value) {
+  if (value is List) {
+    return Object.hashAll(value.map(_deepHash));
+  }
+  if (value is Map) {
+    int result = 0;
+    for (final MapEntry<Object?, Object?> entry in value.entries) {
+      result += (_deepHash(entry.key) * 31) ^ _deepHash(entry.value);
+    }
+    return result;
+  }
+  if (value is double && value.isNaN) {
+    // Normalize NaN to a consistent hash.
+    return 0x7FF8000000000000.hashCode;
+  }
+  if (value is double && value == 0.0) {
+    // Normalize -0.0 to 0.0 so they have the same hash code.
+    return 0.0.hashCode;
+  }
+  return value.hashCode;
+}
+
+class PlatformAppInfo {
+  PlatformAppInfo({
+    required this.appName,
+    required this.packageName,
+    required this.version,
+    required this.buildNumber,
+    this.buildSignature,
+    this.installerStore,
+  });
+
+  String appName;
+
+  String packageName;
+
+  String version;
+
+  String buildNumber;
+
+  String? buildSignature;
+
+  String? installerStore;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      appName,
+      packageName,
+      version,
+      buildNumber,
+      buildSignature,
+      installerStore,
+    ];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static PlatformAppInfo decode(Object result) {
+    result as List<Object?>;
+    return PlatformAppInfo(
+      appName: result[0]! as String,
+      packageName: result[1]! as String,
+      version: result[2]! as String,
+      buildNumber: result[3]! as String,
+      buildSignature: result[4] as String?,
+      installerStore: result[5] as String?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! PlatformAppInfo || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(appName, other.appName) &&
+        _deepEquals(packageName, other.packageName) &&
+        _deepEquals(version, other.version) &&
+        _deepEquals(buildNumber, other.buildNumber) &&
+        _deepEquals(buildSignature, other.buildSignature) &&
+        _deepEquals(installerStore, other.installerStore);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'PlatformAppInfo(appName: $appName, packageName: $packageName, version: $version, buildNumber: $buildNumber, buildSignature: $buildSignature, installerStore: $installerStore)';
+  }
+}
+
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -41,6 +180,9 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
+    } else if (value is PlatformAppInfo) {
+      buffer.putUint8(129);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -49,6 +191,8 @@ class _PigeonCodec extends StandardMessageCodec {
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
+      case 129:
+        return PlatformAppInfo.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -88,5 +232,23 @@ class InsideScoopHostApi {
       isNullValid: true,
     );
     return pigeonVar_replyValue as String?;
+  }
+
+  Future<PlatformAppInfo> getAppInfo() async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getAppInfo$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as PlatformAppInfo;
   }
 }

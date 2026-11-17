@@ -20,6 +20,8 @@ set(PLUGIN_NAME "inside_scoop_plugin")
 list(APPEND PLUGIN_SOURCES
   "inside_scoop_plugin.cpp"
   "inside_scoop_plugin.h"
+  "messages.g.cpp"
+  "messages.g.h"
 )
 
 # Define the plugin library target. Its name must not be changed (see comment
@@ -43,6 +45,10 @@ set_target_properties(${PLUGIN_NAME} PROPERTIES
 target_compile_definitions(${PLUGIN_NAME} PRIVATE FLUTTER_PLUGIN_IMPL)
 
 # Source include directories and library dependencies. Add any plugin-specific
+# dependencies here.
+target_include_directories(${PLUGIN_NAME} INTERFACE
+  "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_link_libraries(${PLUGIN_NAME} PRIVATE flutter flutter_wrapper_plugin Version)
 # dependencies here.
 target_include_directories(${PLUGIN_NAME} INTERFACE
   "${CMAKE_CURRENT_SOURCE_DIR}/include")

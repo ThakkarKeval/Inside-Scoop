@@ -1,6 +1,7 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'inside_scoop_method_channel.dart';
+import 'src/core/models/app_info.dart';
 
 abstract class InsideScoopPlatform extends PlatformInterface {
   InsideScoopPlatform() : super(token: _token);
@@ -18,5 +19,9 @@ abstract class InsideScoopPlatform extends PlatformInterface {
 
   Future<String?> getPlatformVersion() {
     throw UnimplementedError('platformVersion() has not been implemented.');
+  }
+
+  Future<AppInfo> getAppInfo() {
+    throw UnimplementedError('getAppInfo() has not been implemented.');
   }
 }

@@ -28,3 +28,15 @@
 | **Network Info** | Full | NWPath | NWPath | IP Helper | POSIX | Online/Connection |
 | **Monitoring** | Event/Poll | Event/Poll | Event/Poll | Event/Poll | Poll | Event |
 | **Diagnostics** | Full | Full | Full | Full | Full | Full |
+
+---
+
+## 3. Implemented Feature Status
+
+### Phase 1: Application Information (`AppInfo`)
+- **Android**: `PackageManager` querying label, package name, `versionName`, `longVersionCode`, `getInstallSourceInfo`, and certificate SHA-256 fingerprint.
+- **iOS**: `Bundle.main` (`CFBundleDisplayName`, `CFBundleShortVersionString`, `CFBundleVersion`, receipt analysis).
+- **macOS**: `Bundle.main` (name, bundle ID, version strings, `_MASReceipt` check).
+- **Windows**: Win32 (`GetModuleFileNameW`, `GetFileVersionInfoW`, `VerQueryValueW`).
+- **Linux**: POSIX binary location / desktop specification parser fallback.
+- **Web**: `web.document.title`, `web.window.location.host`.

@@ -17,6 +17,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
+  AppInfo? _appInfo;
   final _insideScoopPlugin = InsideScoop();
 
   @override
@@ -35,10 +36,13 @@ class _MyAppState extends State<MyApp> {
       platformVersion = 'Failed to get platform version.';
     }
 
+    final appResult = await _insideScoopPlugin.app.info();
+
     if (!mounted) return;
 
     setState(() {
       _platformVersion = platformVersion;
+      _appInfo = appResult.valueOrNull;
     });
   }
 
@@ -46,8 +50,24 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(title: const Text('Plugin example app')),
-        body: Center(child: Text('Running on: $_platformVersion\n')),
+        appBar: AppBar(title: const Text('inside_scoop Example')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Running on: $_platformVersion\n'),
+              if (_appInfo != null) ...[
+                Text('App Name: ${_appInfo!.appName}'),
+                Text('Package: ${_appInfo!.packageName}'),
+                Text(
+                  'Version: ${_appInfo!.version} (Build ${_appInfo!.buildNumber})',
+                ),
+                if (_appInfo!.installerStore != null)
+                  Text('Store: ${_appInfo!.installerStore}'),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
