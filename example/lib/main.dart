@@ -395,19 +395,19 @@ class _CyberdeckHomeScreenState extends State<CyberdeckHomeScreen> {
                     fraction: (ramUsed / 100.0).clamp(0.0, 1.0),
                     color: ramUsed > 80 ? const Color(0xFFFF0055) : const Color(0xFF00F0FF),
                   ),
-                  const SizedBox(height: 8),
-                  _buildStatBar(
-                    label: 'POWER CELL',
-                    valueStr: _batteryInfo?.chargeWatts != null
-                        ? '${_batteryInfo!.chargeWatts!.toStringAsFixed(1)}W • $batLevel% (CHARGING)'
-                        : (_batteryInfo?.batteryLevel != null
-                            ? '$batLevel%${_batteryInfo?.isCharging == true ? " (CHARGING)" : ""}'
-                            : 'AC MAINS'),
-                    fraction: (batLevel / 100.0).clamp(0.0, 1.0),
-                    color: _batteryInfo?.isCharging == true
-                        ? const Color(0xFFFFB800)
-                        : (batLevel < 20 ? const Color(0xFFFF0055) : const Color(0xFF00FF66)),
-                  ),
+                  if (_batteryInfo?.batteryLevel != null) ...[
+                    const SizedBox(height: 8),
+                    _buildStatBar(
+                      label: 'POWER CELL',
+                      valueStr: _batteryInfo?.chargeWatts != null
+                          ? '${_batteryInfo!.chargeWatts!.toStringAsFixed(1)}W • $batLevel% (CHARGING)'
+                          : '$batLevel%${_batteryInfo?.isCharging == true ? " (CHARGING)" : ""}',
+                      fraction: (batLevel / 100.0).clamp(0.0, 1.0),
+                      color: _batteryInfo?.isCharging == true
+                          ? const Color(0xFFFFB800)
+                          : (batLevel < 20 ? const Color(0xFFFF0055) : const Color(0xFF00FF66)),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -636,31 +636,34 @@ class _CyberdeckHomeScreenState extends State<CyberdeckHomeScreen> {
                     ],
                   ),
                 ),
-                _buildCyberTile(
-                  title: 'POWER CELL',
-                  subtitle: _batteryInfo?.chargeWatts != null
-                      ? '${_batteryInfo!.chargeWatts!.toStringAsFixed(1)}W • ${_batteryInfo?.batteryLevel}%'
-                      : (_batteryInfo?.batteryLevel != null ? '$batLevel%' : 'AC Powered'),
-                  badge: _batteryInfo?.isCharging == true
-                      ? '${_batteryInfo?.chargeWatts != null ? "${_batteryInfo!.chargeWatts}W " : ""}CHARGING'
-                      : (_batteryInfo?.batteryState.name.toUpperCase() ?? 'POWER'),
-                  icon: _batteryInfo?.isCharging == true ? Icons.bolt : Icons.battery_charging_full,
-                  accentColor: _batteryInfo?.isCharging == true ? const Color(0xFFFFB800) : const Color(0xFF00FF66),
-                  onTap: () => _navigateToDetail(
-                    title: 'POWER MANAGEMENT & CELL',
-                    icon: Icons.battery_charging_full,
-                    color: const Color(0xFF00FF66),
-                    subtitle: 'Thermal sensors, power source, and charging topology',
-                    items: [
-                      DetailRowItem('Battery Charge', _batteryInfo?.batteryLevel != null ? '${_batteryInfo!.batteryLevel}%' : 'Direct AC Power (No Battery)'),
-                      DetailRowItem('Charging State', _batteryInfo?.batteryState.name.toUpperCase() ?? 'UNKNOWN'),
-                      DetailRowItem('Power Source', _batteryInfo?.powerSource.name.toUpperCase() ?? 'MAINS'),
-                      DetailRowItem('Charging Rate (Watts)', _batteryInfo?.chargeWatts != null ? '${_batteryInfo!.chargeWatts!.toStringAsFixed(2)} Watts' : 'Not Charging / Sensor Inactive'),
-                      DetailRowItem('Low Power Throttling', '${_batteryInfo?.isLowPowerMode ?? false}'),
-                      DetailRowItem('Thermal Reading', _batteryInfo?.temperatureCelsius != null ? '${_batteryInfo!.temperatureCelsius!.toStringAsFixed(1)} °C (${_batteryInfo!.temperatureFahrenheit!.toStringAsFixed(1)} °F)' : 'Sensor Unavailable'),
-                    ],
+                if (_capabilities[ScoopFeature.batteryMetrics]?.state != ScoopCapabilityState.unsupported &&
+                    _batteryInfo?.batteryState != BatteryState.unknown) ...[
+                  _buildCyberTile(
+                    title: 'POWER CELL',
+                    subtitle: _batteryInfo?.chargeWatts != null
+                        ? '${_batteryInfo!.chargeWatts!.toStringAsFixed(1)}W • ${_batteryInfo?.batteryLevel}%'
+                        : (_batteryInfo?.batteryLevel != null ? '$batLevel%' : 'AC Powered'),
+                    badge: _batteryInfo?.isCharging == true
+                        ? '${_batteryInfo?.chargeWatts != null ? "${_batteryInfo!.chargeWatts}W " : ""}CHARGING'
+                        : (_batteryInfo?.batteryState.name.toUpperCase() ?? 'POWER'),
+                    icon: _batteryInfo?.isCharging == true ? Icons.bolt : Icons.battery_charging_full,
+                    accentColor: _batteryInfo?.isCharging == true ? const Color(0xFFFFB800) : const Color(0xFF00FF66),
+                    onTap: () => _navigateToDetail(
+                      title: 'POWER MANAGEMENT & CELL',
+                      icon: Icons.battery_charging_full,
+                      color: const Color(0xFF00FF66),
+                      subtitle: 'Thermal sensors, power source, and charging topology',
+                      items: [
+                        DetailRowItem('Battery Charge', _batteryInfo?.batteryLevel != null ? '${_batteryInfo!.batteryLevel}%' : 'Direct AC Power (No Battery)'),
+                        DetailRowItem('Charging State', _batteryInfo?.batteryState.name.toUpperCase() ?? 'UNKNOWN'),
+                        DetailRowItem('Power Source', _batteryInfo?.powerSource.name.toUpperCase() ?? 'MAINS'),
+                        DetailRowItem('Charging Rate (Watts)', _batteryInfo?.chargeWatts != null ? '${_batteryInfo!.chargeWatts!.toStringAsFixed(2)} Watts' : 'Not Charging / Sensor Inactive'),
+                        DetailRowItem('Low Power Throttling', '${_batteryInfo?.isLowPowerMode ?? false}'),
+                        DetailRowItem('Thermal Reading', _batteryInfo?.temperatureCelsius != null ? '${_batteryInfo!.temperatureCelsius!.toStringAsFixed(1)} °C (${_batteryInfo!.temperatureFahrenheit!.toStringAsFixed(1)} °F)' : 'Sensor Unavailable'),
+                      ],
+                    ),
                   ),
-                ),
+                ],
                 _buildCyberTile(
                   title: 'UPLINK NET',
                   subtitle: _networkInfo?.primaryType.name.toUpperCase() ?? 'INTERFACES',
@@ -865,6 +868,19 @@ class CyberDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Filter out rows that represent unsupported or unavailable telemetry
+    final visibleItems = items.where((item) {
+      final v = item.value.trim().toLowerCase();
+      if (v == 'null' ||
+          v == 'not supported' ||
+          v == 'unavailable' ||
+          v == 'sensor unavailable' ||
+          v == 'unknown') {
+        return false;
+      }
+      return true;
+    }).toList();
+
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
@@ -943,10 +959,10 @@ class CyberDetailScreen extends StatelessWidget {
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: items.length,
+              itemCount: visibleItems.length,
               separatorBuilder: (ctx, index) => const SizedBox(height: 10),
               itemBuilder: (ctx, idx) {
-                final item = items[idx];
+                final item = visibleItems[idx];
                 return Container(
                   padding: const EdgeInsets.all(14.0),
                   decoration: BoxDecoration(
