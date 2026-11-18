@@ -121,6 +121,18 @@ class InsideScoopWeb extends InsideScoopPlatform {
     int total = 10 * 1024 * 1024 * 1024;
     int available = 8 * 1024 * 1024 * 1024;
 
+    try {
+      final storageManager = web.window.navigator.storage;
+      final estimatePromise = storageManager.estimate();
+      final estimate = await estimatePromise.toDart;
+      final quota = estimate.quota;
+      final usage = estimate.usage;
+      if (quota > 0) {
+        total = quota;
+        available = (quota - usage) > 0 ? (quota - usage) : 0;
+      }
+    } catch (_) {}
+
     return StorageInfo(
       totalBytes: total,
       availableBytes: available,
@@ -149,6 +161,7 @@ class InsideScoopWeb extends InsideScoopPlatform {
       powerSource: PowerSource.unknown,
       isLowPowerMode: null,
       temperatureCelsius: null,
+      chargeWatts: null,
     );
   }
 
