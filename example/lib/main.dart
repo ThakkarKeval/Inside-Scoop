@@ -68,6 +68,7 @@ class _CyberdeckHomeScreenState extends State<CyberdeckHomeScreen> {
 
   StreamSubscription<NetworkInfo>? _netSub;
   StreamSubscription<SystemMetricsSnapshot>? _monSub;
+  Timer? _batteryTimer;
   bool _isMonitoring = false;
   int _monitoringTicks = 0;
   SystemMetricsSnapshot? _latestSnapshot;
@@ -83,6 +84,7 @@ class _CyberdeckHomeScreenState extends State<CyberdeckHomeScreen> {
   void dispose() {
     _netSub?.cancel();
     _monSub?.cancel();
+    _batteryTimer?.cancel();
     super.dispose();
   }
 
@@ -126,6 +128,16 @@ class _CyberdeckHomeScreenState extends State<CyberdeckHomeScreen> {
       if (mounted) {
         setState(() {
           _networkInfo = update;
+        });
+      }
+    });
+
+    // Also poll active battery & power state periodically so charging updates in real-time
+    _batteryTimer = Timer.periodic(const Duration(seconds: 1), (_) async {
+      final batResult = await _scoop.battery.info();
+      if (mounted && batResult.valueOrNull != null) {
+        setState(() {
+          _batteryInfo = batResult.valueOrNull;
         });
       }
     });
@@ -386,9 +398,15 @@ class _CyberdeckHomeScreenState extends State<CyberdeckHomeScreen> {
                   const SizedBox(height: 8),
                   _buildStatBar(
                     label: 'POWER CELL',
-                    valueStr: _batteryInfo?.batteryLevel != null ? '$batLevel%' : 'AC MAINS',
+                    valueStr: _batteryInfo?.chargeWatts != null
+                        ? '${_batteryInfo!.chargeWatts!.toStringAsFixed(1)}W • $batLevel% (CHARGING)'
+                        : (_batteryInfo?.batteryLevel != null
+                            ? '$batLevel%${_batteryInfo?.isCharging == true ? " (CHARGING)" : ""}'
+                            : 'AC MAINS'),
                     fraction: (batLevel / 100.0).clamp(0.0, 1.0),
-                    color: batLevel < 20 ? const Color(0xFFFF0055) : const Color(0xFF00FF66),
+                    color: _batteryInfo?.isCharging == true
+                        ? const Color(0xFFFFB800)
+                        : (batLevel < 20 ? const Color(0xFFFF0055) : const Color(0xFF00FF66)),
                   ),
                 ],
               ),
@@ -620,10 +638,14 @@ class _CyberdeckHomeScreenState extends State<CyberdeckHomeScreen> {
                 ),
                 _buildCyberTile(
                   title: 'POWER CELL',
-                  subtitle: _batteryInfo?.batteryLevel != null ? '$batLevel%' : 'AC Powered',
-                  badge: _batteryInfo?.batteryState.name.toUpperCase() ?? 'POWER',
-                  icon: Icons.battery_charging_full,
-                  accentColor: const Color(0xFF00FF66),
+                  subtitle: _batteryInfo?.chargeWatts != null
+                      ? '${_batteryInfo!.chargeWatts!.toStringAsFixed(1)}W • ${_batteryInfo?.batteryLevel}%'
+                      : (_batteryInfo?.batteryLevel != null ? '$batLevel%' : 'AC Powered'),
+                  badge: _batteryInfo?.isCharging == true
+                      ? '${_batteryInfo?.chargeWatts != null ? "${_batteryInfo!.chargeWatts}W " : ""}CHARGING'
+                      : (_batteryInfo?.batteryState.name.toUpperCase() ?? 'POWER'),
+                  icon: _batteryInfo?.isCharging == true ? Icons.bolt : Icons.battery_charging_full,
+                  accentColor: _batteryInfo?.isCharging == true ? const Color(0xFFFFB800) : const Color(0xFF00FF66),
                   onTap: () => _navigateToDetail(
                     title: 'POWER MANAGEMENT & CELL',
                     icon: Icons.battery_charging_full,
@@ -633,6 +655,7 @@ class _CyberdeckHomeScreenState extends State<CyberdeckHomeScreen> {
                       DetailRowItem('Battery Charge', _batteryInfo?.batteryLevel != null ? '${_batteryInfo!.batteryLevel}%' : 'Direct AC Power (No Battery)'),
                       DetailRowItem('Charging State', _batteryInfo?.batteryState.name.toUpperCase() ?? 'UNKNOWN'),
                       DetailRowItem('Power Source', _batteryInfo?.powerSource.name.toUpperCase() ?? 'MAINS'),
+                      DetailRowItem('Charging Rate (Watts)', _batteryInfo?.chargeWatts != null ? '${_batteryInfo!.chargeWatts!.toStringAsFixed(2)} Watts' : 'Not Charging / Sensor Inactive'),
                       DetailRowItem('Low Power Throttling', '${_batteryInfo?.isLowPowerMode ?? false}'),
                       DetailRowItem('Thermal Reading', _batteryInfo?.temperatureCelsius != null ? '${_batteryInfo!.temperatureCelsius!.toStringAsFixed(1)} °C (${_batteryInfo!.temperatureFahrenheit!.toStringAsFixed(1)} °F)' : 'Sensor Unavailable'),
                     ],

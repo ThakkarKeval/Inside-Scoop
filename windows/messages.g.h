@@ -458,7 +458,8 @@ class PlatformBatteryInfo {
     int64_t battery_state_index,
     int64_t power_source_index,
     const bool* is_low_power_mode,
-    const double* temperature_celsius);
+    const double* temperature_celsius,
+    const double* charge_watts);
 
   const int64_t* battery_level() const;
   void set_battery_level(const int64_t* value_arg);
@@ -478,6 +479,10 @@ class PlatformBatteryInfo {
   void set_temperature_celsius(const double* value_arg);
   void set_temperature_celsius(double value_arg);
 
+  const double* charge_watts() const;
+  void set_charge_watts(const double* value_arg);
+  void set_charge_watts(double value_arg);
+
   bool operator==(const PlatformBatteryInfo& other) const;
   bool operator!=(const PlatformBatteryInfo& other) const;
   /// Returns a hash code value for the object. This method is supported for the benefit of hash tables.
@@ -494,6 +499,7 @@ class PlatformBatteryInfo {
   int64_t power_source_index_;
   std::optional<bool> is_low_power_mode_;
   std::optional<double> temperature_celsius_;
+  std::optional<double> charge_watts_;
 };
 
 

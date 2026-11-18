@@ -145,6 +145,7 @@ class PlatformBatteryInfo {
     required this.powerSourceIndex,
     this.isLowPowerMode,
     this.temperatureCelsius,
+    this.chargeWatts,
   });
 
   final int? batteryLevel;
@@ -152,6 +153,7 @@ class PlatformBatteryInfo {
   final int powerSourceIndex; // 0: battery, 1: ac, 2: usb, 3: wireless, 4: unknown
   final bool? isLowPowerMode;
   final double? temperatureCelsius;
+  final double? chargeWatts;
 }
 
 class PlatformNetworkInfo {

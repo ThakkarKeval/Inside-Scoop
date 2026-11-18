@@ -390,8 +390,43 @@ class InsideScoopPlugin(private var context: Context? = null) : FlutterPlugin, I
                     }
                 }
 
+                // Query charging wattage if supported
+                var chargeWatts: Double? = null
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    val bm = currentContext.getSystemService(Context.BATTERY_SERVICE) as? android.os.BatteryManager
+                    if (bm != null && batteryStatus != null) {
+                        val status = batteryStatus.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1)
+                        val isCharging = status == android.os.BatteryManager.BATTERY_STATUS_CHARGING ||
+                                status == android.os.BatteryManager.BATTERY_STATUS_FULL
+
+                        if (isCharging) {
+                            val currentMicroAmps = bm.getIntProperty(android.os.BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
+                            val voltageMilliVolts = batteryStatus.getIntExtra(android.os.BatteryManager.EXTRA_VOLTAGE, -1)
+
+                            if (voltageMilliVolts > 0 && currentMicroAmps != Int.MIN_VALUE && currentMicroAmps != 0) {
+                                val absMicroAmps = if (currentMicroAmps < 0) -currentMicroAmps.toLong() else currentMicroAmps.toLong()
+                                val currentAmps = absMicroAmps.toDouble() / 1000000.0
+                                val voltageVolts = voltageMilliVolts.toDouble() / 1000.0
+                                val calculatedWatts = currentAmps * voltageVolts
+                                if (calculatedWatts >= 0.05 && calculatedWatts <= 300.0) {
+                                    chargeWatts = (calculatedWatts * 100.0).toLong().toDouble() / 100.0
+                                }
+                            }
+                        }
+                    }
+                }
+
                 val powerManager = currentContext.getSystemService(Context.POWER_SERVICE) as? android.os.PowerManager
                 isLowPowerMode = powerManager?.isPowerSaveMode
+
+                return PlatformBatteryInfo(
+                    batteryLevel = level,
+                    batteryStateIndex = batteryStateIndex,
+                    powerSourceIndex = powerSourceIndex,
+                    isLowPowerMode = isLowPowerMode,
+                    temperatureCelsius = tempCelsius,
+                    chargeWatts = chargeWatts
+                )
             }
         } catch (e: Throwable) {
             // Fallback gracefully for unit tests or restricted permissions
@@ -402,7 +437,8 @@ class InsideScoopPlugin(private var context: Context? = null) : FlutterPlugin, I
             batteryStateIndex = batteryStateIndex,
             powerSourceIndex = powerSourceIndex,
             isLowPowerMode = isLowPowerMode,
-            temperatureCelsius = tempCelsius
+            temperatureCelsius = tempCelsius,
+            chargeWatts = null
         )
     }
 
@@ -515,17 +551,6 @@ class InsideScoopPlugin(private var context: Context? = null) : FlutterPlugin, I
             if (currentContext != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 val cm = currentContext.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
                 if (cm != null) {
-                    networkCallback = object : ConnectivityManager.NetworkCallback() {
-                        override fun onAvailable(network: Network) {
-                            sendNetworkUpdate()
-                        }
-                        override fun onLost(network: Network) {
-                            sendNetworkUpdate()
-                        }
-                        override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
-                            sendNetworkUpdate()
-                        }
-                    }
                     cm.registerDefaultNetworkCallback(networkCallback!!)
                 }
             }

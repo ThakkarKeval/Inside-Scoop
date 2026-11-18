@@ -125,6 +125,7 @@ class MethodChannelInsideScoop extends InsideScoopPlatform {
       powerSource: PowerSource.fromIndex(platformBattery.powerSourceIndex),
       isLowPowerMode: platformBattery.isLowPowerMode,
       temperatureCelsius: platformBattery.temperatureCelsius,
+      chargeWatts: platformBattery.chargeWatts,
     );
   }
 

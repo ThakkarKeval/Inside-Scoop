@@ -596,6 +596,7 @@ struct PlatformBatteryInfo: Hashable, CustomStringConvertible {
   var powerSourceIndex: Int64
   var isLowPowerMode: Bool? = nil
   var temperatureCelsius: Double? = nil
+  var chargeWatts: Double? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -605,13 +606,15 @@ struct PlatformBatteryInfo: Hashable, CustomStringConvertible {
     let powerSourceIndex = pigeonVar_list[2] as! Int64
     let isLowPowerMode: Bool? = nilOrValue(pigeonVar_list[3])
     let temperatureCelsius: Double? = nilOrValue(pigeonVar_list[4])
+    let chargeWatts: Double? = nilOrValue(pigeonVar_list[5])
 
     return PlatformBatteryInfo(
       batteryLevel: batteryLevel,
       batteryStateIndex: batteryStateIndex,
       powerSourceIndex: powerSourceIndex,
       isLowPowerMode: isLowPowerMode,
-      temperatureCelsius: temperatureCelsius
+      temperatureCelsius: temperatureCelsius,
+      chargeWatts: chargeWatts
     )
   }
   func toList() -> [Any?] {
@@ -621,13 +624,14 @@ struct PlatformBatteryInfo: Hashable, CustomStringConvertible {
       powerSourceIndex,
       isLowPowerMode,
       temperatureCelsius,
+      chargeWatts,
     ]
   }
   static func == (lhs: PlatformBatteryInfo, rhs: PlatformBatteryInfo) -> Bool {
     if Swift.type(of: lhs) != Swift.type(of: rhs) {
       return false
     }
-    return MessagesPigeonInternal.deepEquals(lhs.batteryLevel, rhs.batteryLevel) && MessagesPigeonInternal.deepEquals(lhs.batteryStateIndex, rhs.batteryStateIndex) && MessagesPigeonInternal.deepEquals(lhs.powerSourceIndex, rhs.powerSourceIndex) && MessagesPigeonInternal.deepEquals(lhs.isLowPowerMode, rhs.isLowPowerMode) && MessagesPigeonInternal.deepEquals(lhs.temperatureCelsius, rhs.temperatureCelsius)
+    return MessagesPigeonInternal.deepEquals(lhs.batteryLevel, rhs.batteryLevel) && MessagesPigeonInternal.deepEquals(lhs.batteryStateIndex, rhs.batteryStateIndex) && MessagesPigeonInternal.deepEquals(lhs.powerSourceIndex, rhs.powerSourceIndex) && MessagesPigeonInternal.deepEquals(lhs.isLowPowerMode, rhs.isLowPowerMode) && MessagesPigeonInternal.deepEquals(lhs.temperatureCelsius, rhs.temperatureCelsius) && MessagesPigeonInternal.deepEquals(lhs.chargeWatts, rhs.chargeWatts)
   }
 
   func hash(into hasher: inout Hasher) {
@@ -637,10 +641,11 @@ struct PlatformBatteryInfo: Hashable, CustomStringConvertible {
     MessagesPigeonInternal.deepHash(value: powerSourceIndex, hasher: &hasher)
     MessagesPigeonInternal.deepHash(value: isLowPowerMode, hasher: &hasher)
     MessagesPigeonInternal.deepHash(value: temperatureCelsius, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: chargeWatts, hasher: &hasher)
   }
 
   public var description: String {
-    return "PlatformBatteryInfo(batteryLevel: \(String(describing: batteryLevel)), batteryStateIndex: \(String(describing: batteryStateIndex)), powerSourceIndex: \(String(describing: powerSourceIndex)), isLowPowerMode: \(String(describing: isLowPowerMode)), temperatureCelsius: \(String(describing: temperatureCelsius)))"
+    return "PlatformBatteryInfo(batteryLevel: \(String(describing: batteryLevel)), batteryStateIndex: \(String(describing: batteryStateIndex)), powerSourceIndex: \(String(describing: powerSourceIndex)), isLowPowerMode: \(String(describing: isLowPowerMode)), temperatureCelsius: \(String(describing: temperatureCelsius)), chargeWatts: \(String(describing: chargeWatts)))"
   }
 }
 

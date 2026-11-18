@@ -585,7 +585,8 @@ data class PlatformBatteryInfo (
   val batteryStateIndex: Long,
   val powerSourceIndex: Long,
   val isLowPowerMode: Boolean? = null,
-  val temperatureCelsius: Double? = null
+  val temperatureCelsius: Double? = null,
+  val chargeWatts: Double? = null
 )
  {
   companion object {
@@ -595,7 +596,8 @@ data class PlatformBatteryInfo (
       val powerSourceIndex = pigeonVar_list[2] as Long
       val isLowPowerMode = pigeonVar_list[3] as Boolean?
       val temperatureCelsius = pigeonVar_list[4] as Double?
-      return PlatformBatteryInfo(batteryLevel, batteryStateIndex, powerSourceIndex, isLowPowerMode, temperatureCelsius)
+      val chargeWatts = pigeonVar_list[5] as Double?
+      return PlatformBatteryInfo(batteryLevel, batteryStateIndex, powerSourceIndex, isLowPowerMode, temperatureCelsius, chargeWatts)
     }
   }
   fun toList(): List<Any?> {
@@ -605,6 +607,7 @@ data class PlatformBatteryInfo (
       powerSourceIndex,
       isLowPowerMode,
       temperatureCelsius,
+      chargeWatts,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -615,7 +618,7 @@ data class PlatformBatteryInfo (
       return true
     }
     val other = other as PlatformBatteryInfo
-    return MessagesPigeonUtils.deepEquals(this.batteryLevel, other.batteryLevel) && MessagesPigeonUtils.deepEquals(this.batteryStateIndex, other.batteryStateIndex) && MessagesPigeonUtils.deepEquals(this.powerSourceIndex, other.powerSourceIndex) && MessagesPigeonUtils.deepEquals(this.isLowPowerMode, other.isLowPowerMode) && MessagesPigeonUtils.deepEquals(this.temperatureCelsius, other.temperatureCelsius)
+    return MessagesPigeonUtils.deepEquals(this.batteryLevel, other.batteryLevel) && MessagesPigeonUtils.deepEquals(this.batteryStateIndex, other.batteryStateIndex) && MessagesPigeonUtils.deepEquals(this.powerSourceIndex, other.powerSourceIndex) && MessagesPigeonUtils.deepEquals(this.isLowPowerMode, other.isLowPowerMode) && MessagesPigeonUtils.deepEquals(this.temperatureCelsius, other.temperatureCelsius) && MessagesPigeonUtils.deepEquals(this.chargeWatts, other.chargeWatts)
   }
 
   override fun hashCode(): Int {
@@ -625,10 +628,11 @@ data class PlatformBatteryInfo (
     result = 31 * result + MessagesPigeonUtils.deepHash(this.powerSourceIndex)
     result = 31 * result + MessagesPigeonUtils.deepHash(this.isLowPowerMode)
     result = 31 * result + MessagesPigeonUtils.deepHash(this.temperatureCelsius)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.chargeWatts)
     return result
   }
   override fun toString(): String {
-    return "PlatformBatteryInfo(batteryLevel=$batteryLevel, batteryStateIndex=$batteryStateIndex, powerSourceIndex=$powerSourceIndex, isLowPowerMode=$isLowPowerMode, temperatureCelsius=$temperatureCelsius)"
+    return "PlatformBatteryInfo(batteryLevel=$batteryLevel, batteryStateIndex=$batteryStateIndex, powerSourceIndex=$powerSourceIndex, isLowPowerMode=$isLowPowerMode, temperatureCelsius=$temperatureCelsius, chargeWatts=$chargeWatts)"
   }
 }
 

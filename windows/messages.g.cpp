@@ -1464,12 +1464,14 @@ PlatformBatteryInfo::PlatformBatteryInfo(
   int64_t battery_state_index,
   int64_t power_source_index,
   const bool* is_low_power_mode,
-  const double* temperature_celsius)
+  const double* temperature_celsius,
+  const double* charge_watts)
  : battery_level_(battery_level ? std::optional<int64_t>(*battery_level) : std::nullopt),
     battery_state_index_(battery_state_index),
     power_source_index_(power_source_index),
     is_low_power_mode_(is_low_power_mode ? std::optional<bool>(*is_low_power_mode) : std::nullopt),
-    temperature_celsius_(temperature_celsius ? std::optional<double>(*temperature_celsius) : std::nullopt) {}
+    temperature_celsius_(temperature_celsius ? std::optional<double>(*temperature_celsius) : std::nullopt),
+    charge_watts_(charge_watts ? std::optional<double>(*charge_watts) : std::nullopt) {}
 
 const int64_t* PlatformBatteryInfo::battery_level() const {
   return battery_level_ ? &(*battery_level_) : nullptr;
@@ -1528,14 +1530,28 @@ void PlatformBatteryInfo::set_temperature_celsius(double value_arg) {
 }
 
 
+const double* PlatformBatteryInfo::charge_watts() const {
+  return charge_watts_ ? &(*charge_watts_) : nullptr;
+}
+
+void PlatformBatteryInfo::set_charge_watts(const double* value_arg) {
+  charge_watts_ = value_arg ? std::optional<double>(*value_arg) : std::nullopt;
+}
+
+void PlatformBatteryInfo::set_charge_watts(double value_arg) {
+  charge_watts_ = value_arg;
+}
+
+
 EncodableList PlatformBatteryInfo::ToEncodableList() const {
   EncodableList list;
-  list.reserve(5);
+  list.reserve(6);
   list.push_back(battery_level_ ? EncodableValue(*battery_level_) : EncodableValue());
   list.push_back(EncodableValue(battery_state_index_));
   list.push_back(EncodableValue(power_source_index_));
   list.push_back(is_low_power_mode_ ? EncodableValue(*is_low_power_mode_) : EncodableValue());
   list.push_back(temperature_celsius_ ? EncodableValue(*temperature_celsius_) : EncodableValue());
+  list.push_back(charge_watts_ ? EncodableValue(*charge_watts_) : EncodableValue());
   return list;
 }
 
@@ -1555,11 +1571,15 @@ PlatformBatteryInfo PlatformBatteryInfo::FromEncodableList(const EncodableList& 
   if (!encodable_temperature_celsius.IsNull()) {
     decoded.set_temperature_celsius(std::get<double>(encodable_temperature_celsius));
   }
+  auto& encodable_charge_watts = list[5];
+  if (!encodable_charge_watts.IsNull()) {
+    decoded.set_charge_watts(std::get<double>(encodable_charge_watts));
+  }
   return decoded;
 }
 
 bool PlatformBatteryInfo::operator==(const PlatformBatteryInfo& other) const {
-  return PigeonInternalDeepEquals(battery_level_, other.battery_level_) && PigeonInternalDeepEquals(battery_state_index_, other.battery_state_index_) && PigeonInternalDeepEquals(power_source_index_, other.power_source_index_) && PigeonInternalDeepEquals(is_low_power_mode_, other.is_low_power_mode_) && PigeonInternalDeepEquals(temperature_celsius_, other.temperature_celsius_);
+  return PigeonInternalDeepEquals(battery_level_, other.battery_level_) && PigeonInternalDeepEquals(battery_state_index_, other.battery_state_index_) && PigeonInternalDeepEquals(power_source_index_, other.power_source_index_) && PigeonInternalDeepEquals(is_low_power_mode_, other.is_low_power_mode_) && PigeonInternalDeepEquals(temperature_celsius_, other.temperature_celsius_) && PigeonInternalDeepEquals(charge_watts_, other.charge_watts_);
 }
 
 bool PlatformBatteryInfo::operator!=(const PlatformBatteryInfo& other) const {
@@ -1573,6 +1593,7 @@ size_t PlatformBatteryInfo::Hash() const {
   result = result * 31 + PigeonInternalDeepHash(power_source_index_);
   result = result * 31 + PigeonInternalDeepHash(is_low_power_mode_);
   result = result * 31 + PigeonInternalDeepHash(temperature_celsius_);
+  result = result * 31 + PigeonInternalDeepHash(charge_watts_);
   return result;
 }
 
@@ -1601,6 +1622,13 @@ std::ostream& operator<<(
   os << ", temperature_celsius: ";
   if (obj.temperature_celsius_) {
     os << PigeonInternalToString(*obj.temperature_celsius_);
+  }
+  else {
+    os << "null";
+  }
+  os << ", charge_watts: ";
+  if (obj.charge_watts_) {
+    os << PigeonInternalToString(*obj.charge_watts_);
   }
   else {
     os << "null";

@@ -579,6 +579,7 @@ class PlatformBatteryInfo {
     required this.powerSourceIndex,
     this.isLowPowerMode,
     this.temperatureCelsius,
+    this.chargeWatts,
   });
 
   int? batteryLevel;
@@ -591,6 +592,8 @@ class PlatformBatteryInfo {
 
   double? temperatureCelsius;
 
+  double? chargeWatts;
+
   List<Object?> _toList() {
     return <Object?>[
       batteryLevel,
@@ -598,6 +601,7 @@ class PlatformBatteryInfo {
       powerSourceIndex,
       isLowPowerMode,
       temperatureCelsius,
+      chargeWatts,
     ];
   }
 
@@ -612,6 +616,7 @@ class PlatformBatteryInfo {
       powerSourceIndex: result[2]! as int,
       isLowPowerMode: result[3] as bool?,
       temperatureCelsius: result[4] as double?,
+      chargeWatts: result[5] as double?,
     );
   }
 
@@ -624,7 +629,7 @@ class PlatformBatteryInfo {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(batteryLevel, other.batteryLevel) && _deepEquals(batteryStateIndex, other.batteryStateIndex) && _deepEquals(powerSourceIndex, other.powerSourceIndex) && _deepEquals(isLowPowerMode, other.isLowPowerMode) && _deepEquals(temperatureCelsius, other.temperatureCelsius);
+    return _deepEquals(batteryLevel, other.batteryLevel) && _deepEquals(batteryStateIndex, other.batteryStateIndex) && _deepEquals(powerSourceIndex, other.powerSourceIndex) && _deepEquals(isLowPowerMode, other.isLowPowerMode) && _deepEquals(temperatureCelsius, other.temperatureCelsius) && _deepEquals(chargeWatts, other.chargeWatts);
   }
 
   @override
@@ -633,7 +638,7 @@ class PlatformBatteryInfo {
 
   @override
   String toString() {
-    return 'PlatformBatteryInfo(batteryLevel: $batteryLevel, batteryStateIndex: $batteryStateIndex, powerSourceIndex: $powerSourceIndex, isLowPowerMode: $isLowPowerMode, temperatureCelsius: $temperatureCelsius)';
+    return 'PlatformBatteryInfo(batteryLevel: $batteryLevel, batteryStateIndex: $batteryStateIndex, powerSourceIndex: $powerSourceIndex, isLowPowerMode: $isLowPowerMode, temperatureCelsius: $temperatureCelsius, chargeWatts: $chargeWatts)';
   }
 }
 

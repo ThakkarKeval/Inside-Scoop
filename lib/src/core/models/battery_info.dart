@@ -40,6 +40,7 @@ class BatteryInfo {
     required this.powerSource,
     this.isLowPowerMode,
     this.temperatureCelsius,
+    this.chargeWatts,
   });
 
   /// The current battery level as a percentage integer from 0 to 100, or `null` if no battery is present.
@@ -56,6 +57,9 @@ class BatteryInfo {
 
   /// The current internal battery temperature in degrees Celsius (°C), if exposed by the hardware.
   final double? temperatureCelsius;
+
+  /// The real-time electrical power charging rate in Watts (W), if supported by the hardware/OS.
+  final double? chargeWatts;
 
   /// Whether the battery is actively receiving electrical power.
   bool get isCharging => batteryState == BatteryState.charging;
@@ -80,6 +84,7 @@ class BatteryInfo {
       powerSource: PowerSource.fromIndex(sourceIndex),
       isLowPowerMode: map['isLowPowerMode'] as bool?,
       temperatureCelsius: (map['temperatureCelsius'] as num?)?.toDouble(),
+      chargeWatts: (map['chargeWatts'] as num?)?.toDouble(),
     );
   }
 
@@ -93,6 +98,7 @@ class BatteryInfo {
       'powerSourceIndex': powerSource.index,
       'isLowPowerMode': isLowPowerMode,
       'temperatureCelsius': temperatureCelsius,
+      'chargeWatts': chargeWatts,
     };
   }
 
@@ -103,6 +109,7 @@ class BatteryInfo {
     PowerSource? powerSource,
     bool? isLowPowerMode,
     double? temperatureCelsius,
+    double? chargeWatts,
   }) {
     return BatteryInfo(
       batteryLevel: batteryLevel ?? this.batteryLevel,
@@ -110,6 +117,7 @@ class BatteryInfo {
       powerSource: powerSource ?? this.powerSource,
       isLowPowerMode: isLowPowerMode ?? this.isLowPowerMode,
       temperatureCelsius: temperatureCelsius ?? this.temperatureCelsius,
+      chargeWatts: chargeWatts ?? this.chargeWatts,
     );
   }
 
@@ -122,7 +130,8 @@ class BatteryInfo {
           batteryState == other.batteryState &&
           powerSource == other.powerSource &&
           isLowPowerMode == other.isLowPowerMode &&
-          temperatureCelsius == other.temperatureCelsius;
+          temperatureCelsius == other.temperatureCelsius &&
+          chargeWatts == other.chargeWatts;
 
   @override
   int get hashCode => Object.hash(
@@ -131,6 +140,7 @@ class BatteryInfo {
     powerSource,
     isLowPowerMode,
     temperatureCelsius,
+    chargeWatts,
   );
 
   @override
