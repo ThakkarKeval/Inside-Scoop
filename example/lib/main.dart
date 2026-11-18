@@ -27,6 +27,10 @@ class _MyAppState extends State<MyApp> {
   BatteryInfo? _batteryInfo;
   NetworkInfo? _networkInfo;
   StreamSubscription<NetworkInfo>? _networkSubscription;
+  bool _isMonitoring = false;
+  int _monitoringSampleCount = 0;
+  SystemMetricsSnapshot? _latestSnapshot;
+  StreamSubscription<SystemMetricsSnapshot>? _monitoringSubscription;
   Map<ScoopFeature, ScoopCapabilityInfo> _capabilities = {};
   final _insideScoopPlugin = InsideScoop();
 
@@ -47,9 +51,36 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  void _toggleMonitoring() {
+    if (_isMonitoring) {
+      _monitoringSubscription?.cancel();
+      _monitoringSubscription = null;
+      setState(() {
+        _isMonitoring = false;
+      });
+    } else {
+      _monitoringSubscription = _insideScoopPlugin.monitoring
+          .startMonitoring(
+            config: const MonitoringConfig(interval: Duration(seconds: 1)),
+          )
+          .listen((snapshot) {
+            if (mounted) {
+              setState(() {
+                _latestSnapshot = snapshot;
+                _monitoringSampleCount++;
+              });
+            }
+          });
+      setState(() {
+        _isMonitoring = true;
+      });
+    }
+  }
+
   @override
   void dispose() {
     _networkSubscription?.cancel();
+    _monitoringSubscription?.cancel();
     super.dispose();
   }
 
@@ -247,6 +278,49 @@ class _MyAppState extends State<MyApp> {
                   Text('VPN Routing: ${_networkInfo!.isVpnActive}'),
                 const SizedBox(height: 12),
               ],
+              Card(
+                margin: const EdgeInsets.only(bottom: 16.0),
+                color: Colors.blueGrey.shade50,
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Real-time Monitoring Engine',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          ElevatedButton(
+                            onPressed: _toggleMonitoring,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _isMonitoring ? Colors.red : Colors.green,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: Text(_isMonitoring ? 'Stop' : 'Start'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text('Status: ${_isMonitoring ? "Active (1s periodic)" : "Idle"}'),
+                      Text('Samples Collected: $_monitoringSampleCount'),
+                      if (_latestSnapshot != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          'Latest Sample: ${_latestSnapshot!.timestamp.toIso8601String().split("T").last.split(".").first}',
+                          style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                        ),
+                        if (_latestSnapshot!.memory != null)
+                          Text('Live RAM Available: ${_latestSnapshot!.memory!.availablePhysicalMb} MB'),
+                        if (_latestSnapshot!.battery?.batteryLevel != null)
+                          Text('Live Battery: ${_latestSnapshot!.battery!.batteryLevel}%'),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
               if (_capabilities.isNotEmpty) ...[
                 const Text(
                   'Feature Capabilities',

@@ -251,4 +251,16 @@ void main() {
     expect(event.isConnected, isTrue);
     expect(event.primaryType, equals(NetworkConnectionType.wifi));
   });
+
+  test('monitoring.snapshot combines multi-domain metrics', () async {
+    final InsideScoop insideScoopPlugin = InsideScoop();
+    final MockInsideScoopPlatform fakePlatform = MockInsideScoopPlatform();
+    InsideScoopPlatform.instance = fakePlatform;
+
+    final snapshot = await insideScoopPlugin.monitoring.snapshot();
+    expect(snapshot.cpu, isNotNull);
+    expect(snapshot.memory, isNotNull);
+    expect(snapshot.battery, isNotNull);
+    expect(snapshot.network, isNotNull);
+  });
 }

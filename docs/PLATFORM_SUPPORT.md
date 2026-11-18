@@ -94,3 +94,9 @@
 - **iOS & macOS**: Apple Network framework `NWPathMonitor` querying path status, interface types (`.wifi`, `.cellular`, `.wiredEthernet`), `isExpensive` metered flag; live observable stream dispatched over `FlutterEventChannel`.
 - **Windows**: Win32 IP Helper / `InternetGetConnectedState` inspecting LAN, modem/cellular, and connection state.
 - **Web**: Browser `window.navigator.onLine` and DOM event listeners on `online`/`offline` streaming live connectivity updates.
+
+### Phase 10: Real-time System Monitoring (`MonitoringService`)
+- Multi-domain consolidated `SystemMetricsSnapshot` capturing CPU, RAM, Battery, and Network concurrently.
+- Lifecycle-aware sampling via Flutter's `AppLifecycleListener` / `WidgetsBindingObserver`: automatically suspends background timers to prevent battery drain.
+- Highly configurable cadence (`MonitoringConfig.interval`) and selective domain filtering (`sampleCpu`, `sampleMemory`, `sampleBattery`, `sampleNetwork`).
+- Zero-leak stream architecture: cancels timers and unregisters lifecycle listeners upon stream unsubscribe.
