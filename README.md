@@ -144,5 +144,138 @@ switch (result) {
 }
 ```
 
+---
+
+## Detailed Platform Parameter Support Matrix
+
+Below is the comprehensive field-by-field availability breakdown across all 6 target platforms. A checkmark (✅) denotes full native availability, (⚠️) denotes restricted/approximate support depending on sandbox policy or permissions, and (❌) denotes hardware or OS-level unavailability.
+
+### 1. Application Information (`AppInfo`)
+
+| Parameter | Android | iOS | macOS | Windows | Linux | Web |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| `appName` | ✅ (`ApplicationInfo`) | ✅ (`CFBundleDisplayName`) | ✅ (`CFBundleName`) | ✅ (`VerQueryValueW`) | ✅ (`desktop/proc`) | ✅ (`document.title`) |
+| `packageName` | ✅ (`packageName`) | ✅ (`bundleIdentifier`) | ✅ (`bundleIdentifier`) | ✅ (`ModuleFileName`) | ✅ (`Executable`) | ✅ (`window.location.host`) |
+| `version` | ✅ (`versionName`) | ✅ (`CFBundleShortVersion`) | ✅ (`CFBundleShortVersion`) | ✅ (`ProductVersion`) | ✅ (`Version`) | ✅ (`1.0.0`) |
+| `buildNumber` | ✅ (`longVersionCode`) | ✅ (`CFBundleVersion`) | ✅ (`CFBundleVersion`) | ✅ (`FileVersion`) | ✅ (`Build`) | ✅ (`1`) |
+| `installerStore` | ✅ (`InstallSourceInfo`) | ✅ (`StoreReceipt`) | ✅ (`MASReceipt`) | ✅ (`Win32/MSIX`) | ❌ | ❌ |
+| `buildSignature` | ✅ (SHA-256 cert) | ❌ | ❌ | ❌ | ❌ | ❌ |
+
+---
+
+### 2. Operating System (`OsInfo`)
+
+| Parameter | Android | iOS | macOS | Windows | Linux | Web |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| `name` | ✅ (`Android`) | ✅ (`iOS`) | ✅ (`macOS`) | ✅ (`Windows`) | ✅ (`Linux distro`) | ✅ (`Web (platform)`) |
+| `version` | ✅ (`Build.VERSION.RELEASE`) | ✅ (`UIDevice.systemVersion`) | ✅ (`ProcessInfo`) | ✅ (`RtlGetVersion`) | ✅ (`os-release`) | ✅ (`Browser`) |
+| `buildNumber` | ✅ (`Build.DISPLAY`) | ✅ (`kern.osversion`) | ✅ (`kern.osversion`) | ✅ (`dwBuildNumber`) | ✅ (`uname -r`) | ✅ (`UserAgent`) |
+| `architecture` | ✅ (`SUPPORTED_ABIS[0]`) | ✅ (`arm64`) | ✅ (`arm64/x86_64`) | ✅ (`GetNativeSystemInfo`) | ✅ (`uname -m`) | ✅ (`wasm/js`) |
+| `kernelVersion` | ✅ (`uname.release`) | ✅ (`kern.version`) | ✅ (`kern.version`) | ❌ | ✅ (`uname -r`) | ❌ |
+
+---
+
+### 3. Device Hardware (`DeviceInfo`)
+
+| Parameter | Android | iOS | macOS | Windows | Linux | Web |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| `model` | ✅ (`Build.MODEL`) | ✅ (`hw.machine`) | ✅ (`hw.model`) | ✅ (`ComputerName`) | ✅ (`sys_vendor/product`) | ✅ (`Browser Client`) |
+| `manufacturer` | ✅ (`Build.MANUFACTURER`) | ✅ (`Apple`) | ✅ (`Apple`) | ✅ (`Win32/OEM`) | ✅ (`DMI sys_vendor`) | ✅ (`Web Client`) |
+| `brand` | ✅ (`Build.BRAND`) | ✅ (`Apple`) | ✅ (`Apple`) | ✅ (`Microsoft/OEM`) | ✅ (`Vendor`) | ✅ (`Web`) |
+| `category` | ✅ (`Phone/Tablet/TV/Auto`) | ✅ (`Phone/Pad`) | ✅ (`Laptop/Desktop`) | ✅ (`Desktop/Laptop`) | ✅ (`Desktop/Server`) | ✅ (`Touch/Screen width`) |
+| `isPhysicalDevice` | ✅ (Heuristic & Fingerprint) | ✅ (`!TARGET_IPHONE_SIMULATOR`) | ✅ (`true`) | ✅ (`true`) | ✅ (`true`) | ✅ (`true`) |
+| `supportedAbis` | ✅ (`Build.SUPPORTED_ABIS`) | ✅ (`arm64`) | ✅ (`arm64/x86_64`) | ✅ (`Native arch`) | ✅ (`uname -m`) | ✅ (`wasm, js`) |
+
+---
+
+### 4. Processor / CPU (`CpuInfo`)
+
+| Parameter | Android | iOS | macOS | Windows | Linux | Web |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| `architecture` | ✅ (`SUPPORTED_ABIS[0]`) | ✅ (`arm64`) | ✅ (`arm64/x86_64`) | ✅ (`wProcessorArchitecture`) | ✅ (`uname -m`) | ⚠️ (Inferred from UA) |
+| `modelName` | ✅ (`SOC_MODEL / cpuinfo`) | ❌ (Sandbox protected) | ✅ (`machdep.cpu.brand`) | ✅ (`ProcessorNameString`) | ✅ (`model name`) | ❌ (W3C privacy) |
+| `logicalCores` | ✅ (`availableProcessors`) | ✅ (`hw.logicalcpu`) | ✅ (`hw.logicalcpu`) | ✅ (`dwNumberOfProcessors`) | ✅ (`nproc`) | ✅ (`hardwareConcurrency`) |
+| `physicalCores` | ✅ (`sys/devices/cpu/topology`) | ✅ (`hw.physicalcpu`) | ✅ (`hw.physicalcpu`) | ✅ (`LogicalProcessorInfoEx`) | ✅ (`cpu cores`) | ❌ (W3C privacy) |
+| `maxClockSpeedMhz` | ✅ (`cpuinfo_max_freq`) | ❌ (Sandbox protected) | ❌ (Apple Silicon dynamic) | ✅ (`~MHz registry`) | ✅ (`cpu MHz`) | ❌ (W3C privacy) |
+
+---
+
+### 5. Memory / RAM (`MemoryInfo`)
+
+| Parameter | Android | iOS | macOS | Windows | Linux | Web |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| `totalPhysicalBytes` | ✅ (`ActivityManager/meminfo`) | ✅ (`ProcessInfo.physicalMemory`)| ✅ (`ProcessInfo.physicalMemory`)| ✅ (`GlobalMemoryStatusEx`) | ✅ (`MemTotal`) | ⚠️ (`navigator.deviceMemory`) |
+| `availablePhysicalBytes`| ✅ (`ActivityManager.availMem`) | ✅ (`host_statistics64`) | ✅ (`host_statistics64`) | ✅ (`ullAvailPhys`) | ✅ (`MemAvailable`) | ⚠️ (Approximate) |
+| `usedPhysicalBytes` | ✅ (Calculated) | ✅ (Calculated) | ✅ (Calculated) | ✅ (Calculated) | ✅ (Calculated) | ⚠️ (Approximate) |
+| `usagePercentage` | ✅ (Calculated) | ✅ (Calculated) | ✅ (Calculated) | ✅ (Calculated) | ✅ (Calculated) | ⚠️ (Approximate) |
+| `isLowMemory` | ✅ (`ActivityManager.lowMemory`) | ⚠️ (Memory pressure) | ⚠️ (Memory pressure) | ✅ (`MemoryLoad > 90%`) | ⚠️ (`MemAvailable < 10%`) | ❌ |
+| `processResidentBytes` | ✅ (`Runtime.totalMemory()`) | ✅ (`mach_task_basic_info`) | ✅ (`mach_task_basic_info`) | ✅ (`WorkingSetSize`) | ✅ (`VmRSS`) | ❌ |
+| `processVirtualBytes` | ❌ | ❌ | ❌ | ✅ (`PagefileUsage`) | ✅ (`VmSize`) | ❌ |
+
+---
+
+### 6. Storage Volume (`StorageInfo`)
+
+| Parameter | Android | iOS | macOS | Windows | Linux | Web |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| `totalBytes` | ✅ (`StatFs.totalBytes`) | ✅ (`volumeTotalCapacityKey`) | ✅ (`volumeTotalCapacityKey`) | ✅ (`GetDiskFreeSpaceExW`) | ✅ (`statvfs.f_blocks`) | ✅ (`storage.estimate().quota`) |
+| `availableBytes` | ✅ (`StatFs.availableBytes`) | ✅ (`volumeAvailableCapacityKey`) | ✅ (`volumeAvailableCapacityKey`)| ✅ (`lpFreeBytesAvailable`) | ✅ (`statvfs.f_bavail`) | ✅ (`quota - usage`) |
+| `usedBytes` | ✅ (Calculated) | ✅ (Calculated) | ✅ (Calculated) | ✅ (Calculated) | ✅ (Calculated) | ✅ (Calculated) |
+| `usagePercentage` | ✅ (Calculated) | ✅ (Calculated) | ✅ (Calculated) | ✅ (Calculated) | ✅ (Calculated) | ✅ (Calculated) |
+| `isRemovable` | ✅ (`Environment.isExternalStorageRemovable`) | ❌ (`false`) | ❌ (`false`) | ❌ (`false`) | ❌ | ❌ (`false`) |
+| `appStorageBytes` | ✅ (`filesDir + cacheDir`) | ❌ (Sandbox protected) | ❌ | ❌ | ❌ | ✅ (`estimate().usage`) |
+
+---
+
+### 7. Graphics Processing Unit (`GpuInfo`)
+
+| Parameter | Android | iOS | macOS | Windows | Linux | Web |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| `vendor` | ✅ (`GLES20.GL_VENDOR`) | ✅ (`Apple`) | ✅ (`Apple / Intel / AMD`) | ✅ (`DXGI Adapter Desc`) | ✅ (`OpenGL / DRM`) | ✅ (`WebGL Context / Vendor`) |
+| `renderer` | ✅ (`GLES20.GL_RENDERER`)| ✅ (`MTLDevice.name`) | ✅ (`MTLDevice.name`) | ✅ (`Description string`) | ✅ (`GL_RENDERER`) | ✅ (`WebGL Renderer`) |
+| `apiFamily` | ✅ (`OpenGL ES / Vulkan`) | ✅ (`Metal`) | ✅ (`Metal`) | ✅ (`DirectX 3D (DXGI)`) | ✅ (`OpenGL / Vulkan`) | ✅ (`WebGL`) |
+| `apiVersion` | ✅ (`GL_VERSION`) | ✅ (`Metal Feature Set`) | ✅ (`Metal Feature Set`) | ❌ | ✅ (`GL_VERSION`) | ✅ (`2.0`) |
+| `totalVramBytes` | ❌ (Unified system RAM) | ⚠️ (`maxWorkingSetSize`) | ⚠️ (`maxWorkingSetSize`) | ✅ (`DedicatedVideoMemory`) | ⚠️ (If dedicated) | ❌ |
+| `isUnifiedMemory` | ✅ (`true` on mobile) | ✅ (`hasUnifiedMemory`) | ✅ (`hasUnifiedMemory`) | ❌ (`false` on dGPU) | ⚠️ (Arch-dependent) | ❌ |
+
+---
+
+### 8. Battery & Power (`BatteryInfo`)
+
+| Parameter | Android | iOS | macOS | Windows | Linux | Web |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| `batteryLevel` | ✅ (`BatteryManager.EXTRA_LEVEL`)| ✅ (`UIDevice.batteryLevel`) | ✅ (`IOPMPowerSource`) | ✅ (`SYSTEM_POWER_STATUS`) | ✅ (`/sys/class/power_supply`) | ❌ (W3C privacy) |
+| `batteryState` | ✅ (`charging/discharging/full`)| ✅ (`UIDeviceBatteryState`) | ✅ (`IsCharging / IsCharged`)| ✅ (`BatteryFlag`) | ✅ (`status`) | ❌ (W3C privacy) |
+| `powerSource` | ✅ (`AC, USB, Wireless, Battery`)| ✅ (`UIDevice`) | ✅ (`AC / Battery Power`) | ✅ (`ACLineStatus`) | ✅ (`type`) | ❌ (W3C privacy) |
+| `chargeWatts` | ✅ (Real-time $\mu A \times mV$) | ❌ (Hardware restricted) | ❌ | ❌ | ⚠️ (`power_now`) | ❌ |
+| `isLowPowerMode` | ✅ (`PowerManager.isPowerSaveMode`)| ✅ (`isLowPowerModeEnabled`)| ✅ (`isLowPowerModeEnabled`)| ❌ | ❌ | ❌ |
+| `temperatureCelsius`| ✅ (`EXTRA_TEMPERATURE / 10`) | ❌ (Sandbox protected) | ❌ | ❌ | ⚠️ (`temp`) | ❌ |
+
+---
+
+### 9. Network Connectivity (`NetworkInfo`)
+
+| Parameter | Android | iOS | macOS | Windows | Linux | Web |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| `status` | ✅ (`connected/disconnected`) | ✅ (`NWPath.status`) | ✅ (`NWPath.status`) | ✅ (`InternetGetConnectedState`)| ✅ (`getifaddrs`) | ✅ (`navigator.onLine`) |
+| `primaryType` | ✅ (`Wi-Fi, Cellular, Ethernet`) | ✅ (`wifi, cellular, ethernet`) | ✅ (`wifi, wiredEthernet`)| ✅ (`LAN, Modem`) | ✅ (`Interface check`) | ⚠️ (`online / other`) |
+| `availableTypes` | ✅ (Active transports list) | ✅ (Active interfaces list)| ✅ (Active interfaces list)| ✅ (Interface list) | ✅ (Active interfaces) | ⚠️ (Active connection) |
+| `isMetered` | ✅ (`NET_CAPABILITY_NOT_METERED`)| ✅ (`NWPath.isExpensive`) | ✅ (`NWPath.isExpensive`) | ❌ | ❌ | ⚠️ (`connection.saveData`) |
+| `isVpnActive` | ✅ (`TRANSPORT_VPN`) | ❌ | ❌ | ❌ | ⚠️ (`tun/tap`) | ❌ |
+| `watch()` Stream | ✅ (`NetworkCallback`) | ✅ (`NWPathMonitor`) | ✅ (`NWPathMonitor`) | ⚠️ (Polled stream) | ⚠️ (Polled stream) | ✅ (`online/offline` DOM) |
+
+---
+
+### 10. Real-time Monitoring & Diagnostics (`MonitoringService`, `DiagnosticsService`)
+
+| Feature | Android | iOS | macOS | Windows | Linux | Web |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| Lifecycle-aware continuous sampling | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Configurable sample cadence & domain filters | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Consolidated point-in-time snapshot | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Privacy-redacted diagnostic audit | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| GitHub-flavored Markdown generator | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+
 
 
