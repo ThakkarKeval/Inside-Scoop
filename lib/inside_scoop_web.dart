@@ -8,6 +8,7 @@ import 'src/core/models/cpu_info.dart';
 import 'src/core/models/device_info.dart';
 import 'src/core/models/memory_info.dart';
 import 'src/core/models/os_info.dart';
+import 'src/core/models/storage_info.dart';
 
 class InsideScoopWeb extends InsideScoopPlatform {
   InsideScoopWeb();
@@ -106,6 +107,19 @@ class InsideScoopWeb extends InsideScoopPlatform {
       processResidentBytes: null,
       processVirtualBytes: null,
       isLowMemory: false,
+    );
+  }
+
+  @override
+  Future<StorageInfo> getStorageInfo() async {
+    int total = 10 * 1024 * 1024 * 1024;
+    int available = 8 * 1024 * 1024 * 1024;
+
+    return StorageInfo(
+      totalBytes: total,
+      availableBytes: available,
+      appStorageBytes: null,
+      isRemovable: false,
     );
   }
 }

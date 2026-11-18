@@ -1137,6 +1137,130 @@ size_t PigeonInternalDeepHash(const PlatformMemoryInfo& v) {
   return v.Hash();
 }
 
+// PlatformStorageInfo
+
+PlatformStorageInfo::PlatformStorageInfo(
+  int64_t total_bytes,
+  int64_t available_bytes,
+  bool is_removable)
+ : total_bytes_(total_bytes),
+    available_bytes_(available_bytes),
+    is_removable_(is_removable) {}
+
+PlatformStorageInfo::PlatformStorageInfo(
+  int64_t total_bytes,
+  int64_t available_bytes,
+  const int64_t* app_storage_bytes,
+  bool is_removable)
+ : total_bytes_(total_bytes),
+    available_bytes_(available_bytes),
+    app_storage_bytes_(app_storage_bytes ? std::optional<int64_t>(*app_storage_bytes) : std::nullopt),
+    is_removable_(is_removable) {}
+
+int64_t PlatformStorageInfo::total_bytes() const {
+  return total_bytes_;
+}
+
+void PlatformStorageInfo::set_total_bytes(int64_t value_arg) {
+  total_bytes_ = value_arg;
+}
+
+
+int64_t PlatformStorageInfo::available_bytes() const {
+  return available_bytes_;
+}
+
+void PlatformStorageInfo::set_available_bytes(int64_t value_arg) {
+  available_bytes_ = value_arg;
+}
+
+
+const int64_t* PlatformStorageInfo::app_storage_bytes() const {
+  return app_storage_bytes_ ? &(*app_storage_bytes_) : nullptr;
+}
+
+void PlatformStorageInfo::set_app_storage_bytes(const int64_t* value_arg) {
+  app_storage_bytes_ = value_arg ? std::optional<int64_t>(*value_arg) : std::nullopt;
+}
+
+void PlatformStorageInfo::set_app_storage_bytes(int64_t value_arg) {
+  app_storage_bytes_ = value_arg;
+}
+
+
+bool PlatformStorageInfo::is_removable() const {
+  return is_removable_;
+}
+
+void PlatformStorageInfo::set_is_removable(bool value_arg) {
+  is_removable_ = value_arg;
+}
+
+
+EncodableList PlatformStorageInfo::ToEncodableList() const {
+  EncodableList list;
+  list.reserve(4);
+  list.push_back(EncodableValue(total_bytes_));
+  list.push_back(EncodableValue(available_bytes_));
+  list.push_back(app_storage_bytes_ ? EncodableValue(*app_storage_bytes_) : EncodableValue());
+  list.push_back(EncodableValue(is_removable_));
+  return list;
+}
+
+PlatformStorageInfo PlatformStorageInfo::FromEncodableList(const EncodableList& list) {
+  PlatformStorageInfo decoded(
+    std::get<int64_t>(list[0]),
+    std::get<int64_t>(list[1]),
+    std::get<bool>(list[3]));
+  auto& encodable_app_storage_bytes = list[2];
+  if (!encodable_app_storage_bytes.IsNull()) {
+    decoded.set_app_storage_bytes(std::get<int64_t>(encodable_app_storage_bytes));
+  }
+  return decoded;
+}
+
+bool PlatformStorageInfo::operator==(const PlatformStorageInfo& other) const {
+  return PigeonInternalDeepEquals(total_bytes_, other.total_bytes_) && PigeonInternalDeepEquals(available_bytes_, other.available_bytes_) && PigeonInternalDeepEquals(app_storage_bytes_, other.app_storage_bytes_) && PigeonInternalDeepEquals(is_removable_, other.is_removable_);
+}
+
+bool PlatformStorageInfo::operator!=(const PlatformStorageInfo& other) const {
+  return !(*this == other);
+}
+
+size_t PlatformStorageInfo::Hash() const {
+  size_t result = 1;
+  result = result * 31 + PigeonInternalDeepHash(total_bytes_);
+  result = result * 31 + PigeonInternalDeepHash(available_bytes_);
+  result = result * 31 + PigeonInternalDeepHash(app_storage_bytes_);
+  result = result * 31 + PigeonInternalDeepHash(is_removable_);
+  return result;
+}
+
+std::ostream& operator<<(
+  std::ostream& os,
+  const PlatformStorageInfo& obj) {
+  os << "PlatformStorageInfo(";
+  os << "total_bytes: ";
+  os << PigeonInternalToString(obj.total_bytes_);
+  os << ", available_bytes: ";
+  os << PigeonInternalToString(obj.available_bytes_);
+  os << ", app_storage_bytes: ";
+  if (obj.app_storage_bytes_) {
+    os << PigeonInternalToString(*obj.app_storage_bytes_);
+  }
+  else {
+    os << "null";
+  }
+  os << ", is_removable: ";
+  os << PigeonInternalToString(obj.is_removable_);
+  os << ")";
+  return os;
+}
+
+size_t PigeonInternalDeepHash(const PlatformStorageInfo& v) {
+  return v.Hash();
+}
+
 
 PigeonInternalCodecSerializer::PigeonInternalCodecSerializer() {}
 
@@ -1158,6 +1282,9 @@ EncodableValue PigeonInternalCodecSerializer::ReadValueOfType(
       }
     case 133: {
         return CustomEncodableValue(PlatformMemoryInfo::FromEncodableList(std::get<EncodableList>(ReadValue(stream))));
+      }
+    case 134: {
+        return CustomEncodableValue(PlatformStorageInfo::FromEncodableList(std::get<EncodableList>(ReadValue(stream))));
       }
     default:
       return ::flutter::StandardCodecSerializer::ReadValueOfType(type, stream);
@@ -1191,6 +1318,11 @@ void PigeonInternalCodecSerializer::WriteValue(
     if (custom_value->type() == typeid(PlatformMemoryInfo)) {
       stream->WriteByte(133);
       WriteValue(EncodableValue(std::any_cast<PlatformMemoryInfo>(*custom_value).ToEncodableList()), stream);
+      return;
+    }
+    if (custom_value->type() == typeid(PlatformStorageInfo)) {
+      stream->WriteByte(134);
+      WriteValue(EncodableValue(std::any_cast<PlatformStorageInfo>(*custom_value).ToEncodableList()), stream);
       return;
     }
   }
@@ -1330,6 +1462,27 @@ void InsideScoopHostApi::SetUp(
       channel.SetMessageHandler([api](const EncodableValue& message, const ::flutter::MessageReply<EncodableValue>& reply) {
         try {
           ErrorOr<PlatformMemoryInfo> output = api->GetMemoryInfo();
+          if (output.has_error()) {
+            reply(WrapError(output.error()));
+            return;
+          }
+          EncodableList wrapped;
+          wrapped.push_back(CustomEncodableValue(std::move(output).TakeValue()));
+          reply(EncodableValue(std::move(wrapped)));
+        } catch (const std::exception& exception) {
+          reply(WrapError(exception.what()));
+        }
+      });
+    } else {
+      channel.SetMessageHandler(nullptr);
+    }
+  }
+  {
+    BasicMessageChannel<> channel(binary_messenger, "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getStorageInfo" + prepended_suffix, &GetCodec());
+    if (api != nullptr) {
+      channel.SetMessageHandler([api](const EncodableValue& message, const ::flutter::MessageReply<EncodableValue>& reply) {
+        try {
+          ErrorOr<PlatformStorageInfo> output = api->GetStorageInfo();
           if (output.has_error()) {
             reply(WrapError(output.error()));
             return;

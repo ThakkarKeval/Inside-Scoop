@@ -338,6 +338,53 @@ class PlatformMemoryInfo {
 };
 
 
+// Generated class from Pigeon that represents data sent in messages.
+class PlatformStorageInfo {
+ public:
+  // Constructs an object setting all non-nullable fields.
+  explicit PlatformStorageInfo(
+    int64_t total_bytes,
+    int64_t available_bytes,
+    bool is_removable);
+
+  // Constructs an object setting all fields.
+  explicit PlatformStorageInfo(
+    int64_t total_bytes,
+    int64_t available_bytes,
+    const int64_t* app_storage_bytes,
+    bool is_removable);
+
+  int64_t total_bytes() const;
+  void set_total_bytes(int64_t value_arg);
+
+  int64_t available_bytes() const;
+  void set_available_bytes(int64_t value_arg);
+
+  const int64_t* app_storage_bytes() const;
+  void set_app_storage_bytes(const int64_t* value_arg);
+  void set_app_storage_bytes(int64_t value_arg);
+
+  bool is_removable() const;
+  void set_is_removable(bool value_arg);
+
+  bool operator==(const PlatformStorageInfo& other) const;
+  bool operator!=(const PlatformStorageInfo& other) const;
+  /// Returns a hash code value for the object. This method is supported for the benefit of hash tables.
+  size_t Hash() const;
+  /// Stream output operator for formatted string representation.
+  friend std::ostream& operator<<(std::ostream& os, const PlatformStorageInfo& obj);
+ private:
+  static PlatformStorageInfo FromEncodableList(const ::flutter::EncodableList& list);
+  ::flutter::EncodableList ToEncodableList() const;
+  friend class InsideScoopHostApi;
+  friend class PigeonInternalCodecSerializer;
+  int64_t total_bytes_;
+  int64_t available_bytes_;
+  std::optional<int64_t> app_storage_bytes_;
+  bool is_removable_;
+};
+
+
 class PigeonInternalCodecSerializer : public ::flutter::StandardCodecSerializer {
  public:
   PigeonInternalCodecSerializer();
@@ -367,6 +414,7 @@ class InsideScoopHostApi {
   virtual ErrorOr<PlatformDeviceInfo> GetDeviceInfo() = 0;
   virtual ErrorOr<PlatformCpuInfo> GetCpuInfo() = 0;
   virtual ErrorOr<PlatformMemoryInfo> GetMemoryInfo() = 0;
+  virtual ErrorOr<PlatformStorageInfo> GetStorageInfo() = 0;
 
   // The codec used by InsideScoopHostApi.
   static const ::flutter::StandardMessageCodec& GetCodec();

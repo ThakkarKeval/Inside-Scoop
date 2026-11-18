@@ -188,4 +188,28 @@ public class InsideScoopPlugin: NSObject, FlutterPlugin, InsideScoopHostApi {
       isLowMemory: availableMem < (totalMem / 10)
     )
   }
+
+  func getStorageInfo() throws -> PlatformStorageInfo {
+    let homeURL = URL(fileURLWithPath: NSHomeDirectory())
+    var totalBytes: Int64 = 64 * 1024 * 1024 * 1024
+    var availBytes: Int64 = 32 * 1024 * 1024 * 1024
+
+    if let values = try? homeURL.resourceValues(forKeys: [.volumeTotalCapacityKey, .volumeAvailableCapacityKey, .volumeAvailableCapacityForImportantUsageKey]) {
+      if let total = values.volumeTotalCapacity {
+        totalBytes = Int64(total)
+      }
+      if let availImportant = values.volumeAvailableCapacityForImportantUsage {
+        availBytes = availImportant
+      } else if let avail = values.volumeAvailableCapacity {
+        availBytes = Int64(avail)
+      }
+    }
+
+    return PlatformStorageInfo(
+      totalBytes: totalBytes,
+      availableBytes: availBytes,
+      appStorageBytes: nil,
+      isRemovable: false
+    )
+  }
 }

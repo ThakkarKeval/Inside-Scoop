@@ -56,4 +56,12 @@ internal class InsideScoopPluginTest {
         assertEquals(true, memoryInfo.totalPhysicalBytes > 0L)
         assertEquals(true, memoryInfo.availablePhysicalBytes > 0L)
     }
+
+    @Test
+    fun getStorageInfo_returnsExpectedStorageMetadata() {
+        val plugin = InsideScoopPlugin()
+        val storageInfo = plugin.getStorageInfo()
+        assertEquals(true, storageInfo.totalBytes > 0L)
+        assertEquals(true, storageInfo.availableBytes > 0L)
+    }
 }

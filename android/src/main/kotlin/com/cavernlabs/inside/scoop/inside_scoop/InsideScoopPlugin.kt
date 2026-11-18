@@ -199,6 +199,61 @@ class InsideScoopPlugin(private var context: Context? = null) : FlutterPlugin, I
         )
     }
 
+    override fun getStorageInfo(): PlatformStorageInfo {
+        var totalBytes = 0L
+        var availableBytes = 0L
+        try {
+            val dataDir: java.io.File? = android.os.Environment.getDataDirectory()
+            if (dataDir != null) {
+                val stat = android.os.StatFs(dataDir.absolutePath)
+                totalBytes = stat.totalBytes
+                availableBytes = stat.availableBytes
+            }
+        } catch (e: Throwable) {
+            // JVM mock JAR fallback
+        }
+
+        val currentContext = context
+        var appBytes: Long? = null
+        if (currentContext != null) {
+            try {
+                val filesDir = currentContext.filesDir
+                val cacheDir = currentContext.cacheDir
+                val filesSize = getDirectorySize(filesDir)
+                val cacheSize = getDirectorySize(cacheDir)
+                appBytes = filesSize + cacheSize
+            } catch (e: Throwable) {
+                appBytes = null
+            }
+        }
+
+        val isRemovable = try {
+            android.os.Environment.isExternalStorageRemovable()
+        } catch (e: Throwable) {
+            false
+        }
+
+        val fallbackTotal = 1024L * 1024L * 1024L * 64L
+        val fallbackAvail = 1024L * 1024L * 1024L * 32L
+
+        return PlatformStorageInfo(
+            totalBytes = if (totalBytes > 0L) totalBytes else fallbackTotal,
+            availableBytes = if (availableBytes > 0L) availableBytes else fallbackAvail,
+            appStorageBytes = appBytes,
+            isRemovable = isRemovable
+        )
+    }
+
+    private fun getDirectorySize(dir: java.io.File?): Long {
+        if (dir == null || !dir.exists()) return 0L
+        var size = 0L
+        val files = dir.listFiles() ?: return 0L
+        for (f in files) {
+            size += if (f.isDirectory) getDirectorySize(f) else f.length()
+        }
+        return size
+    }
+
     private fun readMemTotalFromProc(): Long? {
         return try {
             val file = java.io.File("/proc/meminfo")

@@ -106,6 +106,20 @@ class PlatformMemoryInfo {
   final bool isLowMemory;
 }
 
+class PlatformStorageInfo {
+  PlatformStorageInfo({
+    required this.totalBytes,
+    required this.availableBytes,
+    this.appStorageBytes,
+    required this.isRemovable,
+  });
+
+  final int totalBytes;
+  final int availableBytes;
+  final int? appStorageBytes;
+  final bool isRemovable;
+}
+
 @HostApi()
 abstract class InsideScoopHostApi {
   String? getPlatformVersion();
@@ -114,4 +128,5 @@ abstract class InsideScoopHostApi {
   PlatformDeviceInfo getDeviceInfo();
   PlatformCpuInfo getCpuInfo();
   PlatformMemoryInfo getMemoryInfo();
+  PlatformStorageInfo getStorageInfo();
 }

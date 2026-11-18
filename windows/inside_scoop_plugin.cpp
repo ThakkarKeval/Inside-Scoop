@@ -299,4 +299,21 @@ ErrorOr<PlatformMemoryInfo> InsideScoopPlugin::GetMemoryInfo() {
   return mem_info;
 }
 
+ErrorOr<PlatformStorageInfo> InsideScoopPlugin::GetStorageInfo() {
+  ULARGE_INTEGER free_bytes_available;
+  ULARGE_INTEGER total_bytes;
+  ULARGE_INTEGER total_free_bytes;
+
+  int64_t total = 0;
+  int64_t available = 0;
+
+  if (GetDiskFreeSpaceExW(nullptr, &free_bytes_available, &total_bytes, &total_free_bytes)) {
+    total = static_cast<int64_t>(total_bytes.QuadPart);
+    available = static_cast<int64_t>(free_bytes_available.QuadPart);
+  }
+
+  PlatformStorageInfo storage_info(total, available, false);
+  return storage_info;
+}
+
 }  // namespace inside_scoop

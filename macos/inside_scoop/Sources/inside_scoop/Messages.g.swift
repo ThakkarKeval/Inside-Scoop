@@ -479,6 +479,56 @@ struct PlatformMemoryInfo: Hashable, CustomStringConvertible {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct PlatformStorageInfo: Hashable, CustomStringConvertible {
+  var totalBytes: Int64
+  var availableBytes: Int64
+  var appStorageBytes: Int64? = nil
+  var isRemovable: Bool
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> PlatformStorageInfo? {
+    let totalBytes = pigeonVar_list[0] as! Int64
+    let availableBytes = pigeonVar_list[1] as! Int64
+    let appStorageBytes: Int64? = nilOrValue(pigeonVar_list[2])
+    let isRemovable = pigeonVar_list[3] as! Bool
+
+    return PlatformStorageInfo(
+      totalBytes: totalBytes,
+      availableBytes: availableBytes,
+      appStorageBytes: appStorageBytes,
+      isRemovable: isRemovable
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      totalBytes,
+      availableBytes,
+      appStorageBytes,
+      isRemovable,
+    ]
+  }
+  static func == (lhs: PlatformStorageInfo, rhs: PlatformStorageInfo) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return MessagesPigeonInternal.deepEquals(lhs.totalBytes, rhs.totalBytes) && MessagesPigeonInternal.deepEquals(lhs.availableBytes, rhs.availableBytes) && MessagesPigeonInternal.deepEquals(lhs.appStorageBytes, rhs.appStorageBytes) && MessagesPigeonInternal.deepEquals(lhs.isRemovable, rhs.isRemovable)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("PlatformStorageInfo")
+    MessagesPigeonInternal.deepHash(value: totalBytes, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: availableBytes, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: appStorageBytes, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: isRemovable, hasher: &hasher)
+  }
+
+  public var description: String {
+    return "PlatformStorageInfo(totalBytes: \(String(describing: totalBytes)), availableBytes: \(String(describing: availableBytes)), appStorageBytes: \(String(describing: appStorageBytes)), isRemovable: \(String(describing: isRemovable)))"
+  }
+}
+
 private class MessagesPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -492,6 +542,8 @@ private class MessagesPigeonCodecReader: FlutterStandardReader {
       return PlatformCpuInfo.fromList(self.readValue() as! [Any?])
     case 133:
       return PlatformMemoryInfo.fromList(self.readValue() as! [Any?])
+    case 134:
+      return PlatformStorageInfo.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -514,6 +566,9 @@ private class MessagesPigeonCodecWriter: FlutterStandardWriter {
       super.writeValue(value.toList())
     } else if let value = value as? PlatformMemoryInfo {
       super.writeByte(133)
+      super.writeValue(value.toList())
+    } else if let value = value as? PlatformStorageInfo {
+      super.writeByte(134)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -543,6 +598,7 @@ protocol InsideScoopHostApi {
   func getDeviceInfo() throws -> PlatformDeviceInfo
   func getCpuInfo() throws -> PlatformCpuInfo
   func getMemoryInfo() throws -> PlatformMemoryInfo
+  func getStorageInfo() throws -> PlatformStorageInfo
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -628,6 +684,19 @@ class InsideScoopHostApiSetup {
       }
     } else {
       getMemoryInfoChannel.setMessageHandler(nil)
+    }
+    let getStorageInfoChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getStorageInfo\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getStorageInfoChannel.setMessageHandler { _, reply in
+        do {
+          let result = try api.getStorageInfo()
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      getStorageInfoChannel.setMessageHandler(nil)
     }
   }
 }

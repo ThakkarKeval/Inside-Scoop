@@ -67,3 +67,10 @@
 - **macOS**: `ProcessInfo.processInfo.physicalMemory` for total RAM, Mach `host_statistics64` (`HOST_VM_INFO64`) for available memory, and Mach `mach_task_basic_info` for resident/virtual process sizes.
 - **Windows**: Win32 `GlobalMemoryStatusEx` for total/available physical RAM and memory load pressure; `K32GetProcessMemoryInfo` for working set size (resident) and pagefile usage (virtual).
 - **Web**: `navigator.deviceMemory` for approximate hardware memory, with low memory flags and safe fallback to prevent browser side-channel leakage.
+
+### Phase 6: Storage Information (`StorageInfo`)
+- **Android**: `StatFs` on `Environment.getDataDirectory()` for primary storage capacity and available bytes, internal application storage measurement (`filesDir` and `cacheDir`), and removable media detection.
+- **iOS**: `URLResourceValues` (`volumeTotalCapacityKey`, `volumeAvailableCapacityForImportantUsageKey`, `volumeAvailableCapacityKey`) on home directory URL.
+- **macOS**: `URLResourceValues` on root filesystem (`/`) for total volume capacity and free storage.
+- **Windows**: Win32 `GetDiskFreeSpaceExW` for total capacity and available free bytes on primary system disk.
+- **Web**: Browser storage quota and estimated usage via standard `navigator.storage.estimate()` (or fallback defaults), respecting origin privacy.

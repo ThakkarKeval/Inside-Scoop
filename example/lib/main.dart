@@ -22,6 +22,7 @@ class _MyAppState extends State<MyApp> {
   DeviceInfo? _deviceInfo;
   CpuInfo? _cpuInfo;
   MemoryInfo? _memoryInfo;
+  StorageInfo? _storageInfo;
   Map<ScoopFeature, ScoopCapabilityInfo> _capabilities = {};
   final _insideScoopPlugin = InsideScoop();
 
@@ -46,6 +47,7 @@ class _MyAppState extends State<MyApp> {
     final deviceResult = await _insideScoopPlugin.device.info();
     final cpuResult = await _insideScoopPlugin.cpu.info();
     final memoryResult = await _insideScoopPlugin.memory.info();
+    final storageResult = await _insideScoopPlugin.storage.info();
     final capabilities = await _insideScoopPlugin.capabilities.getAll();
 
     if (!mounted) return;
@@ -57,6 +59,7 @@ class _MyAppState extends State<MyApp> {
       _deviceInfo = deviceResult.valueOrNull;
       _cpuInfo = cpuResult.valueOrNull;
       _memoryInfo = memoryResult.valueOrNull;
+      _storageInfo = storageResult.valueOrNull;
       _capabilities = capabilities;
     });
   }
@@ -131,6 +134,19 @@ class _MyAppState extends State<MyApp> {
                 Text('Low Memory Warning: ${_memoryInfo!.isLowMemory}'),
                 if (_memoryInfo!.processResidentBytes != null)
                   Text('App Resident: ${(_memoryInfo!.processResidentBytes! / (1024 * 1024)).toStringAsFixed(1)} MB'),
+                const SizedBox(height: 12),
+              ],
+              if (_storageInfo != null) ...[
+                const Text(
+                  'Primary Storage Volume',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text('Total: ${_storageInfo!.totalGb.toStringAsFixed(1)} GB (${_storageInfo!.totalMb} MB)'),
+                Text('Available: ${_storageInfo!.availableGb.toStringAsFixed(1)} GB (${_storageInfo!.availableMb} MB)'),
+                Text('Used: ${_storageInfo!.usedGb.toStringAsFixed(1)} GB (${_storageInfo!.usagePercentage.toStringAsFixed(1)}%)'),
+                Text('Removable Storage: ${_storageInfo!.isRemovable}'),
+                if (_storageInfo!.appStorageBytes != null)
+                  Text('App Data + Cache: ${_storageInfo!.appStorageMb?.toStringAsFixed(1)} MB'),
                 const SizedBox(height: 12),
               ],
               if (_capabilities.isNotEmpty) ...[

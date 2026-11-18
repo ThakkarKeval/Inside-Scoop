@@ -442,6 +442,66 @@ class PlatformMemoryInfo {
   }
 }
 
+class PlatformStorageInfo {
+  PlatformStorageInfo({
+    required this.totalBytes,
+    required this.availableBytes,
+    this.appStorageBytes,
+    required this.isRemovable,
+  });
+
+  int totalBytes;
+
+  int availableBytes;
+
+  int? appStorageBytes;
+
+  bool isRemovable;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      totalBytes,
+      availableBytes,
+      appStorageBytes,
+      isRemovable,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static PlatformStorageInfo decode(Object result) {
+    result as List<Object?>;
+    return PlatformStorageInfo(
+      totalBytes: result[0]! as int,
+      availableBytes: result[1]! as int,
+      appStorageBytes: result[2] as int?,
+      isRemovable: result[3]! as bool,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! PlatformStorageInfo || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(totalBytes, other.totalBytes) && _deepEquals(availableBytes, other.availableBytes) && _deepEquals(appStorageBytes, other.appStorageBytes) && _deepEquals(isRemovable, other.isRemovable);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'PlatformStorageInfo(totalBytes: $totalBytes, availableBytes: $availableBytes, appStorageBytes: $appStorageBytes, isRemovable: $isRemovable)';
+  }
+}
+
 
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
@@ -465,6 +525,9 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is PlatformMemoryInfo) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
+    }    else if (value is PlatformStorageInfo) {
+      buffer.putUint8(134);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -483,6 +546,8 @@ class _PigeonCodec extends StandardMessageCodec {
         return PlatformCpuInfo.decode(readValue(buffer)!);
       case 133:
         return PlatformMemoryInfo.decode(readValue(buffer)!);
+      case 134:
+        return PlatformStorageInfo.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -612,5 +677,23 @@ class InsideScoopHostApi {
     )
     ;
     return pigeonVar_replyValue! as PlatformMemoryInfo;
+  }
+
+  Future<PlatformStorageInfo> getStorageInfo() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getStorageInfo$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return pigeonVar_replyValue! as PlatformStorageInfo;
   }
 }

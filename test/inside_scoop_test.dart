@@ -61,6 +61,15 @@ class MockInsideScoopPlatform
       isLowMemory: false,
     ),
   );
+
+  @override
+  Future<StorageInfo> getStorageInfo() => Future.value(
+    const StorageInfo(
+      totalBytes: 137438953472, // 128 GB
+      availableBytes: 68719476736, // 64 GB
+      isRemovable: false,
+    ),
+  );
 }
 
 void main() {
@@ -134,5 +143,17 @@ void main() {
     expect(result.valueOrNull?.totalPhysicalBytes, equals(8589934592));
     expect(result.valueOrNull?.availablePhysicalBytes, equals(4294967296));
     expect(result.valueOrNull?.isLowMemory, isFalse);
+  });
+
+  test('storage.info returns StorageInfo from platform instance', () async {
+    final InsideScoop insideScoopPlugin = InsideScoop();
+    final MockInsideScoopPlatform fakePlatform = MockInsideScoopPlatform();
+    InsideScoopPlatform.instance = fakePlatform;
+
+    final result = await insideScoopPlugin.storage.info();
+    expect(result.isAvailable, isTrue);
+    expect(result.valueOrNull?.totalBytes, equals(137438953472));
+    expect(result.valueOrNull?.availableBytes, equals(68719476736));
+    expect(result.valueOrNull?.isRemovable, isFalse);
   });
 }

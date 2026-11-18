@@ -55,6 +55,14 @@ class FakeInsideScoopHostApi extends InsideScoopHostApi {
     processVirtualBytes: 209715200,
     isLowMemory: false,
   );
+
+  @override
+  Future<PlatformStorageInfo> getStorageInfo() async => PlatformStorageInfo(
+    totalBytes: 512 * 1024 * 1024 * 1024,
+    availableBytes: 256 * 1024 * 1024 * 1024,
+    appStorageBytes: 1048576000,
+    isRemovable: false,
+  );
 }
 
 void main() {
@@ -130,5 +138,17 @@ void main() {
     expect(memInfo.processResidentBytes, equals(104857600));
     expect(memInfo.processVirtualBytes, equals(209715200));
     expect(memInfo.isLowMemory, isFalse);
+  });
+
+  test('getStorageInfo converts PlatformStorageInfo to StorageInfo', () async {
+    final platform = MethodChannelInsideScoop(
+      hostApi: FakeInsideScoopHostApi(),
+    );
+    final storageInfo = await platform.getStorageInfo();
+    expect(storageInfo.totalBytes, equals(512 * 1024 * 1024 * 1024));
+    expect(storageInfo.availableBytes, equals(256 * 1024 * 1024 * 1024));
+    expect(storageInfo.usedBytes, equals(256 * 1024 * 1024 * 1024));
+    expect(storageInfo.appStorageBytes, equals(1048576000));
+    expect(storageInfo.isRemovable, isFalse);
   });
 }

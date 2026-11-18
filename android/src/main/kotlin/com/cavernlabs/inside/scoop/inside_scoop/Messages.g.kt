@@ -472,6 +472,55 @@ data class PlatformMemoryInfo (
     return "PlatformMemoryInfo(totalPhysicalBytes=$totalPhysicalBytes, availablePhysicalBytes=$availablePhysicalBytes, processResidentBytes=$processResidentBytes, processVirtualBytes=$processVirtualBytes, isLowMemory=$isLowMemory)"
   }
 }
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class PlatformStorageInfo (
+  val totalBytes: Long,
+  val availableBytes: Long,
+  val appStorageBytes: Long? = null,
+  val isRemovable: Boolean
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): PlatformStorageInfo {
+      val totalBytes = pigeonVar_list[0] as Long
+      val availableBytes = pigeonVar_list[1] as Long
+      val appStorageBytes = pigeonVar_list[2] as Long?
+      val isRemovable = pigeonVar_list[3] as Boolean
+      return PlatformStorageInfo(totalBytes, availableBytes, appStorageBytes, isRemovable)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      totalBytes,
+      availableBytes,
+      appStorageBytes,
+      isRemovable,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as PlatformStorageInfo
+    return MessagesPigeonUtils.deepEquals(this.totalBytes, other.totalBytes) && MessagesPigeonUtils.deepEquals(this.availableBytes, other.availableBytes) && MessagesPigeonUtils.deepEquals(this.appStorageBytes, other.appStorageBytes) && MessagesPigeonUtils.deepEquals(this.isRemovable, other.isRemovable)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.totalBytes)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.availableBytes)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.appStorageBytes)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.isRemovable)
+    return result
+  }
+  override fun toString(): String {
+    return "PlatformStorageInfo(totalBytes=$totalBytes, availableBytes=$availableBytes, appStorageBytes=$appStorageBytes, isRemovable=$isRemovable)"
+  }
+}
 private open class MessagesPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -500,6 +549,11 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
           PlatformMemoryInfo.fromList(it)
         }
       }
+      134.toByte() -> {
+        (readValue(buffer) as? List<Any?>)?.let {
+          PlatformStorageInfo.fromList(it)
+        }
+      }
       else -> super.readValueOfType(type, buffer)
     }
   }
@@ -525,6 +579,10 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
         stream.write(133)
         writeValue(stream, value.toList())
       }
+      is PlatformStorageInfo -> {
+        stream.write(134)
+        writeValue(stream, value.toList())
+      }
       else -> super.writeValue(stream, value)
     }
   }
@@ -538,6 +596,7 @@ interface InsideScoopHostApi {
   fun getDeviceInfo(): PlatformDeviceInfo
   fun getCpuInfo(): PlatformCpuInfo
   fun getMemoryInfo(): PlatformMemoryInfo
+  fun getStorageInfo(): PlatformStorageInfo
 
   companion object {
     /** The codec used by InsideScoopHostApi. */
@@ -629,6 +688,21 @@ interface InsideScoopHostApi {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
               listOf(api.getMemoryInfo())
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getStorageInfo$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.getStorageInfo())
             } catch (exception: Throwable) {
               MessagesPigeonUtils.wrapError(exception)
             }

@@ -4,6 +4,7 @@ import 'src/core/models/cpu_info.dart';
 import 'src/core/models/device_info.dart';
 import 'src/core/models/memory_info.dart';
 import 'src/core/models/os_info.dart';
+import 'src/core/models/storage_info.dart';
 import 'src/messages.g.dart';
 
 class MethodChannelInsideScoop extends InsideScoopPlatform {
@@ -78,6 +79,17 @@ class MethodChannelInsideScoop extends InsideScoopPlatform {
       processResidentBytes: platformMemory.processResidentBytes,
       processVirtualBytes: platformMemory.processVirtualBytes,
       isLowMemory: platformMemory.isLowMemory,
+    );
+  }
+
+  @override
+  Future<StorageInfo> getStorageInfo() async {
+    final platformStorage = await _hostApi.getStorageInfo();
+    return StorageInfo(
+      totalBytes: platformStorage.totalBytes,
+      availableBytes: platformStorage.availableBytes,
+      appStorageBytes: platformStorage.appStorageBytes,
+      isRemovable: platformStorage.isRemovable,
     );
   }
 }
