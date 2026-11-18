@@ -572,6 +572,71 @@ class PlatformGpuInfo {
   }
 }
 
+class PlatformBatteryInfo {
+  PlatformBatteryInfo({
+    this.batteryLevel,
+    required this.batteryStateIndex,
+    required this.powerSourceIndex,
+    this.isLowPowerMode,
+    this.temperatureCelsius,
+  });
+
+  int? batteryLevel;
+
+  int batteryStateIndex;
+
+  int powerSourceIndex;
+
+  bool? isLowPowerMode;
+
+  double? temperatureCelsius;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      batteryLevel,
+      batteryStateIndex,
+      powerSourceIndex,
+      isLowPowerMode,
+      temperatureCelsius,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static PlatformBatteryInfo decode(Object result) {
+    result as List<Object?>;
+    return PlatformBatteryInfo(
+      batteryLevel: result[0] as int?,
+      batteryStateIndex: result[1]! as int,
+      powerSourceIndex: result[2]! as int,
+      isLowPowerMode: result[3] as bool?,
+      temperatureCelsius: result[4] as double?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! PlatformBatteryInfo || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(batteryLevel, other.batteryLevel) && _deepEquals(batteryStateIndex, other.batteryStateIndex) && _deepEquals(powerSourceIndex, other.powerSourceIndex) && _deepEquals(isLowPowerMode, other.isLowPowerMode) && _deepEquals(temperatureCelsius, other.temperatureCelsius);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'PlatformBatteryInfo(batteryLevel: $batteryLevel, batteryStateIndex: $batteryStateIndex, powerSourceIndex: $powerSourceIndex, isLowPowerMode: $isLowPowerMode, temperatureCelsius: $temperatureCelsius)';
+  }
+}
+
 
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
@@ -601,6 +666,9 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is PlatformGpuInfo) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
+    }    else if (value is PlatformBatteryInfo) {
+      buffer.putUint8(136);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -623,6 +691,8 @@ class _PigeonCodec extends StandardMessageCodec {
         return PlatformStorageInfo.decode(readValue(buffer)!);
       case 135:
         return PlatformGpuInfo.decode(readValue(buffer)!);
+      case 136:
+        return PlatformBatteryInfo.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -788,5 +858,23 @@ class InsideScoopHostApi {
     )
     ;
     return pigeonVar_replyValue! as PlatformGpuInfo;
+  }
+
+  Future<PlatformBatteryInfo> getBatteryInfo() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getBatteryInfo$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return pigeonVar_replyValue! as PlatformBatteryInfo;
   }
 }

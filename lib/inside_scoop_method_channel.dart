@@ -1,5 +1,6 @@
 import 'inside_scoop_platform_interface.dart';
 import 'src/core/models/app_info.dart';
+import 'src/core/models/battery_info.dart';
 import 'src/core/models/cpu_info.dart';
 import 'src/core/models/device_info.dart';
 import 'src/core/models/gpu_info.dart';
@@ -104,6 +105,18 @@ class MethodChannelInsideScoop extends InsideScoopPlatform {
       apiVersion: platformGpu.apiVersion,
       totalVramBytes: platformGpu.totalVramBytes,
       isUnifiedMemory: platformGpu.isUnifiedMemory,
+    );
+  }
+
+  @override
+  Future<BatteryInfo> getBatteryInfo() async {
+    final platformBattery = await _hostApi.getBatteryInfo();
+    return BatteryInfo(
+      batteryLevel: platformBattery.batteryLevel,
+      batteryState: BatteryState.fromIndex(platformBattery.batteryStateIndex),
+      powerSource: PowerSource.fromIndex(platformBattery.powerSourceIndex),
+      isLowPowerMode: platformBattery.isLowPowerMode,
+      temperatureCelsius: platformBattery.temperatureCelsius,
     );
   }
 }

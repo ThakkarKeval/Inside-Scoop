@@ -578,6 +578,59 @@ data class PlatformGpuInfo (
     return "PlatformGpuInfo(vendor=$vendor, renderer=$renderer, apiFamily=$apiFamily, apiVersion=$apiVersion, totalVramBytes=$totalVramBytes, isUnifiedMemory=$isUnifiedMemory)"
   }
 }
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class PlatformBatteryInfo (
+  val batteryLevel: Long? = null,
+  val batteryStateIndex: Long,
+  val powerSourceIndex: Long,
+  val isLowPowerMode: Boolean? = null,
+  val temperatureCelsius: Double? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): PlatformBatteryInfo {
+      val batteryLevel = pigeonVar_list[0] as Long?
+      val batteryStateIndex = pigeonVar_list[1] as Long
+      val powerSourceIndex = pigeonVar_list[2] as Long
+      val isLowPowerMode = pigeonVar_list[3] as Boolean?
+      val temperatureCelsius = pigeonVar_list[4] as Double?
+      return PlatformBatteryInfo(batteryLevel, batteryStateIndex, powerSourceIndex, isLowPowerMode, temperatureCelsius)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      batteryLevel,
+      batteryStateIndex,
+      powerSourceIndex,
+      isLowPowerMode,
+      temperatureCelsius,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as PlatformBatteryInfo
+    return MessagesPigeonUtils.deepEquals(this.batteryLevel, other.batteryLevel) && MessagesPigeonUtils.deepEquals(this.batteryStateIndex, other.batteryStateIndex) && MessagesPigeonUtils.deepEquals(this.powerSourceIndex, other.powerSourceIndex) && MessagesPigeonUtils.deepEquals(this.isLowPowerMode, other.isLowPowerMode) && MessagesPigeonUtils.deepEquals(this.temperatureCelsius, other.temperatureCelsius)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.batteryLevel)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.batteryStateIndex)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.powerSourceIndex)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.isLowPowerMode)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.temperatureCelsius)
+    return result
+  }
+  override fun toString(): String {
+    return "PlatformBatteryInfo(batteryLevel=$batteryLevel, batteryStateIndex=$batteryStateIndex, powerSourceIndex=$powerSourceIndex, isLowPowerMode=$isLowPowerMode, temperatureCelsius=$temperatureCelsius)"
+  }
+}
 private open class MessagesPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -616,6 +669,11 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
           PlatformGpuInfo.fromList(it)
         }
       }
+      136.toByte() -> {
+        (readValue(buffer) as? List<Any?>)?.let {
+          PlatformBatteryInfo.fromList(it)
+        }
+      }
       else -> super.readValueOfType(type, buffer)
     }
   }
@@ -649,6 +707,10 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
         stream.write(135)
         writeValue(stream, value.toList())
       }
+      is PlatformBatteryInfo -> {
+        stream.write(136)
+        writeValue(stream, value.toList())
+      }
       else -> super.writeValue(stream, value)
     }
   }
@@ -664,6 +726,7 @@ interface InsideScoopHostApi {
   fun getMemoryInfo(): PlatformMemoryInfo
   fun getStorageInfo(): PlatformStorageInfo
   fun getGpuInfo(): PlatformGpuInfo
+  fun getBatteryInfo(): PlatformBatteryInfo
 
   companion object {
     /** The codec used by InsideScoopHostApi. */
@@ -785,6 +848,21 @@ interface InsideScoopHostApi {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
               listOf(api.getGpuInfo())
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getBatteryInfo$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.getBatteryInfo())
             } catch (exception: Throwable) {
               MessagesPigeonUtils.wrapError(exception)
             }

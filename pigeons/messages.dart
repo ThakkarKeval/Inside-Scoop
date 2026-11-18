@@ -138,6 +138,22 @@ class PlatformGpuInfo {
   final bool? isUnifiedMemory;
 }
 
+class PlatformBatteryInfo {
+  PlatformBatteryInfo({
+    this.batteryLevel,
+    required this.batteryStateIndex,
+    required this.powerSourceIndex,
+    this.isLowPowerMode,
+    this.temperatureCelsius,
+  });
+
+  final int? batteryLevel;
+  final int batteryStateIndex; // 0: charging, 1: discharging, 2: full, 3: unknown
+  final int powerSourceIndex; // 0: battery, 1: ac, 2: usb, 3: wireless, 4: unknown
+  final bool? isLowPowerMode;
+  final double? temperatureCelsius;
+}
+
 @HostApi()
 abstract class InsideScoopHostApi {
   String? getPlatformVersion();
@@ -148,4 +164,5 @@ abstract class InsideScoopHostApi {
   PlatformMemoryInfo getMemoryInfo();
   PlatformStorageInfo getStorageInfo();
   PlatformGpuInfo getGpuInfo();
+  PlatformBatteryInfo getBatteryInfo();
 }

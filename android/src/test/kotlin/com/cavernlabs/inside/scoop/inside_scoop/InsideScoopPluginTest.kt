@@ -73,4 +73,12 @@ internal class InsideScoopPluginTest {
         assertNotNull(gpuInfo.renderer)
         assertNotNull(gpuInfo.apiFamily)
     }
+
+    @Test
+    fun getBatteryInfo_returnsExpectedBatteryMetadata() {
+        val plugin = InsideScoopPlugin()
+        val batteryInfo = plugin.getBatteryInfo()
+        assertNotNull(batteryInfo.batteryStateIndex)
+        assertNotNull(batteryInfo.powerSourceIndex)
+    }
 }

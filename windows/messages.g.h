@@ -444,6 +444,59 @@ class PlatformGpuInfo {
 };
 
 
+// Generated class from Pigeon that represents data sent in messages.
+class PlatformBatteryInfo {
+ public:
+  // Constructs an object setting all non-nullable fields.
+  explicit PlatformBatteryInfo(
+    int64_t battery_state_index,
+    int64_t power_source_index);
+
+  // Constructs an object setting all fields.
+  explicit PlatformBatteryInfo(
+    const int64_t* battery_level,
+    int64_t battery_state_index,
+    int64_t power_source_index,
+    const bool* is_low_power_mode,
+    const double* temperature_celsius);
+
+  const int64_t* battery_level() const;
+  void set_battery_level(const int64_t* value_arg);
+  void set_battery_level(int64_t value_arg);
+
+  int64_t battery_state_index() const;
+  void set_battery_state_index(int64_t value_arg);
+
+  int64_t power_source_index() const;
+  void set_power_source_index(int64_t value_arg);
+
+  const bool* is_low_power_mode() const;
+  void set_is_low_power_mode(const bool* value_arg);
+  void set_is_low_power_mode(bool value_arg);
+
+  const double* temperature_celsius() const;
+  void set_temperature_celsius(const double* value_arg);
+  void set_temperature_celsius(double value_arg);
+
+  bool operator==(const PlatformBatteryInfo& other) const;
+  bool operator!=(const PlatformBatteryInfo& other) const;
+  /// Returns a hash code value for the object. This method is supported for the benefit of hash tables.
+  size_t Hash() const;
+  /// Stream output operator for formatted string representation.
+  friend std::ostream& operator<<(std::ostream& os, const PlatformBatteryInfo& obj);
+ private:
+  static PlatformBatteryInfo FromEncodableList(const ::flutter::EncodableList& list);
+  ::flutter::EncodableList ToEncodableList() const;
+  friend class InsideScoopHostApi;
+  friend class PigeonInternalCodecSerializer;
+  std::optional<int64_t> battery_level_;
+  int64_t battery_state_index_;
+  int64_t power_source_index_;
+  std::optional<bool> is_low_power_mode_;
+  std::optional<double> temperature_celsius_;
+};
+
+
 class PigeonInternalCodecSerializer : public ::flutter::StandardCodecSerializer {
  public:
   PigeonInternalCodecSerializer();
@@ -475,6 +528,7 @@ class InsideScoopHostApi {
   virtual ErrorOr<PlatformMemoryInfo> GetMemoryInfo() = 0;
   virtual ErrorOr<PlatformStorageInfo> GetStorageInfo() = 0;
   virtual ErrorOr<PlatformGpuInfo> GetGpuInfo() = 0;
+  virtual ErrorOr<PlatformBatteryInfo> GetBatteryInfo() = 0;
 
   // The codec used by InsideScoopHostApi.
   static const ::flutter::StandardMessageCodec& GetCodec();

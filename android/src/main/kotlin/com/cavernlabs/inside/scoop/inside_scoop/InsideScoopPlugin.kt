@@ -2,13 +2,17 @@ package com.cavernlabs.inside.scoop.inside_scoop
 
 import android.app.UiModeManager
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.opengl.EGL14
 import android.opengl.EGLConfig
 import android.opengl.GLES20
+import android.os.BatteryManager
 import android.os.Build
+import android.os.PowerManager
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import java.security.MessageDigest
 
@@ -324,6 +328,66 @@ class InsideScoopPlugin(private var context: Context? = null) : FlutterPlugin, I
             apiVersion = apiVersion ?: "3.0",
             totalVramBytes = null,
             isUnifiedMemory = true
+        )
+    }
+
+    override fun getBatteryInfo(): PlatformBatteryInfo {
+        val currentContext = context
+        var level: Long? = null
+        var batteryStateIndex: Long = 3L // unknown
+        var powerSourceIndex: Long = 4L // unknown
+        var isLowPowerMode: Boolean? = null
+        var tempCelsius: Double? = null
+
+        try {
+            if (currentContext != null) {
+                val intentFilter = android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED)
+                val batteryStatus: android.content.Intent? = currentContext.registerReceiver(null, intentFilter)
+
+                if (batteryStatus != null) {
+                    val rawLevel = batteryStatus.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1)
+                    val scale = batteryStatus.getIntExtra(android.os.BatteryManager.EXTRA_SCALE, -1)
+                    if (rawLevel >= 0 && scale > 0) {
+                        level = ((rawLevel.toDouble() / scale.toDouble()) * 100.0).toLong()
+                    }
+
+                    val status = batteryStatus.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1)
+                    batteryStateIndex = when (status) {
+                        android.os.BatteryManager.BATTERY_STATUS_CHARGING -> 0L // charging
+                        android.os.BatteryManager.BATTERY_STATUS_DISCHARGING -> 1L // discharging
+                        android.os.BatteryManager.BATTERY_STATUS_FULL -> 2L // full
+                        android.os.BatteryManager.BATTERY_STATUS_NOT_CHARGING -> 1L // discharging
+                        else -> 3L // unknown
+                    }
+
+                    val plugged = batteryStatus.getIntExtra(android.os.BatteryManager.EXTRA_PLUGGED, -1)
+                    powerSourceIndex = when (plugged) {
+                        android.os.BatteryManager.BATTERY_PLUGGED_AC -> 1L // ac
+                        android.os.BatteryManager.BATTERY_PLUGGED_USB -> 2L // usb
+                        android.os.BatteryManager.BATTERY_PLUGGED_WIRELESS -> 3L // wireless
+                        0 -> 0L // battery
+                        else -> 4L // unknown
+                    }
+
+                    val temp = batteryStatus.getIntExtra(android.os.BatteryManager.EXTRA_TEMPERATURE, -1)
+                    if (temp > 0) {
+                        tempCelsius = temp.toDouble() / 10.0
+                    }
+                }
+
+                val powerManager = currentContext.getSystemService(Context.POWER_SERVICE) as? android.os.PowerManager
+                isLowPowerMode = powerManager?.isPowerSaveMode
+            }
+        } catch (e: Throwable) {
+            // Fallback gracefully for unit tests or restricted permissions
+        }
+
+        return PlatformBatteryInfo(
+            batteryLevel = level,
+            batteryStateIndex = batteryStateIndex,
+            powerSourceIndex = powerSourceIndex,
+            isLowPowerMode = isLowPowerMode,
+            temperatureCelsius = tempCelsius
         )
     }
 

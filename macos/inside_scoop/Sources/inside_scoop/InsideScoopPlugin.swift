@@ -1,5 +1,6 @@
 import Cocoa
 import FlutterMacOS
+import IOKit.ps
 import Metal
 
 public class InsideScoopPlugin: NSObject, FlutterPlugin, InsideScoopHostApi {
@@ -236,6 +237,56 @@ public class InsideScoopPlugin: NSObject, FlutterPlugin, InsideScoopHostApi {
       apiVersion: "Metal 3",
       totalVramBytes: maxWorkingSet > 0 ? maxWorkingSet : nil,
       isUnifiedMemory: hasUnifiedMemory
+    )
+  }
+
+  func getBatteryInfo() throws -> PlatformBatteryInfo {
+    var batteryLevel: Int64? = nil
+    var batteryStateIndex: Int64 = 3 // unknown
+    var powerSourceIndex: Int64 = 4 // unknown
+
+    let snapshot = IOPSCopyPowerSourcesInfo().takeRetainedValue()
+    let sources = IOPSCopyPowerSourcesList(snapshot).takeRetainedValue() as [CFTypeRef]
+
+    for ps in sources {
+      if let desc = IOPSGetPowerSourceDescription(snapshot, ps).takeUnretainedValue() as? [String: Any] {
+        if let current = desc[kIOPSCurrentCapacityKey] as? Int,
+           let max = desc[kIOPSMaxCapacityKey] as? Int, max > 0 {
+          batteryLevel = Int64((Double(current) / Double(max)) * 100.0)
+        }
+
+        let isCharging = desc[kIOPSIsChargingKey] as? Bool ?? false
+        let isCharged = desc[kIOPSIsChargedKey] as? Bool ?? false
+        let powerState = desc[kIOPSPowerSourceStateKey] as? String ?? ""
+
+        if powerState == kIOPSACPowerValue {
+          powerSourceIndex = 1 // AC
+          if isCharged {
+            batteryStateIndex = 2 // full
+          } else if isCharging {
+            batteryStateIndex = 0 // charging
+          } else {
+            batteryStateIndex = 2 // full
+          }
+        } else if powerState == kIOPSBatteryPowerValue {
+          powerSourceIndex = 0 // battery
+          batteryStateIndex = 1 // discharging
+        }
+        break
+      }
+    }
+
+    var isLowPower: Bool? = nil
+    if #available(macOS 12.0, *) {
+      isLowPower = ProcessInfo.processInfo.isLowPowerModeEnabled
+    }
+
+    return PlatformBatteryInfo(
+      batteryLevel: batteryLevel,
+      batteryStateIndex: batteryStateIndex,
+      powerSourceIndex: powerSourceIndex,
+      isLowPowerMode: isLowPower,
+      temperatureCelsius: nil
     )
   }
 }

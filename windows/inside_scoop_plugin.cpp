@@ -397,4 +397,50 @@ ErrorOr<PlatformGpuInfo> InsideScoopPlugin::GetGpuInfo() {
   return gpu_info;
 }
 
+ErrorOr<PlatformBatteryInfo> InsideScoopPlugin::GetBatteryInfo() {
+  int64_t battery_state = 3;  // unknown
+  int64_t power_source = 4;   // unknown
+  std::optional<int64_t> battery_level = std::nullopt;
+  std::optional<bool> low_power_mode = std::nullopt;
+
+  SYSTEM_POWER_STATUS sps;
+  if (GetSystemPowerStatus(&sps)) {
+    if (sps.BatteryLifePercent != 255 && sps.BatteryLifePercent <= 100) {
+      battery_level = static_cast<int64_t>(sps.BatteryLifePercent);
+    }
+
+    if (sps.ACLineStatus == 1) {
+      power_source = 1;  // ac
+      if (sps.BatteryFlag & 8) {
+        battery_state = 0;  // charging
+      } else if (battery_level.has_value() && *battery_level >= 99) {
+        battery_state = 2;  // full
+      } else {
+        battery_state = 2;  // full / plugged in
+      }
+    } else if (sps.ACLineStatus == 0) {
+      power_source = 0;   // battery
+      battery_state = 1;  // discharging
+    }
+
+    if (sps.BatteryFlag & 128) {
+      // No system battery
+      battery_level = std::nullopt;
+      battery_state = 3;  // unknown
+    }
+
+    low_power_mode = (sps.SystemStatusFlag == 1);
+  }
+
+  PlatformBatteryInfo info(battery_state, power_source);
+  if (battery_level.has_value()) {
+    info.set_battery_level(*battery_level);
+  }
+  if (low_power_mode.has_value()) {
+    info.set_is_low_power_mode(*low_power_mode);
+  }
+
+  return info;
+}
+
 }  // namespace inside_scoop

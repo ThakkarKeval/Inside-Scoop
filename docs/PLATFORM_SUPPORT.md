@@ -81,3 +81,10 @@
 - **macOS**: Metal framework (`MTLCopyAllDevices()`, `MTLCreateSystemDefaultDevice()`) identifying GPU name, vendor classification (Apple, Intel, AMD, NVIDIA), unified memory architecture, and working set VRAM.
 - **Windows**: DirectX Graphics Infrastructure (`dxgi.dll` via `CreateDXGIFactory` / `EnumAdapters` / `GetDesc`) resolving vendor ID (NVIDIA, AMD, Intel, Qualcomm, Microsoft), GPU description, dedicated VRAM bytes, and `EnumDisplayDevicesW` fallback.
 - **Web**: WebGL context (`webgl2` / `webgl`) information respecting privacy restrictions with unified architecture and fallback metadata.
+
+### Phase 8: Battery & Power Information (`BatteryInfo`)
+- **Android**: `Intent.ACTION_BATTERY_CHANGED` sticky broadcast inspecting `EXTRA_LEVEL`, `EXTRA_SCALE`, `EXTRA_STATUS` (charging, discharging, full), `EXTRA_PLUGGED` (AC, USB, wireless), `EXTRA_TEMPERATURE`, and `PowerManager.isPowerSaveMode()`.
+- **iOS**: `UIDevice.current` battery monitoring (`batteryLevel`, `batteryState`), and `ProcessInfo.processInfo.isLowPowerModeEnabled`.
+- **macOS**: `IOKit.ps` (`IOPSCopyPowerSourcesInfo`, `IOPSCopyPowerSourcesList`, `IOPSGetPowerSourceDescription`) querying capacity, power source state (AC vs Battery), and `ProcessInfo.processInfo.isLowPowerModeEnabled`.
+- **Windows**: Win32 `GetSystemPowerStatus` reading `BatteryLifePercent`, `ACLineStatus`, `BatteryFlag`, and `SystemStatusFlag` (battery saver).
+- **Web**: Standard privacy-preserving default structure, gracefully handling browser restrictions on battery inspection.

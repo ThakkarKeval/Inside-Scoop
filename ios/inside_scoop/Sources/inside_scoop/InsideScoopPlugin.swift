@@ -239,4 +239,41 @@ public class InsideScoopPlugin: NSObject, FlutterPlugin, InsideScoopHostApi {
       isUnifiedMemory: hasUnifiedMemory
     )
   }
+
+  func getBatteryInfo() throws -> PlatformBatteryInfo {
+    UIDevice.current.isBatteryMonitoringEnabled = true
+    let rawLevel = UIDevice.current.batteryLevel
+    let batteryLevel = rawLevel >= 0 ? Int64(round(rawLevel * 100.0)) : nil
+
+    var batteryStateIndex: Int64 = 3 // unknown
+    var powerSourceIndex: Int64 = 4 // unknown
+
+    switch UIDevice.current.batteryState {
+    case .charging:
+      batteryStateIndex = 0
+      powerSourceIndex = 1 // ac
+    case .unplugged:
+      batteryStateIndex = 1
+      powerSourceIndex = 0 // battery
+    case .full:
+      batteryStateIndex = 2
+      powerSourceIndex = 1 // ac
+    case .unknown:
+      batteryStateIndex = 3
+      powerSourceIndex = 4
+    @unknown default:
+      batteryStateIndex = 3
+      powerSourceIndex = 4
+    }
+
+    let isLowPowerMode = ProcessInfo.processInfo.isLowPowerModeEnabled
+
+    return PlatformBatteryInfo(
+      batteryLevel: batteryLevel,
+      batteryStateIndex: batteryStateIndex,
+      powerSourceIndex: powerSourceIndex,
+      isLowPowerMode: isLowPowerMode,
+      temperatureCelsius: nil
+    )
+  }
 }

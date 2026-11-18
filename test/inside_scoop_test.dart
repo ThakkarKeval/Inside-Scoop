@@ -82,6 +82,17 @@ class MockInsideScoopPlatform
       isUnifiedMemory: true,
     ),
   );
+
+  @override
+  Future<BatteryInfo> getBatteryInfo() => Future.value(
+    const BatteryInfo(
+      batteryLevel: 92,
+      batteryState: BatteryState.charging,
+      powerSource: PowerSource.ac,
+      isLowPowerMode: false,
+      temperatureCelsius: 29.0,
+    ),
+  );
 }
 
 void main() {
@@ -180,5 +191,19 @@ void main() {
     expect(result.valueOrNull?.renderer, equals('MockGPU'));
     expect(result.valueOrNull?.apiFamily, equals('Metal'));
     expect(result.valueOrNull?.isUnifiedMemory, isTrue);
+  });
+
+  test('battery.info returns BatteryInfo from platform instance', () async {
+    final InsideScoop insideScoopPlugin = InsideScoop();
+    final MockInsideScoopPlatform fakePlatform = MockInsideScoopPlatform();
+    InsideScoopPlatform.instance = fakePlatform;
+
+    final result = await insideScoopPlugin.battery.info();
+    expect(result.isAvailable, isTrue);
+    expect(result.valueOrNull?.batteryLevel, equals(92));
+    expect(result.valueOrNull?.batteryState, equals(BatteryState.charging));
+    expect(result.valueOrNull?.powerSource, equals(PowerSource.ac));
+    expect(result.valueOrNull?.isLowPowerMode, isFalse);
+    expect(result.valueOrNull?.temperatureCelsius, equals(29.0));
   });
 }

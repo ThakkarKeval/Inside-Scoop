@@ -73,6 +73,15 @@ class FakeInsideScoopHostApi extends InsideScoopHostApi {
     totalVramBytes: 17179869184,
     isUnifiedMemory: false,
   );
+
+  @override
+  Future<PlatformBatteryInfo> getBatteryInfo() async => PlatformBatteryInfo(
+    batteryLevel: 75,
+    batteryStateIndex: 1, // discharging
+    powerSourceIndex: 0, // battery
+    isLowPowerMode: false,
+    temperatureCelsius: 27.5,
+  );
 }
 
 void main() {
@@ -173,5 +182,17 @@ void main() {
     expect(gpuInfo.apiVersion, equals('12'));
     expect(gpuInfo.totalVramBytes, equals(17179869184));
     expect(gpuInfo.isUnifiedMemory, isFalse);
+  });
+
+  test('getBatteryInfo converts PlatformBatteryInfo to BatteryInfo', () async {
+    final platform = MethodChannelInsideScoop(
+      hostApi: FakeInsideScoopHostApi(),
+    );
+    final batteryInfo = await platform.getBatteryInfo();
+    expect(batteryInfo.batteryLevel, equals(75));
+    expect(batteryInfo.batteryState, equals(BatteryState.discharging));
+    expect(batteryInfo.powerSource, equals(PowerSource.battery));
+    expect(batteryInfo.isLowPowerMode, isFalse);
+    expect(batteryInfo.temperatureCelsius, equals(27.5));
   });
 }

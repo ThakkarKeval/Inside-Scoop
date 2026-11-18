@@ -1451,6 +1451,168 @@ size_t PigeonInternalDeepHash(const PlatformGpuInfo& v) {
   return v.Hash();
 }
 
+// PlatformBatteryInfo
+
+PlatformBatteryInfo::PlatformBatteryInfo(
+  int64_t battery_state_index,
+  int64_t power_source_index)
+ : battery_state_index_(battery_state_index),
+    power_source_index_(power_source_index) {}
+
+PlatformBatteryInfo::PlatformBatteryInfo(
+  const int64_t* battery_level,
+  int64_t battery_state_index,
+  int64_t power_source_index,
+  const bool* is_low_power_mode,
+  const double* temperature_celsius)
+ : battery_level_(battery_level ? std::optional<int64_t>(*battery_level) : std::nullopt),
+    battery_state_index_(battery_state_index),
+    power_source_index_(power_source_index),
+    is_low_power_mode_(is_low_power_mode ? std::optional<bool>(*is_low_power_mode) : std::nullopt),
+    temperature_celsius_(temperature_celsius ? std::optional<double>(*temperature_celsius) : std::nullopt) {}
+
+const int64_t* PlatformBatteryInfo::battery_level() const {
+  return battery_level_ ? &(*battery_level_) : nullptr;
+}
+
+void PlatformBatteryInfo::set_battery_level(const int64_t* value_arg) {
+  battery_level_ = value_arg ? std::optional<int64_t>(*value_arg) : std::nullopt;
+}
+
+void PlatformBatteryInfo::set_battery_level(int64_t value_arg) {
+  battery_level_ = value_arg;
+}
+
+
+int64_t PlatformBatteryInfo::battery_state_index() const {
+  return battery_state_index_;
+}
+
+void PlatformBatteryInfo::set_battery_state_index(int64_t value_arg) {
+  battery_state_index_ = value_arg;
+}
+
+
+int64_t PlatformBatteryInfo::power_source_index() const {
+  return power_source_index_;
+}
+
+void PlatformBatteryInfo::set_power_source_index(int64_t value_arg) {
+  power_source_index_ = value_arg;
+}
+
+
+const bool* PlatformBatteryInfo::is_low_power_mode() const {
+  return is_low_power_mode_ ? &(*is_low_power_mode_) : nullptr;
+}
+
+void PlatformBatteryInfo::set_is_low_power_mode(const bool* value_arg) {
+  is_low_power_mode_ = value_arg ? std::optional<bool>(*value_arg) : std::nullopt;
+}
+
+void PlatformBatteryInfo::set_is_low_power_mode(bool value_arg) {
+  is_low_power_mode_ = value_arg;
+}
+
+
+const double* PlatformBatteryInfo::temperature_celsius() const {
+  return temperature_celsius_ ? &(*temperature_celsius_) : nullptr;
+}
+
+void PlatformBatteryInfo::set_temperature_celsius(const double* value_arg) {
+  temperature_celsius_ = value_arg ? std::optional<double>(*value_arg) : std::nullopt;
+}
+
+void PlatformBatteryInfo::set_temperature_celsius(double value_arg) {
+  temperature_celsius_ = value_arg;
+}
+
+
+EncodableList PlatformBatteryInfo::ToEncodableList() const {
+  EncodableList list;
+  list.reserve(5);
+  list.push_back(battery_level_ ? EncodableValue(*battery_level_) : EncodableValue());
+  list.push_back(EncodableValue(battery_state_index_));
+  list.push_back(EncodableValue(power_source_index_));
+  list.push_back(is_low_power_mode_ ? EncodableValue(*is_low_power_mode_) : EncodableValue());
+  list.push_back(temperature_celsius_ ? EncodableValue(*temperature_celsius_) : EncodableValue());
+  return list;
+}
+
+PlatformBatteryInfo PlatformBatteryInfo::FromEncodableList(const EncodableList& list) {
+  PlatformBatteryInfo decoded(
+    std::get<int64_t>(list[1]),
+    std::get<int64_t>(list[2]));
+  auto& encodable_battery_level = list[0];
+  if (!encodable_battery_level.IsNull()) {
+    decoded.set_battery_level(std::get<int64_t>(encodable_battery_level));
+  }
+  auto& encodable_is_low_power_mode = list[3];
+  if (!encodable_is_low_power_mode.IsNull()) {
+    decoded.set_is_low_power_mode(std::get<bool>(encodable_is_low_power_mode));
+  }
+  auto& encodable_temperature_celsius = list[4];
+  if (!encodable_temperature_celsius.IsNull()) {
+    decoded.set_temperature_celsius(std::get<double>(encodable_temperature_celsius));
+  }
+  return decoded;
+}
+
+bool PlatformBatteryInfo::operator==(const PlatformBatteryInfo& other) const {
+  return PigeonInternalDeepEquals(battery_level_, other.battery_level_) && PigeonInternalDeepEquals(battery_state_index_, other.battery_state_index_) && PigeonInternalDeepEquals(power_source_index_, other.power_source_index_) && PigeonInternalDeepEquals(is_low_power_mode_, other.is_low_power_mode_) && PigeonInternalDeepEquals(temperature_celsius_, other.temperature_celsius_);
+}
+
+bool PlatformBatteryInfo::operator!=(const PlatformBatteryInfo& other) const {
+  return !(*this == other);
+}
+
+size_t PlatformBatteryInfo::Hash() const {
+  size_t result = 1;
+  result = result * 31 + PigeonInternalDeepHash(battery_level_);
+  result = result * 31 + PigeonInternalDeepHash(battery_state_index_);
+  result = result * 31 + PigeonInternalDeepHash(power_source_index_);
+  result = result * 31 + PigeonInternalDeepHash(is_low_power_mode_);
+  result = result * 31 + PigeonInternalDeepHash(temperature_celsius_);
+  return result;
+}
+
+std::ostream& operator<<(
+  std::ostream& os,
+  const PlatformBatteryInfo& obj) {
+  os << "PlatformBatteryInfo(";
+  os << "battery_level: ";
+  if (obj.battery_level_) {
+    os << PigeonInternalToString(*obj.battery_level_);
+  }
+  else {
+    os << "null";
+  }
+  os << ", battery_state_index: ";
+  os << PigeonInternalToString(obj.battery_state_index_);
+  os << ", power_source_index: ";
+  os << PigeonInternalToString(obj.power_source_index_);
+  os << ", is_low_power_mode: ";
+  if (obj.is_low_power_mode_) {
+    os << PigeonInternalToString(*obj.is_low_power_mode_);
+  }
+  else {
+    os << "null";
+  }
+  os << ", temperature_celsius: ";
+  if (obj.temperature_celsius_) {
+    os << PigeonInternalToString(*obj.temperature_celsius_);
+  }
+  else {
+    os << "null";
+  }
+  os << ")";
+  return os;
+}
+
+size_t PigeonInternalDeepHash(const PlatformBatteryInfo& v) {
+  return v.Hash();
+}
+
 
 PigeonInternalCodecSerializer::PigeonInternalCodecSerializer() {}
 
@@ -1478,6 +1640,9 @@ EncodableValue PigeonInternalCodecSerializer::ReadValueOfType(
       }
     case 135: {
         return CustomEncodableValue(PlatformGpuInfo::FromEncodableList(std::get<EncodableList>(ReadValue(stream))));
+      }
+    case 136: {
+        return CustomEncodableValue(PlatformBatteryInfo::FromEncodableList(std::get<EncodableList>(ReadValue(stream))));
       }
     default:
       return ::flutter::StandardCodecSerializer::ReadValueOfType(type, stream);
@@ -1521,6 +1686,11 @@ void PigeonInternalCodecSerializer::WriteValue(
     if (custom_value->type() == typeid(PlatformGpuInfo)) {
       stream->WriteByte(135);
       WriteValue(EncodableValue(std::any_cast<PlatformGpuInfo>(*custom_value).ToEncodableList()), stream);
+      return;
+    }
+    if (custom_value->type() == typeid(PlatformBatteryInfo)) {
+      stream->WriteByte(136);
+      WriteValue(EncodableValue(std::any_cast<PlatformBatteryInfo>(*custom_value).ToEncodableList()), stream);
       return;
     }
   }
@@ -1702,6 +1872,27 @@ void InsideScoopHostApi::SetUp(
       channel.SetMessageHandler([api](const EncodableValue& message, const ::flutter::MessageReply<EncodableValue>& reply) {
         try {
           ErrorOr<PlatformGpuInfo> output = api->GetGpuInfo();
+          if (output.has_error()) {
+            reply(WrapError(output.error()));
+            return;
+          }
+          EncodableList wrapped;
+          wrapped.push_back(CustomEncodableValue(std::move(output).TakeValue()));
+          reply(EncodableValue(std::move(wrapped)));
+        } catch (const std::exception& exception) {
+          reply(WrapError(exception.what()));
+        }
+      });
+    } else {
+      channel.SetMessageHandler(nullptr);
+    }
+  }
+  {
+    BasicMessageChannel<> channel(binary_messenger, "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getBatteryInfo" + prepended_suffix, &GetCodec());
+    if (api != nullptr) {
+      channel.SetMessageHandler([api](const EncodableValue& message, const ::flutter::MessageReply<EncodableValue>& reply) {
+        try {
+          ErrorOr<PlatformBatteryInfo> output = api->GetBatteryInfo();
           if (output.has_error()) {
             reply(WrapError(output.error()));
             return;

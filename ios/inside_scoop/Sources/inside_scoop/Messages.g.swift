@@ -589,6 +589,61 @@ struct PlatformGpuInfo: Hashable, CustomStringConvertible {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct PlatformBatteryInfo: Hashable, CustomStringConvertible {
+  var batteryLevel: Int64? = nil
+  var batteryStateIndex: Int64
+  var powerSourceIndex: Int64
+  var isLowPowerMode: Bool? = nil
+  var temperatureCelsius: Double? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> PlatformBatteryInfo? {
+    let batteryLevel: Int64? = nilOrValue(pigeonVar_list[0])
+    let batteryStateIndex = pigeonVar_list[1] as! Int64
+    let powerSourceIndex = pigeonVar_list[2] as! Int64
+    let isLowPowerMode: Bool? = nilOrValue(pigeonVar_list[3])
+    let temperatureCelsius: Double? = nilOrValue(pigeonVar_list[4])
+
+    return PlatformBatteryInfo(
+      batteryLevel: batteryLevel,
+      batteryStateIndex: batteryStateIndex,
+      powerSourceIndex: powerSourceIndex,
+      isLowPowerMode: isLowPowerMode,
+      temperatureCelsius: temperatureCelsius
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      batteryLevel,
+      batteryStateIndex,
+      powerSourceIndex,
+      isLowPowerMode,
+      temperatureCelsius,
+    ]
+  }
+  static func == (lhs: PlatformBatteryInfo, rhs: PlatformBatteryInfo) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return MessagesPigeonInternal.deepEquals(lhs.batteryLevel, rhs.batteryLevel) && MessagesPigeonInternal.deepEquals(lhs.batteryStateIndex, rhs.batteryStateIndex) && MessagesPigeonInternal.deepEquals(lhs.powerSourceIndex, rhs.powerSourceIndex) && MessagesPigeonInternal.deepEquals(lhs.isLowPowerMode, rhs.isLowPowerMode) && MessagesPigeonInternal.deepEquals(lhs.temperatureCelsius, rhs.temperatureCelsius)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("PlatformBatteryInfo")
+    MessagesPigeonInternal.deepHash(value: batteryLevel, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: batteryStateIndex, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: powerSourceIndex, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: isLowPowerMode, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: temperatureCelsius, hasher: &hasher)
+  }
+
+  public var description: String {
+    return "PlatformBatteryInfo(batteryLevel: \(String(describing: batteryLevel)), batteryStateIndex: \(String(describing: batteryStateIndex)), powerSourceIndex: \(String(describing: powerSourceIndex)), isLowPowerMode: \(String(describing: isLowPowerMode)), temperatureCelsius: \(String(describing: temperatureCelsius)))"
+  }
+}
+
 private class MessagesPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -606,6 +661,8 @@ private class MessagesPigeonCodecReader: FlutterStandardReader {
       return PlatformStorageInfo.fromList(self.readValue() as! [Any?])
     case 135:
       return PlatformGpuInfo.fromList(self.readValue() as! [Any?])
+    case 136:
+      return PlatformBatteryInfo.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -634,6 +691,9 @@ private class MessagesPigeonCodecWriter: FlutterStandardWriter {
       super.writeValue(value.toList())
     } else if let value = value as? PlatformGpuInfo {
       super.writeByte(135)
+      super.writeValue(value.toList())
+    } else if let value = value as? PlatformBatteryInfo {
+      super.writeByte(136)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -665,6 +725,7 @@ protocol InsideScoopHostApi {
   func getMemoryInfo() throws -> PlatformMemoryInfo
   func getStorageInfo() throws -> PlatformStorageInfo
   func getGpuInfo() throws -> PlatformGpuInfo
+  func getBatteryInfo() throws -> PlatformBatteryInfo
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -776,6 +837,19 @@ class InsideScoopHostApiSetup {
       }
     } else {
       getGpuInfoChannel.setMessageHandler(nil)
+    }
+    let getBatteryInfoChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getBatteryInfo\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getBatteryInfoChannel.setMessageHandler { _, reply in
+        do {
+          let result = try api.getBatteryInfo()
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      getBatteryInfoChannel.setMessageHandler(nil)
     }
   }
 }

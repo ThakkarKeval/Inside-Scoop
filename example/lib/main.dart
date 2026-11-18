@@ -24,6 +24,7 @@ class _MyAppState extends State<MyApp> {
   MemoryInfo? _memoryInfo;
   StorageInfo? _storageInfo;
   GpuInfo? _gpuInfo;
+  BatteryInfo? _batteryInfo;
   Map<ScoopFeature, ScoopCapabilityInfo> _capabilities = {};
   final _insideScoopPlugin = InsideScoop();
 
@@ -50,6 +51,7 @@ class _MyAppState extends State<MyApp> {
     final memoryResult = await _insideScoopPlugin.memory.info();
     final storageResult = await _insideScoopPlugin.storage.info();
     final gpuResult = await _insideScoopPlugin.gpu.info();
+    final batteryResult = await _insideScoopPlugin.battery.info();
     final capabilities = await _insideScoopPlugin.capabilities.getAll();
 
     if (!mounted) return;
@@ -63,6 +65,7 @@ class _MyAppState extends State<MyApp> {
       _memoryInfo = memoryResult.valueOrNull;
       _storageInfo = storageResult.valueOrNull;
       _gpuInfo = gpuResult.valueOrNull;
+      _batteryInfo = batteryResult.valueOrNull;
       _capabilities = capabilities;
     });
   }
@@ -167,6 +170,24 @@ class _MyAppState extends State<MyApp> {
                   Text('VRAM: ${_gpuInfo!.totalVramMb} MB (${_gpuInfo!.totalVramGb?.toStringAsFixed(1)} GB)'),
                 if (_gpuInfo!.isUnifiedMemory != null)
                   Text('Unified Memory: ${_gpuInfo!.isUnifiedMemory}'),
+                const SizedBox(height: 12),
+              ],
+              if (_batteryInfo != null) ...[
+                const Text(
+                  'Battery & Power Management',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  'Level: ${_batteryInfo!.batteryLevel != null ? "${_batteryInfo!.batteryLevel}%" : "No Battery"}',
+                ),
+                Text('Status: ${_batteryInfo!.batteryState.name}'),
+                Text('Power Source: ${_batteryInfo!.powerSource.name}'),
+                if (_batteryInfo!.isLowPowerMode != null)
+                  Text('Low Power Mode: ${_batteryInfo!.isLowPowerMode}'),
+                if (_batteryInfo!.temperatureCelsius != null)
+                  Text(
+                    'Temperature: ${_batteryInfo!.temperatureCelsius!.toStringAsFixed(1)} °C (${_batteryInfo!.temperatureFahrenheit!.toStringAsFixed(1)} °F)',
+                  ),
                 const SizedBox(height: 12),
               ],
               if (_capabilities.isNotEmpty) ...[

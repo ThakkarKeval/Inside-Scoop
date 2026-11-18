@@ -4,6 +4,7 @@ import 'package:web/web.dart' as web;
 
 import 'inside_scoop_platform_interface.dart';
 import 'src/core/models/app_info.dart';
+import 'src/core/models/battery_info.dart';
 import 'src/core/models/cpu_info.dart';
 import 'src/core/models/device_info.dart';
 import 'src/core/models/gpu_info.dart';
@@ -133,6 +134,17 @@ class InsideScoopWeb extends InsideScoopPlatform {
       apiVersion: '2.0',
       totalVramBytes: null,
       isUnifiedMemory: null,
+    );
+  }
+
+  @override
+  Future<BatteryInfo> getBatteryInfo() async {
+    return const BatteryInfo(
+      batteryLevel: null,
+      batteryState: BatteryState.unknown,
+      powerSource: PowerSource.unknown,
+      isLowPowerMode: null,
+      temperatureCelsius: null,
     );
   }
 }
