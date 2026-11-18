@@ -502,6 +502,76 @@ class PlatformStorageInfo {
   }
 }
 
+class PlatformGpuInfo {
+  PlatformGpuInfo({
+    required this.vendor,
+    required this.renderer,
+    this.apiFamily,
+    this.apiVersion,
+    this.totalVramBytes,
+    this.isUnifiedMemory,
+  });
+
+  String vendor;
+
+  String renderer;
+
+  String? apiFamily;
+
+  String? apiVersion;
+
+  int? totalVramBytes;
+
+  bool? isUnifiedMemory;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      vendor,
+      renderer,
+      apiFamily,
+      apiVersion,
+      totalVramBytes,
+      isUnifiedMemory,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static PlatformGpuInfo decode(Object result) {
+    result as List<Object?>;
+    return PlatformGpuInfo(
+      vendor: result[0]! as String,
+      renderer: result[1]! as String,
+      apiFamily: result[2] as String?,
+      apiVersion: result[3] as String?,
+      totalVramBytes: result[4] as int?,
+      isUnifiedMemory: result[5] as bool?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! PlatformGpuInfo || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(vendor, other.vendor) && _deepEquals(renderer, other.renderer) && _deepEquals(apiFamily, other.apiFamily) && _deepEquals(apiVersion, other.apiVersion) && _deepEquals(totalVramBytes, other.totalVramBytes) && _deepEquals(isUnifiedMemory, other.isUnifiedMemory);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'PlatformGpuInfo(vendor: $vendor, renderer: $renderer, apiFamily: $apiFamily, apiVersion: $apiVersion, totalVramBytes: $totalVramBytes, isUnifiedMemory: $isUnifiedMemory)';
+  }
+}
+
 
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
@@ -528,6 +598,9 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is PlatformStorageInfo) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
+    }    else if (value is PlatformGpuInfo) {
+      buffer.putUint8(135);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -548,6 +621,8 @@ class _PigeonCodec extends StandardMessageCodec {
         return PlatformMemoryInfo.decode(readValue(buffer)!);
       case 134:
         return PlatformStorageInfo.decode(readValue(buffer)!);
+      case 135:
+        return PlatformGpuInfo.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -695,5 +770,23 @@ class InsideScoopHostApi {
     )
     ;
     return pigeonVar_replyValue! as PlatformStorageInfo;
+  }
+
+  Future<PlatformGpuInfo> getGpuInfo() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getGpuInfo$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return pigeonVar_replyValue! as PlatformGpuInfo;
   }
 }

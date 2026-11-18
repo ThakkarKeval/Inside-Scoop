@@ -70,6 +70,18 @@ class MockInsideScoopPlatform
       isRemovable: false,
     ),
   );
+
+  @override
+  Future<GpuInfo> getGpuInfo() => Future.value(
+    const GpuInfo(
+      vendor: 'MockVendor',
+      renderer: 'MockGPU',
+      apiFamily: 'Metal',
+      apiVersion: 'Metal 3',
+      totalVramBytes: 8589934592,
+      isUnifiedMemory: true,
+    ),
+  );
 }
 
 void main() {
@@ -155,5 +167,18 @@ void main() {
     expect(result.valueOrNull?.totalBytes, equals(137438953472));
     expect(result.valueOrNull?.availableBytes, equals(68719476736));
     expect(result.valueOrNull?.isRemovable, isFalse);
+  });
+
+  test('gpu.info returns GpuInfo from platform instance', () async {
+    final InsideScoop insideScoopPlugin = InsideScoop();
+    final MockInsideScoopPlatform fakePlatform = MockInsideScoopPlatform();
+    InsideScoopPlatform.instance = fakePlatform;
+
+    final result = await insideScoopPlugin.gpu.info();
+    expect(result.isAvailable, isTrue);
+    expect(result.valueOrNull?.vendor, equals('MockVendor'));
+    expect(result.valueOrNull?.renderer, equals('MockGPU'));
+    expect(result.valueOrNull?.apiFamily, equals('Metal'));
+    expect(result.valueOrNull?.isUnifiedMemory, isTrue);
   });
 }

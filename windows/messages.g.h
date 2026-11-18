@@ -385,6 +385,65 @@ class PlatformStorageInfo {
 };
 
 
+// Generated class from Pigeon that represents data sent in messages.
+class PlatformGpuInfo {
+ public:
+  // Constructs an object setting all non-nullable fields.
+  explicit PlatformGpuInfo(
+    const std::string& vendor,
+    const std::string& renderer);
+
+  // Constructs an object setting all fields.
+  explicit PlatformGpuInfo(
+    const std::string& vendor,
+    const std::string& renderer,
+    const std::string* api_family,
+    const std::string* api_version,
+    const int64_t* total_vram_bytes,
+    const bool* is_unified_memory);
+
+  const std::string& vendor() const;
+  void set_vendor(std::string_view value_arg);
+
+  const std::string& renderer() const;
+  void set_renderer(std::string_view value_arg);
+
+  const std::string* api_family() const;
+  void set_api_family(const std::string_view* value_arg);
+  void set_api_family(std::string_view value_arg);
+
+  const std::string* api_version() const;
+  void set_api_version(const std::string_view* value_arg);
+  void set_api_version(std::string_view value_arg);
+
+  const int64_t* total_vram_bytes() const;
+  void set_total_vram_bytes(const int64_t* value_arg);
+  void set_total_vram_bytes(int64_t value_arg);
+
+  const bool* is_unified_memory() const;
+  void set_is_unified_memory(const bool* value_arg);
+  void set_is_unified_memory(bool value_arg);
+
+  bool operator==(const PlatformGpuInfo& other) const;
+  bool operator!=(const PlatformGpuInfo& other) const;
+  /// Returns a hash code value for the object. This method is supported for the benefit of hash tables.
+  size_t Hash() const;
+  /// Stream output operator for formatted string representation.
+  friend std::ostream& operator<<(std::ostream& os, const PlatformGpuInfo& obj);
+ private:
+  static PlatformGpuInfo FromEncodableList(const ::flutter::EncodableList& list);
+  ::flutter::EncodableList ToEncodableList() const;
+  friend class InsideScoopHostApi;
+  friend class PigeonInternalCodecSerializer;
+  std::string vendor_;
+  std::string renderer_;
+  std::optional<std::string> api_family_;
+  std::optional<std::string> api_version_;
+  std::optional<int64_t> total_vram_bytes_;
+  std::optional<bool> is_unified_memory_;
+};
+
+
 class PigeonInternalCodecSerializer : public ::flutter::StandardCodecSerializer {
  public:
   PigeonInternalCodecSerializer();
@@ -415,6 +474,7 @@ class InsideScoopHostApi {
   virtual ErrorOr<PlatformCpuInfo> GetCpuInfo() = 0;
   virtual ErrorOr<PlatformMemoryInfo> GetMemoryInfo() = 0;
   virtual ErrorOr<PlatformStorageInfo> GetStorageInfo() = 0;
+  virtual ErrorOr<PlatformGpuInfo> GetGpuInfo() = 0;
 
   // The codec used by InsideScoopHostApi.
   static const ::flutter::StandardMessageCodec& GetCodec();

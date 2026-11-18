@@ -1261,6 +1261,196 @@ size_t PigeonInternalDeepHash(const PlatformStorageInfo& v) {
   return v.Hash();
 }
 
+// PlatformGpuInfo
+
+PlatformGpuInfo::PlatformGpuInfo(
+  const std::string& vendor,
+  const std::string& renderer)
+ : vendor_(vendor),
+    renderer_(renderer) {}
+
+PlatformGpuInfo::PlatformGpuInfo(
+  const std::string& vendor,
+  const std::string& renderer,
+  const std::string* api_family,
+  const std::string* api_version,
+  const int64_t* total_vram_bytes,
+  const bool* is_unified_memory)
+ : vendor_(vendor),
+    renderer_(renderer),
+    api_family_(api_family ? std::optional<std::string>(*api_family) : std::nullopt),
+    api_version_(api_version ? std::optional<std::string>(*api_version) : std::nullopt),
+    total_vram_bytes_(total_vram_bytes ? std::optional<int64_t>(*total_vram_bytes) : std::nullopt),
+    is_unified_memory_(is_unified_memory ? std::optional<bool>(*is_unified_memory) : std::nullopt) {}
+
+const std::string& PlatformGpuInfo::vendor() const {
+  return vendor_;
+}
+
+void PlatformGpuInfo::set_vendor(std::string_view value_arg) {
+  vendor_ = value_arg;
+}
+
+
+const std::string& PlatformGpuInfo::renderer() const {
+  return renderer_;
+}
+
+void PlatformGpuInfo::set_renderer(std::string_view value_arg) {
+  renderer_ = value_arg;
+}
+
+
+const std::string* PlatformGpuInfo::api_family() const {
+  return api_family_ ? &(*api_family_) : nullptr;
+}
+
+void PlatformGpuInfo::set_api_family(const std::string_view* value_arg) {
+  api_family_ = value_arg ? std::optional<std::string>(*value_arg) : std::nullopt;
+}
+
+void PlatformGpuInfo::set_api_family(std::string_view value_arg) {
+  api_family_ = value_arg;
+}
+
+
+const std::string* PlatformGpuInfo::api_version() const {
+  return api_version_ ? &(*api_version_) : nullptr;
+}
+
+void PlatformGpuInfo::set_api_version(const std::string_view* value_arg) {
+  api_version_ = value_arg ? std::optional<std::string>(*value_arg) : std::nullopt;
+}
+
+void PlatformGpuInfo::set_api_version(std::string_view value_arg) {
+  api_version_ = value_arg;
+}
+
+
+const int64_t* PlatformGpuInfo::total_vram_bytes() const {
+  return total_vram_bytes_ ? &(*total_vram_bytes_) : nullptr;
+}
+
+void PlatformGpuInfo::set_total_vram_bytes(const int64_t* value_arg) {
+  total_vram_bytes_ = value_arg ? std::optional<int64_t>(*value_arg) : std::nullopt;
+}
+
+void PlatformGpuInfo::set_total_vram_bytes(int64_t value_arg) {
+  total_vram_bytes_ = value_arg;
+}
+
+
+const bool* PlatformGpuInfo::is_unified_memory() const {
+  return is_unified_memory_ ? &(*is_unified_memory_) : nullptr;
+}
+
+void PlatformGpuInfo::set_is_unified_memory(const bool* value_arg) {
+  is_unified_memory_ = value_arg ? std::optional<bool>(*value_arg) : std::nullopt;
+}
+
+void PlatformGpuInfo::set_is_unified_memory(bool value_arg) {
+  is_unified_memory_ = value_arg;
+}
+
+
+EncodableList PlatformGpuInfo::ToEncodableList() const {
+  EncodableList list;
+  list.reserve(6);
+  list.push_back(EncodableValue(vendor_));
+  list.push_back(EncodableValue(renderer_));
+  list.push_back(api_family_ ? EncodableValue(*api_family_) : EncodableValue());
+  list.push_back(api_version_ ? EncodableValue(*api_version_) : EncodableValue());
+  list.push_back(total_vram_bytes_ ? EncodableValue(*total_vram_bytes_) : EncodableValue());
+  list.push_back(is_unified_memory_ ? EncodableValue(*is_unified_memory_) : EncodableValue());
+  return list;
+}
+
+PlatformGpuInfo PlatformGpuInfo::FromEncodableList(const EncodableList& list) {
+  PlatformGpuInfo decoded(
+    std::get<std::string>(list[0]),
+    std::get<std::string>(list[1]));
+  auto& encodable_api_family = list[2];
+  if (!encodable_api_family.IsNull()) {
+    decoded.set_api_family(std::get<std::string>(encodable_api_family));
+  }
+  auto& encodable_api_version = list[3];
+  if (!encodable_api_version.IsNull()) {
+    decoded.set_api_version(std::get<std::string>(encodable_api_version));
+  }
+  auto& encodable_total_vram_bytes = list[4];
+  if (!encodable_total_vram_bytes.IsNull()) {
+    decoded.set_total_vram_bytes(std::get<int64_t>(encodable_total_vram_bytes));
+  }
+  auto& encodable_is_unified_memory = list[5];
+  if (!encodable_is_unified_memory.IsNull()) {
+    decoded.set_is_unified_memory(std::get<bool>(encodable_is_unified_memory));
+  }
+  return decoded;
+}
+
+bool PlatformGpuInfo::operator==(const PlatformGpuInfo& other) const {
+  return PigeonInternalDeepEquals(vendor_, other.vendor_) && PigeonInternalDeepEquals(renderer_, other.renderer_) && PigeonInternalDeepEquals(api_family_, other.api_family_) && PigeonInternalDeepEquals(api_version_, other.api_version_) && PigeonInternalDeepEquals(total_vram_bytes_, other.total_vram_bytes_) && PigeonInternalDeepEquals(is_unified_memory_, other.is_unified_memory_);
+}
+
+bool PlatformGpuInfo::operator!=(const PlatformGpuInfo& other) const {
+  return !(*this == other);
+}
+
+size_t PlatformGpuInfo::Hash() const {
+  size_t result = 1;
+  result = result * 31 + PigeonInternalDeepHash(vendor_);
+  result = result * 31 + PigeonInternalDeepHash(renderer_);
+  result = result * 31 + PigeonInternalDeepHash(api_family_);
+  result = result * 31 + PigeonInternalDeepHash(api_version_);
+  result = result * 31 + PigeonInternalDeepHash(total_vram_bytes_);
+  result = result * 31 + PigeonInternalDeepHash(is_unified_memory_);
+  return result;
+}
+
+std::ostream& operator<<(
+  std::ostream& os,
+  const PlatformGpuInfo& obj) {
+  os << "PlatformGpuInfo(";
+  os << "vendor: ";
+  os << PigeonInternalToString(obj.vendor_);
+  os << ", renderer: ";
+  os << PigeonInternalToString(obj.renderer_);
+  os << ", api_family: ";
+  if (obj.api_family_) {
+    os << PigeonInternalToString(*obj.api_family_);
+  }
+  else {
+    os << "null";
+  }
+  os << ", api_version: ";
+  if (obj.api_version_) {
+    os << PigeonInternalToString(*obj.api_version_);
+  }
+  else {
+    os << "null";
+  }
+  os << ", total_vram_bytes: ";
+  if (obj.total_vram_bytes_) {
+    os << PigeonInternalToString(*obj.total_vram_bytes_);
+  }
+  else {
+    os << "null";
+  }
+  os << ", is_unified_memory: ";
+  if (obj.is_unified_memory_) {
+    os << PigeonInternalToString(*obj.is_unified_memory_);
+  }
+  else {
+    os << "null";
+  }
+  os << ")";
+  return os;
+}
+
+size_t PigeonInternalDeepHash(const PlatformGpuInfo& v) {
+  return v.Hash();
+}
+
 
 PigeonInternalCodecSerializer::PigeonInternalCodecSerializer() {}
 
@@ -1285,6 +1475,9 @@ EncodableValue PigeonInternalCodecSerializer::ReadValueOfType(
       }
     case 134: {
         return CustomEncodableValue(PlatformStorageInfo::FromEncodableList(std::get<EncodableList>(ReadValue(stream))));
+      }
+    case 135: {
+        return CustomEncodableValue(PlatformGpuInfo::FromEncodableList(std::get<EncodableList>(ReadValue(stream))));
       }
     default:
       return ::flutter::StandardCodecSerializer::ReadValueOfType(type, stream);
@@ -1323,6 +1516,11 @@ void PigeonInternalCodecSerializer::WriteValue(
     if (custom_value->type() == typeid(PlatformStorageInfo)) {
       stream->WriteByte(134);
       WriteValue(EncodableValue(std::any_cast<PlatformStorageInfo>(*custom_value).ToEncodableList()), stream);
+      return;
+    }
+    if (custom_value->type() == typeid(PlatformGpuInfo)) {
+      stream->WriteByte(135);
+      WriteValue(EncodableValue(std::any_cast<PlatformGpuInfo>(*custom_value).ToEncodableList()), stream);
       return;
     }
   }
@@ -1483,6 +1681,27 @@ void InsideScoopHostApi::SetUp(
       channel.SetMessageHandler([api](const EncodableValue& message, const ::flutter::MessageReply<EncodableValue>& reply) {
         try {
           ErrorOr<PlatformStorageInfo> output = api->GetStorageInfo();
+          if (output.has_error()) {
+            reply(WrapError(output.error()));
+            return;
+          }
+          EncodableList wrapped;
+          wrapped.push_back(CustomEncodableValue(std::move(output).TakeValue()));
+          reply(EncodableValue(std::move(wrapped)));
+        } catch (const std::exception& exception) {
+          reply(WrapError(exception.what()));
+        }
+      });
+    } else {
+      channel.SetMessageHandler(nullptr);
+    }
+  }
+  {
+    BasicMessageChannel<> channel(binary_messenger, "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getGpuInfo" + prepended_suffix, &GetCodec());
+    if (api != nullptr) {
+      channel.SetMessageHandler([api](const EncodableValue& message, const ::flutter::MessageReply<EncodableValue>& reply) {
+        try {
+          ErrorOr<PlatformGpuInfo> output = api->GetGpuInfo();
           if (output.has_error()) {
             reply(WrapError(output.error()));
             return;

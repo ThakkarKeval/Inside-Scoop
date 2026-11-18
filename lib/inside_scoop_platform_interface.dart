@@ -4,6 +4,7 @@ import 'inside_scoop_method_channel.dart';
 import 'src/core/models/app_info.dart';
 import 'src/core/models/cpu_info.dart';
 import 'src/core/models/device_info.dart';
+import 'src/core/models/gpu_info.dart';
 import 'src/core/models/memory_info.dart';
 import 'src/core/models/os_info.dart';
 import 'src/core/models/storage_info.dart';
@@ -48,5 +49,9 @@ abstract class InsideScoopPlatform extends PlatformInterface {
 
   Future<StorageInfo> getStorageInfo() {
     throw UnimplementedError('getStorageInfo() has not been implemented.');
+  }
+
+  Future<GpuInfo> getGpuInfo() {
+    throw UnimplementedError('getGpuInfo() has not been implemented.');
   }
 }

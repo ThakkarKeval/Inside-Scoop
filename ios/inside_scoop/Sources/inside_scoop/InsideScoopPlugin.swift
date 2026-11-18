@@ -1,4 +1,5 @@
 import Flutter
+import Metal
 import UIKit
 
 public class InsideScoopPlugin: NSObject, FlutterPlugin, InsideScoopHostApi {
@@ -210,6 +211,32 @@ public class InsideScoopPlugin: NSObject, FlutterPlugin, InsideScoopHostApi {
       availableBytes: availBytes,
       appStorageBytes: nil,
       isRemovable: false
+    )
+  }
+
+  func getGpuInfo() throws -> PlatformGpuInfo {
+    guard let device = MTLCreateSystemDefaultDevice() else {
+      return PlatformGpuInfo(
+        vendor: "Apple",
+        renderer: "Apple GPU",
+        apiFamily: "Metal",
+        apiVersion: "Metal 3",
+        totalVramBytes: nil,
+        isUnifiedMemory: true
+      )
+    }
+
+    let name = device.name
+    let hasUnifiedMemory = device.hasUnifiedMemory
+    let maxWorkingSet = Int64(device.recommendedMaxWorkingSetSize)
+
+    return PlatformGpuInfo(
+      vendor: "Apple",
+      renderer: name,
+      apiFamily: "Metal",
+      apiVersion: "Metal 3",
+      totalVramBytes: maxWorkingSet > 0 ? maxWorkingSet : nil,
+      isUnifiedMemory: hasUnifiedMemory
     )
   }
 }

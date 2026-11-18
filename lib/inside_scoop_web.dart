@@ -6,6 +6,7 @@ import 'inside_scoop_platform_interface.dart';
 import 'src/core/models/app_info.dart';
 import 'src/core/models/cpu_info.dart';
 import 'src/core/models/device_info.dart';
+import 'src/core/models/gpu_info.dart';
 import 'src/core/models/memory_info.dart';
 import 'src/core/models/os_info.dart';
 import 'src/core/models/storage_info.dart';
@@ -120,6 +121,18 @@ class InsideScoopWeb extends InsideScoopPlatform {
       availableBytes: available,
       appStorageBytes: null,
       isRemovable: false,
+    );
+  }
+
+  @override
+  Future<GpuInfo> getGpuInfo() async {
+    return const GpuInfo(
+      vendor: 'Web Browser',
+      renderer: 'WebGL Context',
+      apiFamily: 'WebGL',
+      apiVersion: '2.0',
+      totalVramBytes: null,
+      isUnifiedMemory: null,
     );
   }
 }

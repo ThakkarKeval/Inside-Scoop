@@ -64,4 +64,13 @@ internal class InsideScoopPluginTest {
         assertEquals(true, storageInfo.totalBytes > 0L)
         assertEquals(true, storageInfo.availableBytes > 0L)
     }
+
+    @Test
+    fun getGpuInfo_returnsExpectedGpuMetadata() {
+        val plugin = InsideScoopPlugin()
+        val gpuInfo = plugin.getGpuInfo()
+        assertNotNull(gpuInfo.vendor)
+        assertNotNull(gpuInfo.renderer)
+        assertNotNull(gpuInfo.apiFamily)
+    }
 }

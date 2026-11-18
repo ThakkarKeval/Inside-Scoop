@@ -74,3 +74,10 @@
 - **macOS**: `URLResourceValues` on root filesystem (`/`) for total volume capacity and free storage.
 - **Windows**: Win32 `GetDiskFreeSpaceExW` for total capacity and available free bytes on primary system disk.
 - **Web**: Browser storage quota and estimated usage via standard `navigator.storage.estimate()` (or fallback defaults), respecting origin privacy.
+
+### Phase 7: GPU Information (`GpuInfo`)
+- **Android**: EGL offscreen context (`EGL14`, `GLES20`) querying `GL_RENDERER`, `GL_VENDOR`, `GL_VERSION` with fallbacks to `ActivityManager.deviceConfigurationInfo.glEsVersion` and `Build.HARDWARE`; mobile unified memory flag.
+- **iOS**: Metal framework (`MTLCreateSystemDefaultDevice()`) inspecting device name, `hasUnifiedMemory`, and `recommendedMaxWorkingSetSize`.
+- **macOS**: Metal framework (`MTLCopyAllDevices()`, `MTLCreateSystemDefaultDevice()`) identifying GPU name, vendor classification (Apple, Intel, AMD, NVIDIA), unified memory architecture, and working set VRAM.
+- **Windows**: DirectX Graphics Infrastructure (`dxgi.dll` via `CreateDXGIFactory` / `EnumAdapters` / `GetDesc`) resolving vendor ID (NVIDIA, AMD, Intel, Qualcomm, Microsoft), GPU description, dedicated VRAM bytes, and `EnumDisplayDevicesW` fallback.
+- **Web**: WebGL context (`webgl2` / `webgl`) information respecting privacy restrictions with unified architecture and fallback metadata.

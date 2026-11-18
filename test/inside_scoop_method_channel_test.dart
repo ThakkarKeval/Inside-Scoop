@@ -63,6 +63,16 @@ class FakeInsideScoopHostApi extends InsideScoopHostApi {
     appStorageBytes: 1048576000,
     isRemovable: false,
   );
+
+  @override
+  Future<PlatformGpuInfo> getGpuInfo() async => PlatformGpuInfo(
+    vendor: 'NVIDIA',
+    renderer: 'GeForce RTX 4080',
+    apiFamily: 'DirectX',
+    apiVersion: '12',
+    totalVramBytes: 17179869184,
+    isUnifiedMemory: false,
+  );
 }
 
 void main() {
@@ -150,5 +160,18 @@ void main() {
     expect(storageInfo.usedBytes, equals(256 * 1024 * 1024 * 1024));
     expect(storageInfo.appStorageBytes, equals(1048576000));
     expect(storageInfo.isRemovable, isFalse);
+  });
+
+  test('getGpuInfo converts PlatformGpuInfo to GpuInfo', () async {
+    final platform = MethodChannelInsideScoop(
+      hostApi: FakeInsideScoopHostApi(),
+    );
+    final gpuInfo = await platform.getGpuInfo();
+    expect(gpuInfo.vendor, equals('NVIDIA'));
+    expect(gpuInfo.renderer, equals('GeForce RTX 4080'));
+    expect(gpuInfo.apiFamily, equals('DirectX'));
+    expect(gpuInfo.apiVersion, equals('12'));
+    expect(gpuInfo.totalVramBytes, equals(17179869184));
+    expect(gpuInfo.isUnifiedMemory, isFalse);
   });
 }

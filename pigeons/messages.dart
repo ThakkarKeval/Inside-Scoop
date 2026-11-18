@@ -120,6 +120,24 @@ class PlatformStorageInfo {
   final bool isRemovable;
 }
 
+class PlatformGpuInfo {
+  PlatformGpuInfo({
+    required this.vendor,
+    required this.renderer,
+    this.apiFamily,
+    this.apiVersion,
+    this.totalVramBytes,
+    this.isUnifiedMemory,
+  });
+
+  final String vendor;
+  final String renderer;
+  final String? apiFamily;
+  final String? apiVersion;
+  final int? totalVramBytes;
+  final bool? isUnifiedMemory;
+}
+
 @HostApi()
 abstract class InsideScoopHostApi {
   String? getPlatformVersion();
@@ -129,4 +147,5 @@ abstract class InsideScoopHostApi {
   PlatformCpuInfo getCpuInfo();
   PlatformMemoryInfo getMemoryInfo();
   PlatformStorageInfo getStorageInfo();
+  PlatformGpuInfo getGpuInfo();
 }

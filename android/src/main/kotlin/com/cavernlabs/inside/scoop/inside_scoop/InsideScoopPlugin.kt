@@ -5,6 +5,9 @@ import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.opengl.EGL14
+import android.opengl.EGLConfig
+import android.opengl.GLES20
 import android.os.Build
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import java.security.MessageDigest
@@ -241,6 +244,86 @@ class InsideScoopPlugin(private var context: Context? = null) : FlutterPlugin, I
             availableBytes = if (availableBytes > 0L) availableBytes else fallbackAvail,
             appStorageBytes = appBytes,
             isRemovable = isRemovable
+        )
+    }
+
+    override fun getGpuInfo(): PlatformGpuInfo {
+        var renderer: String? = null
+        var vendor: String? = null
+        var apiVersion: String? = null
+
+        try {
+            val display = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY)
+            if (display != null && display != EGL14.EGL_NO_DISPLAY) {
+                val version = IntArray(2)
+                if (EGL14.eglInitialize(display, version, 0, version, 1)) {
+                    val attribList = intArrayOf(
+                        EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
+                        EGL14.EGL_SURFACE_TYPE, EGL14.EGL_PBUFFER_BIT,
+                        EGL14.EGL_NONE
+                    )
+                    val configs = arrayOfNulls<EGLConfig>(1)
+                    val numConfigs = IntArray(1)
+                    EGL14.eglChooseConfig(display, attribList, 0, configs, 0, 1, numConfigs, 0)
+                    if (numConfigs[0] > 0 && configs[0] != null) {
+                        val contextAttribs = intArrayOf(EGL14.EGL_CONTEXT_CLIENT_VERSION, 2, EGL14.EGL_NONE)
+                        val eglContext = EGL14.eglCreateContext(display, configs[0], EGL14.EGL_NO_CONTEXT, contextAttribs, 0)
+                        val pbufferAttribs = intArrayOf(EGL14.EGL_WIDTH, 1, EGL14.EGL_HEIGHT, 1, EGL14.EGL_NONE)
+                        val eglSurface = EGL14.eglCreatePbufferSurface(display, configs[0], pbufferAttribs, 0)
+                        if (eglSurface != null && eglSurface != EGL14.EGL_NO_SURFACE) {
+                            EGL14.eglMakeCurrent(display, eglSurface, eglSurface, eglContext)
+
+                            renderer = GLES20.glGetString(GLES20.GL_RENDERER)
+                            vendor = GLES20.glGetString(GLES20.GL_VENDOR)
+                            apiVersion = GLES20.glGetString(GLES20.GL_VERSION)
+
+                            EGL14.eglMakeCurrent(display, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT)
+                            EGL14.eglDestroySurface(display, eglSurface)
+                        }
+                        if (eglContext != null && eglContext != EGL14.EGL_NO_CONTEXT) {
+                            EGL14.eglDestroyContext(display, eglContext)
+                        }
+                    }
+                    EGL14.eglTerminate(display)
+                }
+            }
+        } catch (t: Throwable) {
+            // EGL unavailable or not supported in test environment
+        }
+
+        if (apiVersion == null) {
+            val currentContext = context
+            try {
+                val am = currentContext?.getSystemService(Context.ACTIVITY_SERVICE) as? android.app.ActivityManager
+                val glVer = am?.deviceConfigurationInfo?.glEsVersion
+                if (!glVer.isNullOrBlank()) {
+                    apiVersion = glVer
+                }
+            } catch (t: Throwable) {
+                // Ignored
+            }
+        }
+
+        val hardware = try { Build.HARDWARE } catch (t: Throwable) { null }
+        val board = try { Build.BOARD } catch (t: Throwable) { null }
+
+        val resolvedVendor = vendor?.takeIf { it.isNotBlank() }
+            ?: if (hardware?.contains("qcom", ignoreCase = true) == true) "Qualcomm"
+               else if (hardware?.contains("mali", ignoreCase = true) == true) "ARM"
+               else "Android"
+
+        val resolvedRenderer = renderer?.takeIf { it.isNotBlank() }
+            ?: hardware?.takeIf { it.isNotBlank() }
+            ?: board?.takeIf { it.isNotBlank() }
+            ?: "OpenGL ES Generic Renderer"
+
+        return PlatformGpuInfo(
+            vendor = resolvedVendor,
+            renderer = resolvedRenderer,
+            apiFamily = "OpenGL ES",
+            apiVersion = apiVersion ?: "3.0",
+            totalVramBytes = null,
+            isUnifiedMemory = true
         )
     }
 

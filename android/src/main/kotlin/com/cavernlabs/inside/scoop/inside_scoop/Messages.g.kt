@@ -521,6 +521,63 @@ data class PlatformStorageInfo (
     return "PlatformStorageInfo(totalBytes=$totalBytes, availableBytes=$availableBytes, appStorageBytes=$appStorageBytes, isRemovable=$isRemovable)"
   }
 }
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class PlatformGpuInfo (
+  val vendor: String,
+  val renderer: String,
+  val apiFamily: String? = null,
+  val apiVersion: String? = null,
+  val totalVramBytes: Long? = null,
+  val isUnifiedMemory: Boolean? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): PlatformGpuInfo {
+      val vendor = pigeonVar_list[0] as String
+      val renderer = pigeonVar_list[1] as String
+      val apiFamily = pigeonVar_list[2] as String?
+      val apiVersion = pigeonVar_list[3] as String?
+      val totalVramBytes = pigeonVar_list[4] as Long?
+      val isUnifiedMemory = pigeonVar_list[5] as Boolean?
+      return PlatformGpuInfo(vendor, renderer, apiFamily, apiVersion, totalVramBytes, isUnifiedMemory)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      vendor,
+      renderer,
+      apiFamily,
+      apiVersion,
+      totalVramBytes,
+      isUnifiedMemory,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as PlatformGpuInfo
+    return MessagesPigeonUtils.deepEquals(this.vendor, other.vendor) && MessagesPigeonUtils.deepEquals(this.renderer, other.renderer) && MessagesPigeonUtils.deepEquals(this.apiFamily, other.apiFamily) && MessagesPigeonUtils.deepEquals(this.apiVersion, other.apiVersion) && MessagesPigeonUtils.deepEquals(this.totalVramBytes, other.totalVramBytes) && MessagesPigeonUtils.deepEquals(this.isUnifiedMemory, other.isUnifiedMemory)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.vendor)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.renderer)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.apiFamily)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.apiVersion)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.totalVramBytes)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.isUnifiedMemory)
+    return result
+  }
+  override fun toString(): String {
+    return "PlatformGpuInfo(vendor=$vendor, renderer=$renderer, apiFamily=$apiFamily, apiVersion=$apiVersion, totalVramBytes=$totalVramBytes, isUnifiedMemory=$isUnifiedMemory)"
+  }
+}
 private open class MessagesPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -554,6 +611,11 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
           PlatformStorageInfo.fromList(it)
         }
       }
+      135.toByte() -> {
+        (readValue(buffer) as? List<Any?>)?.let {
+          PlatformGpuInfo.fromList(it)
+        }
+      }
       else -> super.readValueOfType(type, buffer)
     }
   }
@@ -583,6 +645,10 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
         stream.write(134)
         writeValue(stream, value.toList())
       }
+      is PlatformGpuInfo -> {
+        stream.write(135)
+        writeValue(stream, value.toList())
+      }
       else -> super.writeValue(stream, value)
     }
   }
@@ -597,6 +663,7 @@ interface InsideScoopHostApi {
   fun getCpuInfo(): PlatformCpuInfo
   fun getMemoryInfo(): PlatformMemoryInfo
   fun getStorageInfo(): PlatformStorageInfo
+  fun getGpuInfo(): PlatformGpuInfo
 
   companion object {
     /** The codec used by InsideScoopHostApi. */
@@ -703,6 +770,21 @@ interface InsideScoopHostApi {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
               listOf(api.getStorageInfo())
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getGpuInfo$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.getGpuInfo())
             } catch (exception: Throwable) {
               MessagesPigeonUtils.wrapError(exception)
             }

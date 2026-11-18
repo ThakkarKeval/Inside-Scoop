@@ -529,6 +529,66 @@ struct PlatformStorageInfo: Hashable, CustomStringConvertible {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct PlatformGpuInfo: Hashable, CustomStringConvertible {
+  var vendor: String
+  var renderer: String
+  var apiFamily: String? = nil
+  var apiVersion: String? = nil
+  var totalVramBytes: Int64? = nil
+  var isUnifiedMemory: Bool? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> PlatformGpuInfo? {
+    let vendor = pigeonVar_list[0] as! String
+    let renderer = pigeonVar_list[1] as! String
+    let apiFamily: String? = nilOrValue(pigeonVar_list[2])
+    let apiVersion: String? = nilOrValue(pigeonVar_list[3])
+    let totalVramBytes: Int64? = nilOrValue(pigeonVar_list[4])
+    let isUnifiedMemory: Bool? = nilOrValue(pigeonVar_list[5])
+
+    return PlatformGpuInfo(
+      vendor: vendor,
+      renderer: renderer,
+      apiFamily: apiFamily,
+      apiVersion: apiVersion,
+      totalVramBytes: totalVramBytes,
+      isUnifiedMemory: isUnifiedMemory
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      vendor,
+      renderer,
+      apiFamily,
+      apiVersion,
+      totalVramBytes,
+      isUnifiedMemory,
+    ]
+  }
+  static func == (lhs: PlatformGpuInfo, rhs: PlatformGpuInfo) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return MessagesPigeonInternal.deepEquals(lhs.vendor, rhs.vendor) && MessagesPigeonInternal.deepEquals(lhs.renderer, rhs.renderer) && MessagesPigeonInternal.deepEquals(lhs.apiFamily, rhs.apiFamily) && MessagesPigeonInternal.deepEquals(lhs.apiVersion, rhs.apiVersion) && MessagesPigeonInternal.deepEquals(lhs.totalVramBytes, rhs.totalVramBytes) && MessagesPigeonInternal.deepEquals(lhs.isUnifiedMemory, rhs.isUnifiedMemory)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("PlatformGpuInfo")
+    MessagesPigeonInternal.deepHash(value: vendor, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: renderer, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: apiFamily, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: apiVersion, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: totalVramBytes, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: isUnifiedMemory, hasher: &hasher)
+  }
+
+  public var description: String {
+    return "PlatformGpuInfo(vendor: \(String(describing: vendor)), renderer: \(String(describing: renderer)), apiFamily: \(String(describing: apiFamily)), apiVersion: \(String(describing: apiVersion)), totalVramBytes: \(String(describing: totalVramBytes)), isUnifiedMemory: \(String(describing: isUnifiedMemory)))"
+  }
+}
+
 private class MessagesPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -544,6 +604,8 @@ private class MessagesPigeonCodecReader: FlutterStandardReader {
       return PlatformMemoryInfo.fromList(self.readValue() as! [Any?])
     case 134:
       return PlatformStorageInfo.fromList(self.readValue() as! [Any?])
+    case 135:
+      return PlatformGpuInfo.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -569,6 +631,9 @@ private class MessagesPigeonCodecWriter: FlutterStandardWriter {
       super.writeValue(value.toList())
     } else if let value = value as? PlatformStorageInfo {
       super.writeByte(134)
+      super.writeValue(value.toList())
+    } else if let value = value as? PlatformGpuInfo {
+      super.writeByte(135)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -599,6 +664,7 @@ protocol InsideScoopHostApi {
   func getCpuInfo() throws -> PlatformCpuInfo
   func getMemoryInfo() throws -> PlatformMemoryInfo
   func getStorageInfo() throws -> PlatformStorageInfo
+  func getGpuInfo() throws -> PlatformGpuInfo
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -697,6 +763,19 @@ class InsideScoopHostApiSetup {
       }
     } else {
       getStorageInfoChannel.setMessageHandler(nil)
+    }
+    let getGpuInfoChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getGpuInfo\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getGpuInfoChannel.setMessageHandler { _, reply in
+        do {
+          let result = try api.getGpuInfo()
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      getGpuInfoChannel.setMessageHandler(nil)
     }
   }
 }

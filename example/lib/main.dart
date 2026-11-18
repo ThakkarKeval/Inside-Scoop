@@ -23,6 +23,7 @@ class _MyAppState extends State<MyApp> {
   CpuInfo? _cpuInfo;
   MemoryInfo? _memoryInfo;
   StorageInfo? _storageInfo;
+  GpuInfo? _gpuInfo;
   Map<ScoopFeature, ScoopCapabilityInfo> _capabilities = {};
   final _insideScoopPlugin = InsideScoop();
 
@@ -48,6 +49,7 @@ class _MyAppState extends State<MyApp> {
     final cpuResult = await _insideScoopPlugin.cpu.info();
     final memoryResult = await _insideScoopPlugin.memory.info();
     final storageResult = await _insideScoopPlugin.storage.info();
+    final gpuResult = await _insideScoopPlugin.gpu.info();
     final capabilities = await _insideScoopPlugin.capabilities.getAll();
 
     if (!mounted) return;
@@ -60,6 +62,7 @@ class _MyAppState extends State<MyApp> {
       _cpuInfo = cpuResult.valueOrNull;
       _memoryInfo = memoryResult.valueOrNull;
       _storageInfo = storageResult.valueOrNull;
+      _gpuInfo = gpuResult.valueOrNull;
       _capabilities = capabilities;
     });
   }
@@ -147,6 +150,23 @@ class _MyAppState extends State<MyApp> {
                 Text('Removable Storage: ${_storageInfo!.isRemovable}'),
                 if (_storageInfo!.appStorageBytes != null)
                   Text('App Data + Cache: ${_storageInfo!.appStorageMb?.toStringAsFixed(1)} MB'),
+                const SizedBox(height: 12),
+              ],
+              if (_gpuInfo != null) ...[
+                const Text(
+                  'Graphics Processing Unit (GPU)',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text('Vendor: ${_gpuInfo!.vendor}'),
+                Text('Renderer: ${_gpuInfo!.renderer}'),
+                if (_gpuInfo!.apiFamily != null)
+                  Text('API Family: ${_gpuInfo!.apiFamily}'),
+                if (_gpuInfo!.apiVersion != null)
+                  Text('API Version: ${_gpuInfo!.apiVersion}'),
+                if (_gpuInfo!.totalVramMb != null)
+                  Text('VRAM: ${_gpuInfo!.totalVramMb} MB (${_gpuInfo!.totalVramGb?.toStringAsFixed(1)} GB)'),
+                if (_gpuInfo!.isUnifiedMemory != null)
+                  Text('Unified Memory: ${_gpuInfo!.isUnifiedMemory}'),
                 const SizedBox(height: 12),
               ],
               if (_capabilities.isNotEmpty) ...[

@@ -1,6 +1,7 @@
 #include "inside_scoop_plugin.h"
 
 #include <windows.h>
+#include <dxgi.h>
 #include <psapi.h>
 #include <VersionHelpers.h>
 
@@ -314,6 +315,86 @@ ErrorOr<PlatformStorageInfo> InsideScoopPlugin::GetStorageInfo() {
 
   PlatformStorageInfo storage_info(total, available, false);
   return storage_info;
+}
+
+ErrorOr<PlatformGpuInfo> InsideScoopPlugin::GetGpuInfo() {
+  std::string renderer = "Windows Display Adapter";
+  std::string vendor = "Unknown";
+  int64_t vram_bytes = 0;
+  bool is_unified = false;
+
+  HMODULE dxgi_lib = LoadLibraryW(L"dxgi.dll");
+  if (dxgi_lib) {
+    typedef HRESULT (WINAPI *CreateDXGIFactoryFn)(REFIID, void**);
+    auto create_factory = reinterpret_cast<CreateDXGIFactoryFn>(
+        GetProcAddress(dxgi_lib, "CreateDXGIFactory"));
+    if (create_factory) {
+      IDXGIFactory* factory = nullptr;
+      if (SUCCEEDED(create_factory(__uuidof(IDXGIFactory), reinterpret_cast<void**>(&factory))) && factory) {
+        IDXGIAdapter* adapter = nullptr;
+        if (SUCCEEDED(factory->EnumAdapters(0, &adapter)) && adapter) {
+          DXGI_ADAPTER_DESC desc;
+          if (SUCCEEDED(adapter->GetDesc(&desc))) {
+            std::wstring desc_w(desc.Description);
+            renderer = std::string(desc_w.begin(), desc_w.end());
+            vram_bytes = static_cast<int64_t>(desc.DedicatedVideoMemory);
+
+            switch (desc.VendorId) {
+              case 0x10DE:
+                vendor = "NVIDIA";
+                break;
+              case 0x1002:
+              case 0x1022:
+                vendor = "AMD";
+                break;
+              case 0x8086:
+                vendor = "Intel";
+                break;
+              case 0x1414:
+                vendor = "Microsoft";
+                break;
+              case 0x5143:
+                vendor = "Qualcomm";
+                break;
+              default:
+                vendor = "Unknown";
+                break;
+            }
+
+            if (vram_bytes == 0) {
+              is_unified = true;
+            }
+          }
+          adapter->Release();
+        }
+        factory->Release();
+      }
+    }
+    FreeLibrary(dxgi_lib);
+  }
+
+  if (renderer == "Windows Display Adapter") {
+    DISPLAY_DEVICEW dd;
+    dd.cb = sizeof(dd);
+    if (EnumDisplayDevicesW(nullptr, 0, &dd, 0)) {
+      std::wstring dev_str(dd.DeviceString);
+      if (!dev_str.empty()) {
+        renderer = std::string(dev_str.begin(), dev_str.end());
+      }
+    }
+  }
+
+  PlatformGpuInfo gpu_info(vendor, renderer);
+  std::string api_family = "DirectX";
+  std::string api_version = "12";
+  gpu_info.set_api_family(api_family);
+  gpu_info.set_api_version(api_version);
+  if (vram_bytes > 0) {
+    gpu_info.set_total_vram_bytes(vram_bytes);
+  }
+  gpu_info.set_is_unified_memory(is_unified);
+
+  return gpu_info;
 }
 
 }  // namespace inside_scoop

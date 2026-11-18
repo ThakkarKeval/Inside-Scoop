@@ -2,6 +2,7 @@ import 'inside_scoop_platform_interface.dart';
 import 'src/core/models/app_info.dart';
 import 'src/core/models/cpu_info.dart';
 import 'src/core/models/device_info.dart';
+import 'src/core/models/gpu_info.dart';
 import 'src/core/models/memory_info.dart';
 import 'src/core/models/os_info.dart';
 import 'src/core/models/storage_info.dart';
@@ -90,6 +91,19 @@ class MethodChannelInsideScoop extends InsideScoopPlatform {
       availableBytes: platformStorage.availableBytes,
       appStorageBytes: platformStorage.appStorageBytes,
       isRemovable: platformStorage.isRemovable,
+    );
+  }
+
+  @override
+  Future<GpuInfo> getGpuInfo() async {
+    final platformGpu = await _hostApi.getGpuInfo();
+    return GpuInfo(
+      vendor: platformGpu.vendor,
+      renderer: platformGpu.renderer,
+      apiFamily: platformGpu.apiFamily,
+      apiVersion: platformGpu.apiVersion,
+      totalVramBytes: platformGpu.totalVramBytes,
+      isUnifiedMemory: platformGpu.isUnifiedMemory,
     );
   }
 }
