@@ -33,37 +33,116 @@ dependencies:
 
 ### Basic Usage
 
+You can use the convenient shared singleton `InsideScoop.instance` or create a new `InsideScoop()` instance:
+
 ```dart
 import 'package:inside_scoop/inside_scoop.dart';
 
 void main() async {
-  // Application Information
-  final app = await InsideScoop.app.getInfo();
-  if (app case ScoopAvailable(:final value)) {
-    print('Running ${value.appName} v${value.version}');
+  final scoop = InsideScoop.instance;
+
+  // 1. Application Information
+  final appResult = await scoop.app.getInfo();
+  if (appResult case ScoopAvailable(:final value)) {
+    print('App: ${value.appName} (${value.packageName})');
+    print('Version: ${value.version}+${value.buildNumber}');
+    print('Store: ${value.installerStore}');
   }
 
-  // Device & OS Metadata
-  final device = await InsideScoop.device.getInfo();
-  final os = await InsideScoop.os.getInfo();
+  // 2. Device & OS Metadata
+  final deviceResult = await scoop.device.getInfo();
+  final osResult = await scoop.os.getInfo();
+  if (deviceResult case ScoopAvailable(:final value)) {
+    print('Device: ${value.manufacturer} ${value.model} (${value.category.name})');
+    print('Physical device: ${value.isPhysicalDevice}');
+  }
+  if (osResult case ScoopAvailable(:final value)) {
+    print('OS: ${value.name} ${value.version} (${value.architecture})');
+  }
 
-  // Hardware Specs
-  final cpu = await InsideScoop.cpu.getInfo();
-  final memory = await InsideScoop.memory.getInfo();
-  final storage = await InsideScoop.storage.getInfo();
-  final gpu = await InsideScoop.gpu.getInfo();
-  final battery = await InsideScoop.battery.getInfo();
+  // 3. Processor / CPU
+  final cpuResult = await scoop.cpu.getInfo();
+  if (cpuResult case ScoopAvailable(:final value)) {
+    print('CPU: ${value.modelName ?? "Unknown"} (${value.logicalCores} cores)');
+  }
 
-  // Network Snapshot & Observable Stream
-  final network = await InsideScoop.network.getInfo();
-  InsideScoop.network.watch().listen((status) {
-    print('Connectivity changed: ${status.isConnected}');
+  // 4. Memory (RAM)
+  final memoryResult = await scoop.memory.getInfo();
+  if (memoryResult case ScoopAvailable(:final value)) {
+    print('RAM: ${value.availablePhysicalMb} MB / ${value.totalPhysicalMb} MB available');
+    print('Memory usage: ${value.usagePercentage.toStringAsFixed(1)}%');
+  }
+
+  // 5. Storage
+  final storageResult = await scoop.storage.getInfo();
+  if (storageResult case ScoopAvailable(:final value)) {
+    print('Storage: ${value.availableGb.toStringAsFixed(1)} GB / ${value.totalGb.toStringAsFixed(1)} GB free');
+  }
+
+  // 6. GPU & Graphics
+  final gpuResult = await scoop.gpu.getInfo();
+  if (gpuResult case ScoopAvailable(:final value)) {
+    print('GPU: ${value.renderer} (${value.vendor})');
+    print('Graphics API: ${value.apiFamily} ${value.apiVersion ?? ""}');
+  }
+
+  // 7. Battery & Power
+  final batteryResult = await scoop.battery.getInfo();
+  if (batteryResult case ScoopAvailable(:final value)) {
+    print('Battery: ${value.batteryLevel}% (${value.batteryState.name})');
+    print('Power source: ${value.powerSource.name}');
+  }
+
+  // 8. Network Snapshot & Live Observable Stream
+  final networkResult = await scoop.network.getInfo();
+  if (networkResult case ScoopAvailable(:final value)) {
+    print('Network: ${value.primaryType.name} (connected: ${value.isConnected})');
+  }
+
+  // Subscribe to live connectivity updates
+  final subscription = scoop.network.watch().listen((network) {
+    print('Live connection change: ${network.primaryType.name} (online: ${network.isConnected})');
   });
 
-  // Diagnostic Report
-  final report = await InsideScoop.diagnostics.generateReport();
+  // 9. Real-time Lifecycle-Aware System Monitoring
+  final monitoringSub = scoop.monitoring
+      .startMonitoring(
+        config: const MonitoringConfig(
+          interval: Duration(seconds: 2),
+          sampleCpu: true,
+          sampleMemory: true,
+          sampleBattery: true,
+          sampleNetwork: true,
+        ),
+      )
+      .listen((snapshot) {
+        print('Snapshot at ${snapshot.timestamp}: RAM free = ${snapshot.memory?.availablePhysicalMb} MB');
+      });
+
+  // 10. Comprehensive Diagnostics & Redacted Markdown Export
+  final report = await scoop.diagnostics.generateReport(
+    options: const DiagnosticOptions(redactSensitiveData: true),
+  );
   print(report.toMarkdown());
 }
 ```
+
+---
+
+## Result Handling: `ScoopResult<T>`
+
+All one-shot query APIs return a type-safe sealed class `ScoopResult<T>` to gracefully handle platform permissions and restrictions without unhandled crashes:
+
+```dart
+final result = await InsideScoop.instance.battery.getInfo();
+
+switch (result) {
+  case ScoopAvailable(:final value):
+    print('Battery level: ${value.batteryLevel}%');
+  case ScoopUnavailable(:final reason, :final message):
+    print('Battery data unavailable: $reason ($message)');
+}
+```
+
 
 

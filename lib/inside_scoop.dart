@@ -41,61 +41,84 @@ export 'src/features/storage/storage_service.dart';
 
 /// The primary entry point for inside_scoop system information APIs.
 class InsideScoop {
+  /// Creates a new instance of [InsideScoop].
+  ///
+  /// Optionally provide a custom [InsideScoopPlatform] for testing.
   InsideScoop([InsideScoopPlatform? platform])
     : _platform = platform,
-      app = AppService(platform),
-      os = OsService(platform),
-      device = DeviceService(platform),
-      capabilities = CapabilitiesService(platform),
-      cpu = CpuService(platform),
-      memory = MemoryService(platform),
-      storage = StorageService(platform),
-      gpu = GpuService(platform),
-      battery = BatteryService(platform),
-      network = NetworkService(platform),
-      monitoring = MonitoringService(platform),
-      diagnostics = DiagnosticsService(platform);
+      _app = AppService(platform),
+      _os = OsService(platform),
+      _device = DeviceService(platform),
+      _capabilities = CapabilitiesService(platform),
+      _cpu = CpuService(platform),
+      _memory = MemoryService(platform),
+      _storage = StorageService(platform),
+      _gpu = GpuService(platform),
+      _battery = BatteryService(platform),
+      _network = NetworkService(platform),
+      _monitoring = MonitoringService(platform),
+      _diagnostics = DiagnosticsService(platform);
 
   final InsideScoopPlatform? _platform;
 
   InsideScoopPlatform get _effectivePlatform =>
       _platform ?? InsideScoopPlatform.instance;
 
+  /// Default shared singleton instance for convenient access:
+  ///
+  /// ```dart
+  /// final app = await InsideScoop.instance.app.getInfo();
+  /// ```
+  static final InsideScoop instance = InsideScoop();
+
+  final AppService _app;
+  final OsService _os;
+  final DeviceService _device;
+  final CapabilitiesService _capabilities;
+  final CpuService _cpu;
+  final MemoryService _memory;
+  final StorageService _storage;
+  final GpuService _gpu;
+  final BatteryService _battery;
+  final NetworkService _network;
+  final MonitoringService _monitoring;
+  final DiagnosticsService _diagnostics;
+
   /// Application information service.
-  final AppService app;
+  AppService get app => _app;
 
   /// Operating system metadata service.
-  final OsService os;
+  OsService get os => _os;
 
   /// Hardware and device metadata service.
-  final DeviceService device;
+  DeviceService get device => _device;
 
   /// System and feature capability detection service.
-  final CapabilitiesService capabilities;
+  CapabilitiesService get capabilities => _capabilities;
 
   /// Processor specifications and CPU utilization service.
-  final CpuService cpu;
+  CpuService get cpu => _cpu;
 
   /// System physical memory and process RAM consumption service.
-  final MemoryService memory;
+  MemoryService get memory => _memory;
 
   /// Primary storage volume capacities and application disk usage service.
-  final StorageService storage;
+  StorageService get storage => _storage;
 
   /// Graphics processing unit (GPU), renderer, and graphics API metrics service.
-  final GpuService gpu;
+  GpuService get gpu => _gpu;
 
   /// Battery level, charging state, power source, and power saver mode service.
-  final BatteryService battery;
+  BatteryService get battery => _battery;
 
   /// Network connectivity status, active transport mediums, and live observable streams service.
-  final NetworkService network;
+  NetworkService get network => _network;
 
   /// Continuous, lifecycle-aware system metrics monitoring and snapshot service.
-  final MonitoringService monitoring;
+  MonitoringService get monitoring => _monitoring;
 
   /// Comprehensive diagnostic reporting, privacy redaction, and multi-subsystem aggregation service.
-  final DiagnosticsService diagnostics;
+  DiagnosticsService get diagnostics => _diagnostics;
 
   /// Retrieves the platform version string.
   Future<String?> getPlatformVersion() {
