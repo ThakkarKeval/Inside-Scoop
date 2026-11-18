@@ -4,6 +4,7 @@ import 'src/features/battery/battery_service.dart';
 import 'src/features/capabilities/capabilities_service.dart';
 import 'src/features/cpu/cpu_service.dart';
 import 'src/features/device/device_service.dart';
+import 'src/features/diagnostics/diagnostics_service.dart';
 import 'src/features/gpu/gpu_service.dart';
 import 'src/features/memory/memory_service.dart';
 import 'src/features/monitoring/monitoring_service.dart';
@@ -18,6 +19,7 @@ export 'src/core/models/app_info.dart';
 export 'src/core/models/battery_info.dart';
 export 'src/core/models/cpu_info.dart';
 export 'src/core/models/device_info.dart';
+export 'src/core/models/diagnostic_report.dart';
 export 'src/core/models/gpu_info.dart';
 export 'src/core/models/memory_info.dart';
 export 'src/core/models/network_info.dart';
@@ -29,6 +31,7 @@ export 'src/features/battery/battery_service.dart';
 export 'src/features/capabilities/capabilities_service.dart';
 export 'src/features/cpu/cpu_service.dart';
 export 'src/features/device/device_service.dart';
+export 'src/features/diagnostics/diagnostics_service.dart';
 export 'src/features/gpu/gpu_service.dart';
 export 'src/features/memory/memory_service.dart';
 export 'src/features/monitoring/monitoring_service.dart';
@@ -50,7 +53,8 @@ class InsideScoop {
       gpu = GpuService(platform),
       battery = BatteryService(platform),
       network = NetworkService(platform),
-      monitoring = MonitoringService(platform);
+      monitoring = MonitoringService(platform),
+      diagnostics = DiagnosticsService(platform);
 
   final InsideScoopPlatform? _platform;
 
@@ -89,6 +93,9 @@ class InsideScoop {
 
   /// Continuous, lifecycle-aware system metrics monitoring and snapshot service.
   final MonitoringService monitoring;
+
+  /// Comprehensive diagnostic reporting, privacy redaction, and multi-subsystem aggregation service.
+  final DiagnosticsService diagnostics;
 
   /// Retrieves the platform version string.
   Future<String?> getPlatformVersion() {

@@ -263,4 +263,25 @@ void main() {
     expect(snapshot.battery, isNotNull);
     expect(snapshot.network, isNotNull);
   });
+
+  test('diagnostics.generateReport produces consolidated report with Markdown export', () async {
+    final InsideScoop insideScoopPlugin = InsideScoop();
+    final MockInsideScoopPlatform fakePlatform = MockInsideScoopPlatform();
+    InsideScoopPlatform.instance = fakePlatform;
+
+    final report = await insideScoopPlugin.diagnostics.generateReport();
+    expect(report.app?.appName, equals('InsideScoopMock'));
+    expect(report.os?.name, equals('MockOS'));
+    expect(report.device?.model, equals('MockDevice'));
+    expect(report.cpu?.logicalCores, equals(8));
+    expect(report.memory?.isLowMemory, isFalse);
+    expect(report.storage?.totalBytes, equals(137438953472));
+    expect(report.gpu?.vendor, equals('MockVendor'));
+    expect(report.battery?.batteryLevel, equals(92));
+    expect(report.network?.isConnected, isTrue);
+
+    final md = report.toMarkdown();
+    expect(md, contains('# System Diagnostic Report'));
+    expect(md, contains('InsideScoopMock'));
+  });
 }

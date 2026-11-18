@@ -100,3 +100,10 @@
 - Lifecycle-aware sampling via Flutter's `AppLifecycleListener` / `WidgetsBindingObserver`: automatically suspends background timers to prevent battery drain.
 - Highly configurable cadence (`MonitoringConfig.interval`) and selective domain filtering (`sampleCpu`, `sampleMemory`, `sampleBattery`, `sampleNetwork`).
 - Zero-leak stream architecture: cancels timers and unregisters lifecycle listeners upon stream unsubscribe.
+
+### Phase 11: Diagnostics & Reporting (`DiagnosticsService`)
+- Aggregated `DiagnosticReport` providing a complete point-in-time system audit combining App, OS, Device, CPU, RAM, Storage, GPU, Battery, Network, and Platform Capabilities.
+- Configurable `DiagnosticOptions` controlling which subsystems to audit and whether to perform privacy redactions.
+- Built-in PII and secret sanitization: automatically masks build signing signatures, device identifiers, and sensitive fingerprint data when `redactSensitiveData: true` (default).
+- Multiple serialization targets: `toMap()` / `fromMap()`, `toJson()` / `fromJson()`, and a comprehensive GitHub-flavored markdown generator `toMarkdown()` ready for issue trackers, bug reports, and user feedback.
+

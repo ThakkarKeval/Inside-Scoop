@@ -77,6 +77,36 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
+  Future<void> _showDiagnosticReportDialog(BuildContext context) async {
+    final report = await _insideScoopPlugin.diagnostics.generateReport();
+    if (!context.mounted) return;
+
+    showDialog<void>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('System Diagnostic Report'),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: 400,
+            child: SingleChildScrollView(
+              child: SelectableText(
+                report.toMarkdown(),
+                style: const TextStyle(fontFamily: 'monospace', fontSize: 11),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
     _networkSubscription?.cancel();
@@ -125,13 +155,24 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: const Text('inside_scoop Example')),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+      home: Builder(
+        builder: (scaffoldContext) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('inside_scoop Example'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.receipt_long),
+                  tooltip: 'Diagnostic Report',
+                  onPressed: () => _showDiagnosticReportDialog(scaffoldContext),
+                ),
+              ],
+            ),
+            body: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
               Text('Running on: $_platformVersion\n'),
               if (_appInfo != null) ...[
                 const Text(
@@ -358,7 +399,9 @@ class _MyAppState extends State<MyApp> {
             ],
           ),
         ),
-      ),
-    );
+      );
+    },
+  ),
+);
   }
 }
