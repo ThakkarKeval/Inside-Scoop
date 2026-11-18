@@ -82,6 +82,15 @@ class FakeInsideScoopHostApi extends InsideScoopHostApi {
     isLowPowerMode: false,
     temperatureCelsius: 27.5,
   );
+
+  @override
+  Future<PlatformNetworkInfo> getNetworkInfo() async => PlatformNetworkInfo(
+    statusIndex: 0, // connected
+    primaryTypeIndex: 0, // wifi
+    availableTypeIndices: [0, 1], // wifi, cellular
+    isMetered: false,
+    isVpnActive: false,
+  );
 }
 
 void main() {
@@ -194,5 +203,18 @@ void main() {
     expect(batteryInfo.powerSource, equals(PowerSource.battery));
     expect(batteryInfo.isLowPowerMode, isFalse);
     expect(batteryInfo.temperatureCelsius, equals(27.5));
+  });
+
+  test('getNetworkInfo converts PlatformNetworkInfo to NetworkInfo', () async {
+    final platform = MethodChannelInsideScoop(
+      hostApi: FakeInsideScoopHostApi(),
+    );
+    final netInfo = await platform.getNetworkInfo();
+    expect(netInfo.status, equals(NetworkStatus.connected));
+    expect(netInfo.primaryType, equals(NetworkConnectionType.wifi));
+    expect(netInfo.availableTypes.length, equals(2));
+    expect(netInfo.isMetered, isFalse);
+    expect(netInfo.isVpnActive, isFalse);
+    expect(netInfo.isConnected, isTrue);
   });
 }

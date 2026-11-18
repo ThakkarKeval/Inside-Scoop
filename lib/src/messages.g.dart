@@ -637,6 +637,71 @@ class PlatformBatteryInfo {
   }
 }
 
+class PlatformNetworkInfo {
+  PlatformNetworkInfo({
+    required this.statusIndex,
+    required this.primaryTypeIndex,
+    required this.availableTypeIndices,
+    this.isMetered,
+    this.isVpnActive,
+  });
+
+  int statusIndex;
+
+  int primaryTypeIndex;
+
+  List<int?> availableTypeIndices;
+
+  bool? isMetered;
+
+  bool? isVpnActive;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      statusIndex,
+      primaryTypeIndex,
+      availableTypeIndices,
+      isMetered,
+      isVpnActive,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static PlatformNetworkInfo decode(Object result) {
+    result as List<Object?>;
+    return PlatformNetworkInfo(
+      statusIndex: result[0]! as int,
+      primaryTypeIndex: result[1]! as int,
+      availableTypeIndices: (result[2]! as List<Object?>).cast<int?>(),
+      isMetered: result[3] as bool?,
+      isVpnActive: result[4] as bool?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! PlatformNetworkInfo || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(statusIndex, other.statusIndex) && _deepEquals(primaryTypeIndex, other.primaryTypeIndex) && _deepEquals(availableTypeIndices, other.availableTypeIndices) && _deepEquals(isMetered, other.isMetered) && _deepEquals(isVpnActive, other.isVpnActive);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'PlatformNetworkInfo(statusIndex: $statusIndex, primaryTypeIndex: $primaryTypeIndex, availableTypeIndices: $availableTypeIndices, isMetered: $isMetered, isVpnActive: $isVpnActive)';
+  }
+}
+
 
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
@@ -669,6 +734,9 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is PlatformBatteryInfo) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
+    }    else if (value is PlatformNetworkInfo) {
+      buffer.putUint8(137);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -693,6 +761,8 @@ class _PigeonCodec extends StandardMessageCodec {
         return PlatformGpuInfo.decode(readValue(buffer)!);
       case 136:
         return PlatformBatteryInfo.decode(readValue(buffer)!);
+      case 137:
+        return PlatformNetworkInfo.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -876,5 +946,23 @@ class InsideScoopHostApi {
     )
     ;
     return pigeonVar_replyValue! as PlatformBatteryInfo;
+  }
+
+  Future<PlatformNetworkInfo> getNetworkInfo() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getNetworkInfo$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return pigeonVar_replyValue! as PlatformNetworkInfo;
   }
 }

@@ -497,6 +497,59 @@ class PlatformBatteryInfo {
 };
 
 
+// Generated class from Pigeon that represents data sent in messages.
+class PlatformNetworkInfo {
+ public:
+  // Constructs an object setting all non-nullable fields.
+  explicit PlatformNetworkInfo(
+    int64_t status_index,
+    int64_t primary_type_index,
+    const ::flutter::EncodableList& available_type_indices);
+
+  // Constructs an object setting all fields.
+  explicit PlatformNetworkInfo(
+    int64_t status_index,
+    int64_t primary_type_index,
+    const ::flutter::EncodableList& available_type_indices,
+    const bool* is_metered,
+    const bool* is_vpn_active);
+
+  int64_t status_index() const;
+  void set_status_index(int64_t value_arg);
+
+  int64_t primary_type_index() const;
+  void set_primary_type_index(int64_t value_arg);
+
+  const ::flutter::EncodableList& available_type_indices() const;
+  void set_available_type_indices(const ::flutter::EncodableList& value_arg);
+
+  const bool* is_metered() const;
+  void set_is_metered(const bool* value_arg);
+  void set_is_metered(bool value_arg);
+
+  const bool* is_vpn_active() const;
+  void set_is_vpn_active(const bool* value_arg);
+  void set_is_vpn_active(bool value_arg);
+
+  bool operator==(const PlatformNetworkInfo& other) const;
+  bool operator!=(const PlatformNetworkInfo& other) const;
+  /// Returns a hash code value for the object. This method is supported for the benefit of hash tables.
+  size_t Hash() const;
+  /// Stream output operator for formatted string representation.
+  friend std::ostream& operator<<(std::ostream& os, const PlatformNetworkInfo& obj);
+ private:
+  static PlatformNetworkInfo FromEncodableList(const ::flutter::EncodableList& list);
+  ::flutter::EncodableList ToEncodableList() const;
+  friend class InsideScoopHostApi;
+  friend class PigeonInternalCodecSerializer;
+  int64_t status_index_;
+  int64_t primary_type_index_;
+  ::flutter::EncodableList available_type_indices_;
+  std::optional<bool> is_metered_;
+  std::optional<bool> is_vpn_active_;
+};
+
+
 class PigeonInternalCodecSerializer : public ::flutter::StandardCodecSerializer {
  public:
   PigeonInternalCodecSerializer();
@@ -529,6 +582,7 @@ class InsideScoopHostApi {
   virtual ErrorOr<PlatformStorageInfo> GetStorageInfo() = 0;
   virtual ErrorOr<PlatformGpuInfo> GetGpuInfo() = 0;
   virtual ErrorOr<PlatformBatteryInfo> GetBatteryInfo() = 0;
+  virtual ErrorOr<PlatformNetworkInfo> GetNetworkInfo() = 0;
 
   // The codec used by InsideScoopHostApi.
   static const ::flutter::StandardMessageCodec& GetCodec();

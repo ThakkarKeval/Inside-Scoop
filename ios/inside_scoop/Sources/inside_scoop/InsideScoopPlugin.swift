@@ -1,11 +1,18 @@
 import Flutter
 import Metal
+import Network
 import UIKit
 
-public class InsideScoopPlugin: NSObject, FlutterPlugin, InsideScoopHostApi {
+public class InsideScoopPlugin: NSObject, FlutterPlugin, InsideScoopHostApi, FlutterStreamHandler {
+  private var eventSink: FlutterEventSink?
+  private var pathMonitor: NWPathMonitor?
+  private let monitorQueue = DispatchQueue(label: "com.cavernlabs.inside_scoop.network_monitor")
+
   public static func register(with registrar: FlutterPluginRegistrar) {
     let instance = InsideScoopPlugin()
     InsideScoopHostApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
+    let eventChannel = FlutterEventChannel(name: "com.cavernlabs.inside_scoop/network_events", binaryMessenger: registrar.messenger())
+    eventChannel.setStreamHandler(instance)
   }
 
   func getPlatformVersion() throws -> String? {
@@ -275,5 +282,99 @@ public class InsideScoopPlugin: NSObject, FlutterPlugin, InsideScoopHostApi {
       isLowPowerMode: isLowPowerMode,
       temperatureCelsius: nil
     )
+  }
+
+  func getNetworkInfo() throws -> PlatformNetworkInfo {
+    let monitor = NWPathMonitor()
+    let semaphore = DispatchSemaphore(value: 0)
+    var currentPath: NWPath?
+    monitor.pathUpdateHandler = { path in
+      currentPath = path
+      semaphore.signal()
+    }
+    monitor.start(queue: monitorQueue)
+    _ = semaphore.wait(timeout: .now() + 0.1)
+    monitor.cancel()
+
+    return buildPlatformNetworkInfo(path: currentPath)
+  }
+
+  public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+    self.eventSink = events
+    self.pathMonitor = NWPathMonitor()
+    self.pathMonitor?.pathUpdateHandler = { [weak self] path in
+      self?.sendNetworkUpdate(path: path)
+    }
+    self.pathMonitor?.start(queue: monitorQueue)
+    return nil
+  }
+
+  public func onCancel(withArguments arguments: Any?) -> FlutterError? {
+    self.pathMonitor?.cancel()
+    self.pathMonitor = nil
+    self.eventSink = nil
+    return nil
+  }
+
+  private func buildPlatformNetworkInfo(path: NWPath?) -> PlatformNetworkInfo {
+    guard let path = path else {
+      return PlatformNetworkInfo(
+        statusIndex: 2, // unknown
+        primaryTypeIndex: 6, // none
+        availableTypeIndices: [],
+        isMetered: nil,
+        isVpnActive: nil
+      )
+    }
+
+    let isConnected = (path.status == .satisfied)
+    var available: [Int64?] = []
+    var primary: Int64 = 6 // none
+
+    if path.usesInterfaceType(.wifi) {
+      available.append(0) // wifi
+    }
+    if path.usesInterfaceType(.cellular) {
+      available.append(1) // cellular
+    }
+    if path.usesInterfaceType(.wiredEthernet) {
+      available.append(2) // ethernet
+    }
+
+    if path.usesInterfaceType(.wiredEthernet) {
+      primary = 2
+    } else if path.usesInterfaceType(.wifi) {
+      primary = 0
+    } else if path.usesInterfaceType(.cellular) {
+      primary = 1
+    } else if isConnected {
+      primary = 5 // other
+    } else {
+      primary = 6 // none
+    }
+
+    let isMetered = path.isExpensive
+
+    return PlatformNetworkInfo(
+      statusIndex: isConnected ? 0 : 1,
+      primaryTypeIndex: primary,
+      availableTypeIndices: available,
+      isMetered: isMetered,
+      isVpnActive: false
+    )
+  }
+
+  private func sendNetworkUpdate(path: NWPath) {
+    let info = buildPlatformNetworkInfo(path: path)
+    let map: [String: Any] = [
+      "statusIndex": info.statusIndex,
+      "primaryTypeIndex": info.primaryTypeIndex,
+      "availableTypeIndices": info.availableTypeIndices.compactMap { $0 },
+      "isMetered": info.isMetered as Any,
+      "isVpnActive": info.isVpnActive as Any
+    ]
+    DispatchQueue.main.async { [weak self] in
+      self?.eventSink?(map)
+    }
   }
 }

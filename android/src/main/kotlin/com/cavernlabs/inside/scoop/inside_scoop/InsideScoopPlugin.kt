@@ -7,23 +7,38 @@ import android.content.IntentFilter
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
 import android.opengl.EGL14
 import android.opengl.EGLConfig
 import android.opengl.GLES20
 import android.os.BatteryManager
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.os.PowerManager
 import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.plugin.common.EventChannel
 import java.security.MessageDigest
 
-class InsideScoopPlugin(private var context: Context? = null) : FlutterPlugin, InsideScoopHostApi {
+class InsideScoopPlugin(private var context: Context? = null) : FlutterPlugin, InsideScoopHostApi, EventChannel.StreamHandler {
+    private var networkEventChannel: EventChannel? = null
+    private var networkEventSink: EventChannel.EventSink? = null
+    private var networkCallback: ConnectivityManager.NetworkCallback? = null
+
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         context = binding.applicationContext
         InsideScoopHostApi.setUp(binding.binaryMessenger, this)
+        networkEventChannel = EventChannel(binding.binaryMessenger, "com.cavernlabs.inside_scoop/network_events")
+        networkEventChannel?.setStreamHandler(this)
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         InsideScoopHostApi.setUp(binding.binaryMessenger, null)
+        networkEventChannel?.setStreamHandler(null)
+        networkEventChannel = null
+        cleanupNetworkCallback()
         context = null
     }
 
@@ -389,6 +404,170 @@ class InsideScoopPlugin(private var context: Context? = null) : FlutterPlugin, I
             isLowPowerMode = isLowPowerMode,
             temperatureCelsius = tempCelsius
         )
+    }
+
+    override fun getNetworkInfo(): PlatformNetworkInfo {
+        val currentContext = context
+        var statusIndex = 2L // unknown
+        var primaryTypeIndex = 6L // none
+        val availableTypeIndices = mutableListOf<Long>()
+        var isMetered: Boolean? = null
+        var isVpnActive = false
+
+        try {
+            if (currentContext != null) {
+                val cm = currentContext.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+                if (cm != null) {
+                    val activeNetwork = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        cm.activeNetwork
+                    } else null
+
+                    val caps = if (activeNetwork != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        cm.getNetworkCapabilities(activeNetwork)
+                    } else null
+
+                    if (caps != null) {
+                        val hasNet = caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                        statusIndex = if (hasNet) 0L else 1L
+
+                        if (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                            availableTypeIndices.add(0L)
+                        }
+                        if (caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+                            availableTypeIndices.add(1L)
+                        }
+                        if (caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
+                            availableTypeIndices.add(2L)
+                        }
+                        if (caps.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH)) {
+                            availableTypeIndices.add(3L)
+                        }
+                        if (caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
+                            availableTypeIndices.add(4L)
+                            isVpnActive = true
+                        }
+
+                        primaryTypeIndex = when {
+                            caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> 2L
+                            caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> 0L
+                            caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> 1L
+                            caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN) -> 4L
+                            caps.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> 3L
+                            availableTypeIndices.isNotEmpty() -> 5L
+                            else -> 6L
+                        }
+
+                        isMetered = !caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        val info = cm.activeNetworkInfo
+                        if (info != null && info.isConnected) {
+                            statusIndex = 0L
+                            primaryTypeIndex = when (info.type) {
+                                ConnectivityManager.TYPE_WIFI -> {
+                                    availableTypeIndices.add(0L)
+                                    0L
+                                }
+                                ConnectivityManager.TYPE_MOBILE -> {
+                                    availableTypeIndices.add(1L)
+                                    1L
+                                }
+                                ConnectivityManager.TYPE_ETHERNET -> {
+                                    availableTypeIndices.add(2L)
+                                    2L
+                                }
+                                ConnectivityManager.TYPE_BLUETOOTH -> {
+                                    availableTypeIndices.add(3L)
+                                    3L
+                                }
+                                ConnectivityManager.TYPE_VPN -> {
+                                    availableTypeIndices.add(4L)
+                                    isVpnActive = true
+                                    4L
+                                }
+                                else -> 5L
+                            }
+                        } else {
+                            statusIndex = 1L
+                            primaryTypeIndex = 6L
+                        }
+                    }
+                }
+            }
+        } catch (e: Throwable) {
+            // JVM mock JAR fallback
+        }
+
+        return PlatformNetworkInfo(
+            statusIndex = statusIndex,
+            primaryTypeIndex = primaryTypeIndex,
+            availableTypeIndices = availableTypeIndices,
+            isMetered = isMetered,
+            isVpnActive = isVpnActive
+        )
+    }
+
+    override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+        networkEventSink = events
+        sendNetworkUpdate()
+        try {
+            val currentContext = context
+            if (currentContext != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                val cm = currentContext.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+                if (cm != null) {
+                    networkCallback = object : ConnectivityManager.NetworkCallback() {
+                        override fun onAvailable(network: Network) {
+                            sendNetworkUpdate()
+                        }
+                        override fun onLost(network: Network) {
+                            sendNetworkUpdate()
+                        }
+                        override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
+                            sendNetworkUpdate()
+                        }
+                    }
+                    cm.registerDefaultNetworkCallback(networkCallback!!)
+                }
+            }
+        } catch (e: Throwable) {
+            // Ignored in unit tests
+        }
+    }
+
+    override fun onCancel(arguments: Any?) {
+        cleanupNetworkCallback()
+        networkEventSink = null
+    }
+
+    private fun cleanupNetworkCallback() {
+        try {
+            if (networkCallback != null) {
+                val currentContext = context
+                val cm = currentContext?.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+                cm?.unregisterNetworkCallback(networkCallback!!)
+                networkCallback = null
+            }
+        } catch (e: Throwable) {
+            // Ignored
+        }
+    }
+
+    private fun sendNetworkUpdate() {
+        try {
+            val info = getNetworkInfo()
+            val map = mapOf(
+                "statusIndex" to info.statusIndex.toInt(),
+                "primaryTypeIndex" to info.primaryTypeIndex.toInt(),
+                "availableTypeIndices" to info.availableTypeIndices.map { (it as Long).toInt() },
+                "isMetered" to info.isMetered,
+                "isVpnActive" to info.isVpnActive
+            )
+            Handler(Looper.getMainLooper()).post {
+                networkEventSink?.success(map)
+            }
+        } catch (e: Throwable) {
+            // Ignored
+        }
     }
 
     private fun getDirectorySize(dir: java.io.File?): Long {

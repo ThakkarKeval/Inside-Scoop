@@ -25,6 +25,8 @@ class _MyAppState extends State<MyApp> {
   StorageInfo? _storageInfo;
   GpuInfo? _gpuInfo;
   BatteryInfo? _batteryInfo;
+  NetworkInfo? _networkInfo;
+  StreamSubscription<NetworkInfo>? _networkSubscription;
   Map<ScoopFeature, ScoopCapabilityInfo> _capabilities = {};
   final _insideScoopPlugin = InsideScoop();
 
@@ -32,6 +34,23 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     initPlatformState();
+    _subscribeNetworkStream();
+  }
+
+  void _subscribeNetworkStream() {
+    _networkSubscription = _insideScoopPlugin.network.watch().listen((network) {
+      if (mounted) {
+        setState(() {
+          _networkInfo = network;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _networkSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> initPlatformState() async {
@@ -52,6 +71,7 @@ class _MyAppState extends State<MyApp> {
     final storageResult = await _insideScoopPlugin.storage.info();
     final gpuResult = await _insideScoopPlugin.gpu.info();
     final batteryResult = await _insideScoopPlugin.battery.info();
+    final networkResult = await _insideScoopPlugin.network.info();
     final capabilities = await _insideScoopPlugin.capabilities.getAll();
 
     if (!mounted) return;
@@ -66,6 +86,7 @@ class _MyAppState extends State<MyApp> {
       _storageInfo = storageResult.valueOrNull;
       _gpuInfo = gpuResult.valueOrNull;
       _batteryInfo = batteryResult.valueOrNull;
+      _networkInfo = networkResult.valueOrNull ?? _networkInfo;
       _capabilities = capabilities;
     });
   }
@@ -188,6 +209,42 @@ class _MyAppState extends State<MyApp> {
                   Text(
                     'Temperature: ${_batteryInfo!.temperatureCelsius!.toStringAsFixed(1)} °C (${_batteryInfo!.temperatureFahrenheit!.toStringAsFixed(1)} °F)',
                   ),
+                const SizedBox(height: 12),
+              ],
+              if (_networkInfo != null) ...[
+                Row(
+                  children: [
+                    const Text(
+                      'Network Connectivity',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: _networkInfo!.isConnected ? Colors.green.shade100 : Colors.red.shade100,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        _networkInfo!.isConnected ? 'ONLINE (Live)' : 'OFFLINE (Live)',
+                        style: TextStyle(
+                          color: _networkInfo!.isConnected ? Colors.green.shade900 : Colors.red.shade900,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text('Status: ${_networkInfo!.status.name}'),
+                Text('Primary Connection: ${_networkInfo!.primaryType.name}'),
+                if (_networkInfo!.availableTypes.isNotEmpty)
+                  Text('Available Interfaces: ${_networkInfo!.availableTypes.map((e) => e.name).join(", ")}'),
+                if (_networkInfo!.isMetered != null)
+                  Text('Metered Connection: ${_networkInfo!.isMetered}'),
+                if (_networkInfo!.isVpnActive != null)
+                  Text('VPN Routing: ${_networkInfo!.isVpnActive}'),
                 const SizedBox(height: 12),
               ],
               if (_capabilities.isNotEmpty) ...[

@@ -1,3 +1,5 @@
+import 'package:flutter/services.dart';
+
 import 'inside_scoop_platform_interface.dart';
 import 'src/core/models/app_info.dart';
 import 'src/core/models/battery_info.dart';
@@ -5,15 +7,21 @@ import 'src/core/models/cpu_info.dart';
 import 'src/core/models/device_info.dart';
 import 'src/core/models/gpu_info.dart';
 import 'src/core/models/memory_info.dart';
+import 'src/core/models/network_info.dart';
 import 'src/core/models/os_info.dart';
 import 'src/core/models/storage_info.dart';
 import 'src/messages.g.dart';
 
 class MethodChannelInsideScoop extends InsideScoopPlatform {
-  MethodChannelInsideScoop({InsideScoopHostApi? hostApi})
-    : _hostApi = hostApi ?? InsideScoopHostApi();
+  MethodChannelInsideScoop({
+    InsideScoopHostApi? hostApi,
+    EventChannel? networkEventChannel,
+  })  : _hostApi = hostApi ?? InsideScoopHostApi(),
+        _networkEventChannel = networkEventChannel ??
+            const EventChannel('com.cavernlabs.inside_scoop/network_events');
 
   final InsideScoopHostApi _hostApi;
+  final EventChannel _networkEventChannel;
 
   @override
   Future<String?> getPlatformVersion() {
@@ -118,5 +126,35 @@ class MethodChannelInsideScoop extends InsideScoopPlatform {
       isLowPowerMode: platformBattery.isLowPowerMode,
       temperatureCelsius: platformBattery.temperatureCelsius,
     );
+  }
+
+  @override
+  Future<NetworkInfo> getNetworkInfo() async {
+    final platformNet = await _hostApi.getNetworkInfo();
+    return NetworkInfo(
+      status: NetworkStatus.fromIndex(platformNet.statusIndex),
+      primaryType: NetworkConnectionType.fromIndex(platformNet.primaryTypeIndex),
+      availableTypes: platformNet.availableTypeIndices
+          .whereType<int>()
+          .map(NetworkConnectionType.fromIndex)
+          .toList(),
+      isMetered: platformNet.isMetered,
+      isVpnActive: platformNet.isVpnActive,
+    );
+  }
+
+  @override
+  Stream<NetworkInfo> watchNetworkInfo() {
+    return _networkEventChannel
+        .receiveBroadcastStream()
+        .map((dynamic event) {
+          if (event is Map) {
+            return NetworkInfo.fromMap(Map<String, dynamic>.from(event));
+          }
+          return const NetworkInfo(
+            status: NetworkStatus.unknown,
+            primaryType: NetworkConnectionType.none,
+          );
+        });
   }
 }

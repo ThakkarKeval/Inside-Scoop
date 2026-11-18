@@ -443,4 +443,40 @@ ErrorOr<PlatformBatteryInfo> InsideScoopPlugin::GetBatteryInfo() {
   return info;
 }
 
+ErrorOr<PlatformNetworkInfo> InsideScoopPlugin::GetNetworkInfo() {
+  int64_t status = 1;   // disconnected
+  int64_t primary = 6;  // none
+  std::vector<int64_t> available;
+  bool is_vpn = false;
+
+  HMODULE wininet = LoadLibraryW(L"wininet.dll");
+  if (wininet) {
+    typedef BOOL (WINAPI *InternetGetConnectedStateFn)(LPDWORD, DWORD);
+    auto get_state = reinterpret_cast<InternetGetConnectedStateFn>(
+        GetProcAddress(wininet, "InternetGetConnectedState"));
+    if (get_state) {
+      DWORD flags = 0;
+      if (get_state(&flags, 0)) {
+        status = 0;  // connected
+        if (flags & 0x02) {  // INTERNET_CONNECTION_LAN
+          primary = 2;       // ethernet / lan
+          available.push_back(2);
+          available.push_back(0);
+        } else if (flags & 0x01) {  // INTERNET_CONNECTION_MODEM
+          primary = 1;              // cellular
+          available.push_back(1);
+        } else {
+          primary = 5;  // other
+          available.push_back(5);
+        }
+      }
+    }
+    FreeLibrary(wininet);
+  }
+
+  PlatformNetworkInfo info(status, primary, available);
+  info.set_is_vpn_active(is_vpn);
+  return info;
+}
+
 }  // namespace inside_scoop

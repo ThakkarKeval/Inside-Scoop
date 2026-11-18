@@ -154,6 +154,22 @@ class PlatformBatteryInfo {
   final double? temperatureCelsius;
 }
 
+class PlatformNetworkInfo {
+  PlatformNetworkInfo({
+    required this.statusIndex, // 0: connected, 1: disconnected, 2: unknown
+    required this.primaryTypeIndex, // 0: wifi, 1: cellular, 2: ethernet, 3: bluetooth, 4: vpn, 5: other, 6: none
+    required this.availableTypeIndices,
+    this.isMetered,
+    this.isVpnActive,
+  });
+
+  final int statusIndex;
+  final int primaryTypeIndex;
+  final List<int?> availableTypeIndices;
+  final bool? isMetered;
+  final bool? isVpnActive;
+}
+
 @HostApi()
 abstract class InsideScoopHostApi {
   String? getPlatformVersion();
@@ -165,4 +181,5 @@ abstract class InsideScoopHostApi {
   PlatformStorageInfo getStorageInfo();
   PlatformGpuInfo getGpuInfo();
   PlatformBatteryInfo getBatteryInfo();
+  PlatformNetworkInfo getNetworkInfo();
 }

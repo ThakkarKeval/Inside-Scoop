@@ -93,6 +93,28 @@ class MockInsideScoopPlatform
       temperatureCelsius: 29.0,
     ),
   );
+
+  @override
+  Future<NetworkInfo> getNetworkInfo() => Future.value(
+    const NetworkInfo(
+      status: NetworkStatus.connected,
+      primaryType: NetworkConnectionType.wifi,
+      availableTypes: [NetworkConnectionType.wifi],
+      isMetered: false,
+      isVpnActive: false,
+    ),
+  );
+
+  @override
+  Stream<NetworkInfo> watchNetworkInfo() => Stream.value(
+    const NetworkInfo(
+      status: NetworkStatus.connected,
+      primaryType: NetworkConnectionType.wifi,
+      availableTypes: [NetworkConnectionType.wifi],
+      isMetered: false,
+      isVpnActive: false,
+    ),
+  );
 }
 
 void main() {
@@ -205,5 +227,28 @@ void main() {
     expect(result.valueOrNull?.powerSource, equals(PowerSource.ac));
     expect(result.valueOrNull?.isLowPowerMode, isFalse);
     expect(result.valueOrNull?.temperatureCelsius, equals(29.0));
+  });
+
+  test('network.info returns NetworkInfo from platform instance', () async {
+    final InsideScoop insideScoopPlugin = InsideScoop();
+    final MockInsideScoopPlatform fakePlatform = MockInsideScoopPlatform();
+    InsideScoopPlatform.instance = fakePlatform;
+
+    final result = await insideScoopPlugin.network.info();
+    expect(result.isAvailable, isTrue);
+    expect(result.valueOrNull?.status, equals(NetworkStatus.connected));
+    expect(result.valueOrNull?.primaryType, equals(NetworkConnectionType.wifi));
+    expect(result.valueOrNull?.isConnected, isTrue);
+  });
+
+  test('network.watch emits live NetworkInfo updates', () async {
+    final InsideScoop insideScoopPlugin = InsideScoop();
+    final MockInsideScoopPlatform fakePlatform = MockInsideScoopPlatform();
+    InsideScoopPlatform.instance = fakePlatform;
+
+    final stream = insideScoopPlugin.network.watch();
+    final event = await stream.first;
+    expect(event.isConnected, isTrue);
+    expect(event.primaryType, equals(NetworkConnectionType.wifi));
   });
 }

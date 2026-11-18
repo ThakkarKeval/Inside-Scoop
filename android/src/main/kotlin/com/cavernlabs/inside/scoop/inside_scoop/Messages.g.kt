@@ -631,6 +631,59 @@ data class PlatformBatteryInfo (
     return "PlatformBatteryInfo(batteryLevel=$batteryLevel, batteryStateIndex=$batteryStateIndex, powerSourceIndex=$powerSourceIndex, isLowPowerMode=$isLowPowerMode, temperatureCelsius=$temperatureCelsius)"
   }
 }
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class PlatformNetworkInfo (
+  val statusIndex: Long,
+  val primaryTypeIndex: Long,
+  val availableTypeIndices: List<Long?>,
+  val isMetered: Boolean? = null,
+  val isVpnActive: Boolean? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): PlatformNetworkInfo {
+      val statusIndex = pigeonVar_list[0] as Long
+      val primaryTypeIndex = pigeonVar_list[1] as Long
+      val availableTypeIndices = pigeonVar_list[2] as List<Long?>
+      val isMetered = pigeonVar_list[3] as Boolean?
+      val isVpnActive = pigeonVar_list[4] as Boolean?
+      return PlatformNetworkInfo(statusIndex, primaryTypeIndex, availableTypeIndices, isMetered, isVpnActive)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      statusIndex,
+      primaryTypeIndex,
+      availableTypeIndices,
+      isMetered,
+      isVpnActive,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as PlatformNetworkInfo
+    return MessagesPigeonUtils.deepEquals(this.statusIndex, other.statusIndex) && MessagesPigeonUtils.deepEquals(this.primaryTypeIndex, other.primaryTypeIndex) && MessagesPigeonUtils.deepEquals(this.availableTypeIndices, other.availableTypeIndices) && MessagesPigeonUtils.deepEquals(this.isMetered, other.isMetered) && MessagesPigeonUtils.deepEquals(this.isVpnActive, other.isVpnActive)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.statusIndex)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.primaryTypeIndex)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.availableTypeIndices)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.isMetered)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.isVpnActive)
+    return result
+  }
+  override fun toString(): String {
+    return "PlatformNetworkInfo(statusIndex=$statusIndex, primaryTypeIndex=$primaryTypeIndex, availableTypeIndices=$availableTypeIndices, isMetered=$isMetered, isVpnActive=$isVpnActive)"
+  }
+}
 private open class MessagesPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -674,6 +727,11 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
           PlatformBatteryInfo.fromList(it)
         }
       }
+      137.toByte() -> {
+        (readValue(buffer) as? List<Any?>)?.let {
+          PlatformNetworkInfo.fromList(it)
+        }
+      }
       else -> super.readValueOfType(type, buffer)
     }
   }
@@ -711,6 +769,10 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
         stream.write(136)
         writeValue(stream, value.toList())
       }
+      is PlatformNetworkInfo -> {
+        stream.write(137)
+        writeValue(stream, value.toList())
+      }
       else -> super.writeValue(stream, value)
     }
   }
@@ -727,6 +789,7 @@ interface InsideScoopHostApi {
   fun getStorageInfo(): PlatformStorageInfo
   fun getGpuInfo(): PlatformGpuInfo
   fun getBatteryInfo(): PlatformBatteryInfo
+  fun getNetworkInfo(): PlatformNetworkInfo
 
   companion object {
     /** The codec used by InsideScoopHostApi. */
@@ -863,6 +926,21 @@ interface InsideScoopHostApi {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
               listOf(api.getBatteryInfo())
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getNetworkInfo$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.getNetworkInfo())
             } catch (exception: Throwable) {
               MessagesPigeonUtils.wrapError(exception)
             }

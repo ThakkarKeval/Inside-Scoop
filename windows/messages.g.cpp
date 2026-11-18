@@ -1613,6 +1613,158 @@ size_t PigeonInternalDeepHash(const PlatformBatteryInfo& v) {
   return v.Hash();
 }
 
+// PlatformNetworkInfo
+
+PlatformNetworkInfo::PlatformNetworkInfo(
+  int64_t status_index,
+  int64_t primary_type_index,
+  const EncodableList& available_type_indices)
+ : status_index_(status_index),
+    primary_type_index_(primary_type_index),
+    available_type_indices_(available_type_indices) {}
+
+PlatformNetworkInfo::PlatformNetworkInfo(
+  int64_t status_index,
+  int64_t primary_type_index,
+  const EncodableList& available_type_indices,
+  const bool* is_metered,
+  const bool* is_vpn_active)
+ : status_index_(status_index),
+    primary_type_index_(primary_type_index),
+    available_type_indices_(available_type_indices),
+    is_metered_(is_metered ? std::optional<bool>(*is_metered) : std::nullopt),
+    is_vpn_active_(is_vpn_active ? std::optional<bool>(*is_vpn_active) : std::nullopt) {}
+
+int64_t PlatformNetworkInfo::status_index() const {
+  return status_index_;
+}
+
+void PlatformNetworkInfo::set_status_index(int64_t value_arg) {
+  status_index_ = value_arg;
+}
+
+
+int64_t PlatformNetworkInfo::primary_type_index() const {
+  return primary_type_index_;
+}
+
+void PlatformNetworkInfo::set_primary_type_index(int64_t value_arg) {
+  primary_type_index_ = value_arg;
+}
+
+
+const EncodableList& PlatformNetworkInfo::available_type_indices() const {
+  return available_type_indices_;
+}
+
+void PlatformNetworkInfo::set_available_type_indices(const EncodableList& value_arg) {
+  available_type_indices_ = value_arg;
+}
+
+
+const bool* PlatformNetworkInfo::is_metered() const {
+  return is_metered_ ? &(*is_metered_) : nullptr;
+}
+
+void PlatformNetworkInfo::set_is_metered(const bool* value_arg) {
+  is_metered_ = value_arg ? std::optional<bool>(*value_arg) : std::nullopt;
+}
+
+void PlatformNetworkInfo::set_is_metered(bool value_arg) {
+  is_metered_ = value_arg;
+}
+
+
+const bool* PlatformNetworkInfo::is_vpn_active() const {
+  return is_vpn_active_ ? &(*is_vpn_active_) : nullptr;
+}
+
+void PlatformNetworkInfo::set_is_vpn_active(const bool* value_arg) {
+  is_vpn_active_ = value_arg ? std::optional<bool>(*value_arg) : std::nullopt;
+}
+
+void PlatformNetworkInfo::set_is_vpn_active(bool value_arg) {
+  is_vpn_active_ = value_arg;
+}
+
+
+EncodableList PlatformNetworkInfo::ToEncodableList() const {
+  EncodableList list;
+  list.reserve(5);
+  list.push_back(EncodableValue(status_index_));
+  list.push_back(EncodableValue(primary_type_index_));
+  list.push_back(EncodableValue(available_type_indices_));
+  list.push_back(is_metered_ ? EncodableValue(*is_metered_) : EncodableValue());
+  list.push_back(is_vpn_active_ ? EncodableValue(*is_vpn_active_) : EncodableValue());
+  return list;
+}
+
+PlatformNetworkInfo PlatformNetworkInfo::FromEncodableList(const EncodableList& list) {
+  PlatformNetworkInfo decoded(
+    std::get<int64_t>(list[0]),
+    std::get<int64_t>(list[1]),
+    std::get<EncodableList>(list[2]));
+  auto& encodable_is_metered = list[3];
+  if (!encodable_is_metered.IsNull()) {
+    decoded.set_is_metered(std::get<bool>(encodable_is_metered));
+  }
+  auto& encodable_is_vpn_active = list[4];
+  if (!encodable_is_vpn_active.IsNull()) {
+    decoded.set_is_vpn_active(std::get<bool>(encodable_is_vpn_active));
+  }
+  return decoded;
+}
+
+bool PlatformNetworkInfo::operator==(const PlatformNetworkInfo& other) const {
+  return PigeonInternalDeepEquals(status_index_, other.status_index_) && PigeonInternalDeepEquals(primary_type_index_, other.primary_type_index_) && PigeonInternalDeepEquals(available_type_indices_, other.available_type_indices_) && PigeonInternalDeepEquals(is_metered_, other.is_metered_) && PigeonInternalDeepEquals(is_vpn_active_, other.is_vpn_active_);
+}
+
+bool PlatformNetworkInfo::operator!=(const PlatformNetworkInfo& other) const {
+  return !(*this == other);
+}
+
+size_t PlatformNetworkInfo::Hash() const {
+  size_t result = 1;
+  result = result * 31 + PigeonInternalDeepHash(status_index_);
+  result = result * 31 + PigeonInternalDeepHash(primary_type_index_);
+  result = result * 31 + PigeonInternalDeepHash(available_type_indices_);
+  result = result * 31 + PigeonInternalDeepHash(is_metered_);
+  result = result * 31 + PigeonInternalDeepHash(is_vpn_active_);
+  return result;
+}
+
+std::ostream& operator<<(
+  std::ostream& os,
+  const PlatformNetworkInfo& obj) {
+  os << "PlatformNetworkInfo(";
+  os << "status_index: ";
+  os << PigeonInternalToString(obj.status_index_);
+  os << ", primary_type_index: ";
+  os << PigeonInternalToString(obj.primary_type_index_);
+  os << ", available_type_indices: ";
+  os << PigeonInternalToString(obj.available_type_indices_);
+  os << ", is_metered: ";
+  if (obj.is_metered_) {
+    os << PigeonInternalToString(*obj.is_metered_);
+  }
+  else {
+    os << "null";
+  }
+  os << ", is_vpn_active: ";
+  if (obj.is_vpn_active_) {
+    os << PigeonInternalToString(*obj.is_vpn_active_);
+  }
+  else {
+    os << "null";
+  }
+  os << ")";
+  return os;
+}
+
+size_t PigeonInternalDeepHash(const PlatformNetworkInfo& v) {
+  return v.Hash();
+}
+
 
 PigeonInternalCodecSerializer::PigeonInternalCodecSerializer() {}
 
@@ -1643,6 +1795,9 @@ EncodableValue PigeonInternalCodecSerializer::ReadValueOfType(
       }
     case 136: {
         return CustomEncodableValue(PlatformBatteryInfo::FromEncodableList(std::get<EncodableList>(ReadValue(stream))));
+      }
+    case 137: {
+        return CustomEncodableValue(PlatformNetworkInfo::FromEncodableList(std::get<EncodableList>(ReadValue(stream))));
       }
     default:
       return ::flutter::StandardCodecSerializer::ReadValueOfType(type, stream);
@@ -1691,6 +1846,11 @@ void PigeonInternalCodecSerializer::WriteValue(
     if (custom_value->type() == typeid(PlatformBatteryInfo)) {
       stream->WriteByte(136);
       WriteValue(EncodableValue(std::any_cast<PlatformBatteryInfo>(*custom_value).ToEncodableList()), stream);
+      return;
+    }
+    if (custom_value->type() == typeid(PlatformNetworkInfo)) {
+      stream->WriteByte(137);
+      WriteValue(EncodableValue(std::any_cast<PlatformNetworkInfo>(*custom_value).ToEncodableList()), stream);
       return;
     }
   }
@@ -1893,6 +2053,27 @@ void InsideScoopHostApi::SetUp(
       channel.SetMessageHandler([api](const EncodableValue& message, const ::flutter::MessageReply<EncodableValue>& reply) {
         try {
           ErrorOr<PlatformBatteryInfo> output = api->GetBatteryInfo();
+          if (output.has_error()) {
+            reply(WrapError(output.error()));
+            return;
+          }
+          EncodableList wrapped;
+          wrapped.push_back(CustomEncodableValue(std::move(output).TakeValue()));
+          reply(EncodableValue(std::move(wrapped)));
+        } catch (const std::exception& exception) {
+          reply(WrapError(exception.what()));
+        }
+      });
+    } else {
+      channel.SetMessageHandler(nullptr);
+    }
+  }
+  {
+    BasicMessageChannel<> channel(binary_messenger, "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getNetworkInfo" + prepended_suffix, &GetCodec());
+    if (api != nullptr) {
+      channel.SetMessageHandler([api](const EncodableValue& message, const ::flutter::MessageReply<EncodableValue>& reply) {
+        try {
+          ErrorOr<PlatformNetworkInfo> output = api->GetNetworkInfo();
           if (output.has_error()) {
             reply(WrapError(output.error()));
             return;

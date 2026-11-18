@@ -29,6 +29,7 @@ class InsideScoopPlugin : public flutter::Plugin, public InsideScoopHostApi {
   ErrorOr<PlatformStorageInfo> GetStorageInfo() override;
   ErrorOr<PlatformGpuInfo> GetGpuInfo() override;
   ErrorOr<PlatformBatteryInfo> GetBatteryInfo() override;
+  ErrorOr<PlatformNetworkInfo> GetNetworkInfo() override;
 };
 
 }  // namespace inside_scoop

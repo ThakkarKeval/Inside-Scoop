@@ -1,4 +1,7 @@
 // ignore: avoid_web_libraries_in_flutter
+import 'dart:async';
+import 'dart:js_interop';
+
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:web/web.dart' as web;
 
@@ -9,6 +12,7 @@ import 'src/core/models/cpu_info.dart';
 import 'src/core/models/device_info.dart';
 import 'src/core/models/gpu_info.dart';
 import 'src/core/models/memory_info.dart';
+import 'src/core/models/network_info.dart';
 import 'src/core/models/os_info.dart';
 import 'src/core/models/storage_info.dart';
 
@@ -146,5 +150,44 @@ class InsideScoopWeb extends InsideScoopPlatform {
       isLowPowerMode: null,
       temperatureCelsius: null,
     );
+  }
+
+  @override
+  Future<NetworkInfo> getNetworkInfo() async {
+    final isOnline = web.window.navigator.onLine;
+    return NetworkInfo(
+      status: isOnline ? NetworkStatus.connected : NetworkStatus.disconnected,
+      primaryType: isOnline ? NetworkConnectionType.other : NetworkConnectionType.none,
+      availableTypes: isOnline ? [NetworkConnectionType.other] : [],
+      isMetered: null,
+      isVpnActive: null,
+    );
+  }
+
+  @override
+  Stream<NetworkInfo> watchNetworkInfo() {
+    late final StreamController<NetworkInfo> controller;
+    void emitCurrent() {
+      if (!controller.isClosed) {
+        final isOnline = web.window.navigator.onLine;
+        controller.add(
+          NetworkInfo(
+            status: isOnline ? NetworkStatus.connected : NetworkStatus.disconnected,
+            primaryType: isOnline ? NetworkConnectionType.other : NetworkConnectionType.none,
+            availableTypes: isOnline ? [NetworkConnectionType.other] : [],
+          ),
+        );
+      }
+    }
+
+    controller = StreamController<NetworkInfo>.broadcast(
+      onListen: () {
+        emitCurrent();
+        web.window.addEventListener('online', ((web.Event _) { emitCurrent(); }).toJS);
+        web.window.addEventListener('offline', ((web.Event _) { emitCurrent(); }).toJS);
+      },
+    );
+
+    return controller.stream;
   }
 }

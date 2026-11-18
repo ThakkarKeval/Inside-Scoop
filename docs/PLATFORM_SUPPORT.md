@@ -88,3 +88,9 @@
 - **macOS**: `IOKit.ps` (`IOPSCopyPowerSourcesInfo`, `IOPSCopyPowerSourcesList`, `IOPSGetPowerSourceDescription`) querying capacity, power source state (AC vs Battery), and `ProcessInfo.processInfo.isLowPowerModeEnabled`.
 - **Windows**: Win32 `GetSystemPowerStatus` reading `BatteryLifePercent`, `ACLineStatus`, `BatteryFlag`, and `SystemStatusFlag` (battery saver).
 - **Web**: Standard privacy-preserving default structure, gracefully handling browser restrictions on battery inspection.
+
+### Phase 9: Network Information & Live Observable Stream (`NetworkInfo`)
+- **Android**: `ConnectivityManager` inspecting `activeNetwork` and `NetworkCapabilities` (Wi-Fi, cellular, ethernet, bluetooth, VPN, metered state); real-time `NetworkCallback` streaming connectivity events over `EventChannel`.
+- **iOS & macOS**: Apple Network framework `NWPathMonitor` querying path status, interface types (`.wifi`, `.cellular`, `.wiredEthernet`), `isExpensive` metered flag; live observable stream dispatched over `FlutterEventChannel`.
+- **Windows**: Win32 IP Helper / `InternetGetConnectedState` inspecting LAN, modem/cellular, and connection state.
+- **Web**: Browser `window.navigator.onLine` and DOM event listeners on `online`/`offline` streaming live connectivity updates.

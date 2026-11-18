@@ -81,4 +81,13 @@ internal class InsideScoopPluginTest {
         assertNotNull(batteryInfo.batteryStateIndex)
         assertNotNull(batteryInfo.powerSourceIndex)
     }
+
+    @Test
+    fun getNetworkInfo_returnsExpectedNetworkMetadata() {
+        val plugin = InsideScoopPlugin()
+        val networkInfo = plugin.getNetworkInfo()
+        assertNotNull(networkInfo.statusIndex)
+        assertNotNull(networkInfo.primaryTypeIndex)
+        assertNotNull(networkInfo.availableTypeIndices)
+    }
 }

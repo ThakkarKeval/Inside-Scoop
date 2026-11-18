@@ -644,6 +644,61 @@ struct PlatformBatteryInfo: Hashable, CustomStringConvertible {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct PlatformNetworkInfo: Hashable, CustomStringConvertible {
+  var statusIndex: Int64
+  var primaryTypeIndex: Int64
+  var availableTypeIndices: [Int64?]
+  var isMetered: Bool? = nil
+  var isVpnActive: Bool? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> PlatformNetworkInfo? {
+    let statusIndex = pigeonVar_list[0] as! Int64
+    let primaryTypeIndex = pigeonVar_list[1] as! Int64
+    let availableTypeIndices = pigeonVar_list[2] as! [Int64?]
+    let isMetered: Bool? = nilOrValue(pigeonVar_list[3])
+    let isVpnActive: Bool? = nilOrValue(pigeonVar_list[4])
+
+    return PlatformNetworkInfo(
+      statusIndex: statusIndex,
+      primaryTypeIndex: primaryTypeIndex,
+      availableTypeIndices: availableTypeIndices,
+      isMetered: isMetered,
+      isVpnActive: isVpnActive
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      statusIndex,
+      primaryTypeIndex,
+      availableTypeIndices,
+      isMetered,
+      isVpnActive,
+    ]
+  }
+  static func == (lhs: PlatformNetworkInfo, rhs: PlatformNetworkInfo) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return MessagesPigeonInternal.deepEquals(lhs.statusIndex, rhs.statusIndex) && MessagesPigeonInternal.deepEquals(lhs.primaryTypeIndex, rhs.primaryTypeIndex) && MessagesPigeonInternal.deepEquals(lhs.availableTypeIndices, rhs.availableTypeIndices) && MessagesPigeonInternal.deepEquals(lhs.isMetered, rhs.isMetered) && MessagesPigeonInternal.deepEquals(lhs.isVpnActive, rhs.isVpnActive)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("PlatformNetworkInfo")
+    MessagesPigeonInternal.deepHash(value: statusIndex, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: primaryTypeIndex, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: availableTypeIndices, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: isMetered, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: isVpnActive, hasher: &hasher)
+  }
+
+  public var description: String {
+    return "PlatformNetworkInfo(statusIndex: \(String(describing: statusIndex)), primaryTypeIndex: \(String(describing: primaryTypeIndex)), availableTypeIndices: \(String(describing: availableTypeIndices)), isMetered: \(String(describing: isMetered)), isVpnActive: \(String(describing: isVpnActive)))"
+  }
+}
+
 private class MessagesPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -663,6 +718,8 @@ private class MessagesPigeonCodecReader: FlutterStandardReader {
       return PlatformGpuInfo.fromList(self.readValue() as! [Any?])
     case 136:
       return PlatformBatteryInfo.fromList(self.readValue() as! [Any?])
+    case 137:
+      return PlatformNetworkInfo.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -695,6 +752,9 @@ private class MessagesPigeonCodecWriter: FlutterStandardWriter {
     } else if let value = value as? PlatformBatteryInfo {
       super.writeByte(136)
       super.writeValue(value.toList())
+    } else if let value = value as? PlatformNetworkInfo {
+      super.writeByte(137)
+      super.writeValue(value.toList())
     } else {
       super.writeValue(value)
     }
@@ -726,6 +786,7 @@ protocol InsideScoopHostApi {
   func getStorageInfo() throws -> PlatformStorageInfo
   func getGpuInfo() throws -> PlatformGpuInfo
   func getBatteryInfo() throws -> PlatformBatteryInfo
+  func getNetworkInfo() throws -> PlatformNetworkInfo
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -850,6 +911,19 @@ class InsideScoopHostApiSetup {
       }
     } else {
       getBatteryInfoChannel.setMessageHandler(nil)
+    }
+    let getNetworkInfoChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.inside_scoop.InsideScoopHostApi.getNetworkInfo\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getNetworkInfoChannel.setMessageHandler { _, reply in
+        do {
+          let result = try api.getNetworkInfo()
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      getNetworkInfoChannel.setMessageHandler(nil)
     }
   }
 }

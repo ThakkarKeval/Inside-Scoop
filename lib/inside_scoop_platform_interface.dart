@@ -7,6 +7,7 @@ import 'src/core/models/cpu_info.dart';
 import 'src/core/models/device_info.dart';
 import 'src/core/models/gpu_info.dart';
 import 'src/core/models/memory_info.dart';
+import 'src/core/models/network_info.dart';
 import 'src/core/models/os_info.dart';
 import 'src/core/models/storage_info.dart';
 
@@ -58,5 +59,13 @@ abstract class InsideScoopPlatform extends PlatformInterface {
 
   Future<BatteryInfo> getBatteryInfo() {
     throw UnimplementedError('getBatteryInfo() has not been implemented.');
+  }
+
+  Future<NetworkInfo> getNetworkInfo() {
+    throw UnimplementedError('getNetworkInfo() has not been implemented.');
+  }
+
+  Stream<NetworkInfo> watchNetworkInfo() {
+    throw UnimplementedError('watchNetworkInfo() has not been implemented.');
   }
 }

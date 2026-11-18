@@ -1,6 +1,6 @@
 # Progress Tracker: inside_scoop
 
-## Current Phase: Phase 8 (Battery & Power)
+## Current Phase: Phase 9 (Network Information)
 
 | Phase | Description | Status | Tests | Notes |
 |---|---|:---:|:---:|---|
@@ -13,7 +13,7 @@
 | **Phase 6** | Storage Information | Completed | Passed (69 tests) | Primary volume capacity, free space, app data |
 | **Phase 7** | GPU Information | Completed | Passed (76 tests) | GPU vendor, renderer, graphics API, VRAM, unified memory |
 | **Phase 8** | Battery & Power | Completed | Passed (83 tests) | Level, charging state, power source, low power mode, temperature |
-| **Phase 9** | Network Information | Next | Pending | Interfaces, connection categories |
-| **Phase 10** | Real-time Monitoring | Not Started | — | Sampling streams & lifecycle |
+| **Phase 9** | Network Information | Completed | Passed (91 tests) | Interfaces, connectivity status, live observable stream |
+| **Phase 10** | Real-time Monitoring | Next | Pending | Sampling streams & lifecycle |
 | **Phase 11** | Diagnostics & Reporting | Not Started | — | Snapshots & redaction |
 | **Phase 12** | Stabilization & Release | Not Started | — | Multi-platform verification matrix |
