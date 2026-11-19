@@ -69,8 +69,11 @@ class MonitoringService {
     late final StreamController<SystemMetricsSnapshot> controller;
     Timer? timer;
     AppLifecycleListener? lifecycleListener;
+    bool isSampling = false;
 
     Future<void> sample() async {
+      if (isSampling) return;
+      isSampling = true;
       try {
         final currentSnapshot = await snapshot(config: config);
         if (!controller.isClosed) {
@@ -80,6 +83,8 @@ class MonitoringService {
         if (!controller.isClosed) {
           controller.addError(e, st);
         }
+      } finally {
+        isSampling = false;
       }
     }
 

@@ -1,6 +1,24 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:inside_scoop/inside_scoop.dart';
 import 'package:inside_scoop/inside_scoop_platform_interface.dart';
+
+class SlowSamplingCpuService extends CpuService {
+  SlowSamplingCpuService(super.platform);
+  int sampleCount = 0;
+
+  @override
+  Future<CpuInfo?> infoOrNull() async {
+    sampleCount++;
+    // Simulate a slow async sampling task
+    await Future.delayed(const Duration(milliseconds: 60));
+    return const CpuInfo(
+      architecture: 'x86_64',
+      logicalCores: 4,
+    );
+  }
+}
 
 class FakeMonitoringPlatform extends InsideScoopPlatform {
   @override
@@ -83,6 +101,33 @@ void main() {
       expect(snapshots.length, equals(2));
       expect(snapshots[0].cpu?.architecture, equals('x86_64'));
       expect(snapshots[1].battery?.batteryLevel, equals(95));
+    });
+
+    test('prevents overlapping sampling runs when an operation is slow', () async {
+      final slowCpu = SlowSamplingCpuService(platform);
+      final customService = MonitoringService(
+        platform,
+        slowCpu,
+      );
+
+      const config = MonitoringConfig(
+        interval: Duration(milliseconds: 20), // Ticks every 20ms, but sampling takes 60ms
+        sampleCpu: true,
+        sampleMemory: false,
+        sampleBattery: false,
+        sampleNetwork: false,
+        pauseInBackground: false,
+      );
+
+      final stream = customService.startMonitoring(config: config);
+      final sub = stream.listen((_) {});
+
+      // Wait 100ms: without overlap protection, 5 ticks would fire and start 5 concurrent samples.
+      // With isSampling guard, subsequent ticks while slowCpu is working are skipped.
+      await Future.delayed(const Duration(milliseconds: 100));
+      await sub.cancel();
+
+      expect(slowCpu.sampleCount, lessThanOrEqualTo(2));
     });
   });
 }
