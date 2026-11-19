@@ -1,6 +1,6 @@
 name: inside_scoop
 description: "A zero-dependency, 6-platform Flutter System Information SDK providing App, OS, Device, CPU, RAM, Storage, GPU, Battery, Network, and Live Diagnostics."
-version: 1.0.0
+version: 1.1.0
 repository: https://github.com/ThakkarKeval/Inside-Scoop
 issue_tracker: https://github.com/ThakkarKeval/Inside-Scoop/issues
 topics:
