@@ -155,9 +155,11 @@ class InsideScoopWeb extends InsideScoopPlatform {
 
     try {
       final canvas = web.document.createElement('canvas') as web.HTMLCanvasElement;
-      final gl = (canvas.getContext('webgl2') ?? canvas.getContext('webgl')) as web.WebGLRenderingContext?;
+      final gl2 = canvas.getContext('webgl2');
+      final isWebGL2 = gl2 != null;
+      final gl = (gl2 ?? canvas.getContext('webgl')) as web.WebGLRenderingContext?;
       if (gl != null) {
-        apiVersion = (gl is web.WebGL2RenderingContext) ? 'WebGL 2.0' : 'WebGL 1.0';
+        apiVersion = isWebGL2 ? 'WebGL 2.0' : 'WebGL 1.0';
         final debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
         if (debugInfo != null) {
           final unmaskedVendor = gl.getParameter(0x9245);

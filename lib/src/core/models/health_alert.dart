@@ -160,7 +160,7 @@ class HealthThresholds {
           HealthAlert(
             title: 'High RAM Utilization',
             message:
-                'Physical memory usage is at ${mem.usagePercentage.toStringAsFixed(1)}% (threshold: ${maxMemoryUsagePercentage}%).',
+                'Physical memory usage is at ${mem.usagePercentage.toStringAsFixed(1)}% (threshold: $maxMemoryUsagePercentage%).',
             severity: HealthAlertSeverity.warning,
             category: HealthAlertCategory.memory,
             timestamp: now,
@@ -177,7 +177,7 @@ class HealthThresholds {
             HealthAlert(
               title: 'Process Memory Exceeded',
               message:
-                  'Process resident memory is ${rssMb.toStringAsFixed(1)} MB (threshold: ${maxProcessResidentMb} MB).',
+                  'Process resident memory is ${rssMb.toStringAsFixed(1)} MB (threshold: $maxProcessResidentMb MB).',
               severity: HealthAlertSeverity.warning,
               category: HealthAlertCategory.memory,
               timestamp: now,
@@ -198,7 +198,7 @@ class HealthThresholds {
           HealthAlert(
             title: 'High Battery Temperature',
             message:
-                'Battery temperature reached ${batt.temperatureCelsius!.toStringAsFixed(1)}°C (threshold: ${maxBatteryTemperatureCelsius}°C).',
+                'Battery temperature reached ${batt.temperatureCelsius!.toStringAsFixed(1)}°C (threshold: $maxBatteryTemperatureCelsius°C).',
             severity: HealthAlertSeverity.critical,
             category: HealthAlertCategory.battery,
             timestamp: now,
@@ -235,7 +235,7 @@ class HealthThresholds {
         HealthAlert(
           title: 'High CPU Load',
           message:
-              'System CPU utilization reached ${cpu.systemUtilization!.toStringAsFixed(1)}% (threshold: ${maxCpuUtilizationPercent}%).',
+              'System CPU utilization reached ${cpu.systemUtilization!.toStringAsFixed(1)}% (threshold: $maxCpuUtilizationPercent%).',
           severity: HealthAlertSeverity.warning,
           category: HealthAlertCategory.cpu,
           timestamp: now,
