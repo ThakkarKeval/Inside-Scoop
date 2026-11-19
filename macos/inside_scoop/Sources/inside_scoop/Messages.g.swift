@@ -431,6 +431,9 @@ struct PlatformMemoryInfo: Hashable, CustomStringConvertible {
   var processResidentBytes: Int64? = nil
   var processVirtualBytes: Int64? = nil
   var isLowMemory: Bool
+  var totalPssBytes: Int64? = nil
+  var jvmHeapAllocatedBytes: Int64? = nil
+  var jvmHeapUsedBytes: Int64? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -440,13 +443,19 @@ struct PlatformMemoryInfo: Hashable, CustomStringConvertible {
     let processResidentBytes: Int64? = nilOrValue(pigeonVar_list[2])
     let processVirtualBytes: Int64? = nilOrValue(pigeonVar_list[3])
     let isLowMemory = pigeonVar_list[4] as! Bool
+    let totalPssBytes: Int64? = nilOrValue(pigeonVar_list[5])
+    let jvmHeapAllocatedBytes: Int64? = nilOrValue(pigeonVar_list[6])
+    let jvmHeapUsedBytes: Int64? = nilOrValue(pigeonVar_list[7])
 
     return PlatformMemoryInfo(
       totalPhysicalBytes: totalPhysicalBytes,
       availablePhysicalBytes: availablePhysicalBytes,
       processResidentBytes: processResidentBytes,
       processVirtualBytes: processVirtualBytes,
-      isLowMemory: isLowMemory
+      isLowMemory: isLowMemory,
+      totalPssBytes: totalPssBytes,
+      jvmHeapAllocatedBytes: jvmHeapAllocatedBytes,
+      jvmHeapUsedBytes: jvmHeapUsedBytes
     )
   }
   func toList() -> [Any?] {
@@ -456,13 +465,16 @@ struct PlatformMemoryInfo: Hashable, CustomStringConvertible {
       processResidentBytes,
       processVirtualBytes,
       isLowMemory,
+      totalPssBytes,
+      jvmHeapAllocatedBytes,
+      jvmHeapUsedBytes,
     ]
   }
   static func == (lhs: PlatformMemoryInfo, rhs: PlatformMemoryInfo) -> Bool {
     if Swift.type(of: lhs) != Swift.type(of: rhs) {
       return false
     }
-    return MessagesPigeonInternal.deepEquals(lhs.totalPhysicalBytes, rhs.totalPhysicalBytes) && MessagesPigeonInternal.deepEquals(lhs.availablePhysicalBytes, rhs.availablePhysicalBytes) && MessagesPigeonInternal.deepEquals(lhs.processResidentBytes, rhs.processResidentBytes) && MessagesPigeonInternal.deepEquals(lhs.processVirtualBytes, rhs.processVirtualBytes) && MessagesPigeonInternal.deepEquals(lhs.isLowMemory, rhs.isLowMemory)
+    return MessagesPigeonInternal.deepEquals(lhs.totalPhysicalBytes, rhs.totalPhysicalBytes) && MessagesPigeonInternal.deepEquals(lhs.availablePhysicalBytes, rhs.availablePhysicalBytes) && MessagesPigeonInternal.deepEquals(lhs.processResidentBytes, rhs.processResidentBytes) && MessagesPigeonInternal.deepEquals(lhs.processVirtualBytes, rhs.processVirtualBytes) && MessagesPigeonInternal.deepEquals(lhs.isLowMemory, rhs.isLowMemory) && MessagesPigeonInternal.deepEquals(lhs.totalPssBytes, rhs.totalPssBytes) && MessagesPigeonInternal.deepEquals(lhs.jvmHeapAllocatedBytes, rhs.jvmHeapAllocatedBytes) && MessagesPigeonInternal.deepEquals(lhs.jvmHeapUsedBytes, rhs.jvmHeapUsedBytes)
   }
 
   func hash(into hasher: inout Hasher) {
@@ -472,10 +484,13 @@ struct PlatformMemoryInfo: Hashable, CustomStringConvertible {
     MessagesPigeonInternal.deepHash(value: processResidentBytes, hasher: &hasher)
     MessagesPigeonInternal.deepHash(value: processVirtualBytes, hasher: &hasher)
     MessagesPigeonInternal.deepHash(value: isLowMemory, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: totalPssBytes, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: jvmHeapAllocatedBytes, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: jvmHeapUsedBytes, hasher: &hasher)
   }
 
   public var description: String {
-    return "PlatformMemoryInfo(totalPhysicalBytes: \(String(describing: totalPhysicalBytes)), availablePhysicalBytes: \(String(describing: availablePhysicalBytes)), processResidentBytes: \(String(describing: processResidentBytes)), processVirtualBytes: \(String(describing: processVirtualBytes)), isLowMemory: \(String(describing: isLowMemory)))"
+    return "PlatformMemoryInfo(totalPhysicalBytes: \(String(describing: totalPhysicalBytes)), availablePhysicalBytes: \(String(describing: availablePhysicalBytes)), processResidentBytes: \(String(describing: processResidentBytes)), processVirtualBytes: \(String(describing: processVirtualBytes)), isLowMemory: \(String(describing: isLowMemory)), totalPssBytes: \(String(describing: totalPssBytes)), jvmHeapAllocatedBytes: \(String(describing: jvmHeapAllocatedBytes)), jvmHeapUsedBytes: \(String(describing: jvmHeapUsedBytes)))"
   }
 }
 

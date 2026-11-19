@@ -204,20 +204,30 @@ class InsideScoopPlugin(private var context: Context? = null) : FlutterPlugin, I
         activityManager?.getMemoryInfo(mi)
 
         val totalMem = if (mi.totalMem > 0L) mi.totalMem else {
-            readMemTotalFromProc() ?: (1024L * 1024L * 1024L * 4L)
+            readMemTotalFromProc() ?: readHostJvmMemoryTotal()
         }
-        val availMem = if (mi.availMem > 0L) mi.availMem else (totalMem / 2L)
+        val availMem = if (mi.availMem > 0L) mi.availMem else {
+            readMemAvailableFromProc() ?: readHostJvmMemoryAvailable()
+        }
         val isLowMem = mi.lowMemory
 
+        val procStatus = readProcSelfStatusMemory()
+        val pssBytes = getProcessPssBytes()
+
         val runtime = java.lang.Runtime.getRuntime()
-        val residentBytes = runtime.totalMemory() - runtime.freeMemory()
+        val jvmAllocated = runtime.totalMemory()
+        val jvmFree = runtime.freeMemory()
+        val jvmUsed = jvmAllocated - jvmFree
 
         return PlatformMemoryInfo(
             totalPhysicalBytes = totalMem,
             availablePhysicalBytes = availMem,
-            processResidentBytes = if (residentBytes > 0L) residentBytes else null,
-            processVirtualBytes = null,
-            isLowMemory = isLowMem
+            processResidentBytes = procStatus.rssBytes,
+            processVirtualBytes = procStatus.vmsBytes,
+            isLowMemory = isLowMem,
+            totalPssBytes = pssBytes,
+            jvmHeapAllocatedBytes = if (jvmAllocated > 0L) jvmAllocated else null,
+            jvmHeapUsedBytes = if (jvmUsed > 0L) jvmUsed else null
         )
     }
 
@@ -226,13 +236,21 @@ class InsideScoopPlugin(private var context: Context? = null) : FlutterPlugin, I
         var availableBytes = 0L
         try {
             val dataDir: java.io.File? = android.os.Environment.getDataDirectory()
-            if (dataDir != null) {
+            if (dataDir != null && dataDir.exists()) {
                 val stat = android.os.StatFs(dataDir.absolutePath)
                 totalBytes = stat.totalBytes
                 availableBytes = stat.availableBytes
             }
         } catch (e: Throwable) {
             // JVM mock JAR fallback
+        }
+
+        if (totalBytes <= 0L) {
+            val rootDir = java.io.File("/")
+            if (rootDir.exists()) {
+                totalBytes = rootDir.totalSpace
+                availableBytes = rootDir.usableSpace
+            }
         }
 
         val currentContext = context
@@ -255,12 +273,9 @@ class InsideScoopPlugin(private var context: Context? = null) : FlutterPlugin, I
             false
         }
 
-        val fallbackTotal = 1024L * 1024L * 1024L * 64L
-        val fallbackAvail = 1024L * 1024L * 1024L * 32L
-
         return PlatformStorageInfo(
-            totalBytes = if (totalBytes > 0L) totalBytes else fallbackTotal,
-            availableBytes = if (availableBytes > 0L) availableBytes else fallbackAvail,
+            totalBytes = totalBytes,
+            availableBytes = availableBytes,
             appStorageBytes = appBytes,
             isRemovable = isRemovable
         )
@@ -605,31 +620,100 @@ class InsideScoopPlugin(private var context: Context? = null) : FlutterPlugin, I
         return size
     }
 
+    private data class ProcStatusMemory(val rssBytes: Long?, val vmsBytes: Long?)
+
+    private fun readProcSelfStatusMemory(): ProcStatusMemory {
+        var rss: Long? = null
+        var vms: Long? = null
+        try {
+            val file = java.io.File("/proc/self/status")
+            if (file.exists() && file.canRead()) {
+                file.bufferedReader().useLines { lines ->
+                    for (line in lines) {
+                        if (line.startsWith("VmRSS:")) {
+                            rss = parseKbField(line)
+                        } else if (line.startsWith("VmSize:")) {
+                            vms = parseKbField(line)
+                        }
+                        if (rss != null && vms != null) break
+                    }
+                }
+            }
+        } catch (e: Throwable) {
+            // Ignored
+        }
+        return ProcStatusMemory(rss, vms)
+    }
+
+    private fun parseKbField(line: String): Long? {
+        val colonIdx = line.indexOf(':')
+        if (colonIdx != -1 && colonIdx < line.length - 1) {
+            val afterColon = line.substring(colonIdx + 1).trim()
+            val spaceIdx = afterColon.indexOf(' ')
+            val numStr = if (spaceIdx != -1) afterColon.substring(0, spaceIdx).trim() else afterColon
+            val kb = numStr.toLongOrNull()
+            if (kb != null) {
+                return kb * 1024L
+            }
+        }
+        return null
+    }
+
+    private fun getProcessPssBytes(): Long? {
+        return try {
+            val memInfo = android.os.Debug.MemoryInfo()
+            android.os.Debug.getMemoryInfo(memInfo)
+            val pssKb = memInfo.totalPss
+            if (pssKb > 0) pssKb.toLong() * 1024L else null
+        } catch (e: Throwable) {
+            null
+        }
+    }
+
     private fun readMemTotalFromProc(): Long? {
+        return readProcMemField("MemTotal:")
+    }
+
+    private fun readMemAvailableFromProc(): Long? {
+        return readProcMemField("MemAvailable:") ?: readProcMemField("MemFree:")
+    }
+
+    private fun readProcMemField(fieldName: String): Long? {
         return try {
             val file = java.io.File("/proc/meminfo")
             if (!file.exists() || !file.canRead()) return null
-            val reader = file.bufferedReader()
             var result: Long? = null
-            reader.useLines { lines ->
+            file.bufferedReader().useLines { lines ->
                 for (line in lines) {
-                    if (line.startsWith("MemTotal:")) {
-                        val colonParts = line.split(":")
-                        if (colonParts.size >= 2) {
-                            val trimmed = colonParts[1].trim()
-                            val numStr = trimmed.split(" ")[0].trim()
-                            val kb = numStr.toLongOrNull()
-                            if (kb != null) {
-                                result = kb * 1024L
-                                break
-                            }
-                        }
+                    if (line.startsWith(fieldName)) {
+                        result = parseKbField(line)
+                        if (result != null) break
                     }
                 }
             }
             result
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             null
+        }
+    }
+
+    private fun readHostJvmMemoryTotal(): Long {
+        return try {
+            val osBean = java.lang.management.ManagementFactory.getOperatingSystemMXBean()
+            val method = osBean.javaClass.getMethod("getTotalPhysicalMemorySize")
+            (method.invoke(osBean) as? Long) ?: 0L
+        } catch (e: Throwable) {
+            0L
+        }
+    }
+
+    private fun readHostJvmMemoryAvailable(): Long {
+        return try {
+            val osBean = java.lang.management.ManagementFactory.getOperatingSystemMXBean()
+            val method = osBean.javaClass.getMethod("getFreePhysicalMemorySize")
+            (method.invoke(osBean) as? Long) ?: 0L
+        } catch (e: Throwable) {
+            0L
         }
     }
 

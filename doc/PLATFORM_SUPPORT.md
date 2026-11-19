@@ -61,8 +61,8 @@
 - **Windows**: Win32 `GetNativeSystemInfo`, `GetLogicalProcessorInformationEx` for physical cores, registry `CentralProcessor\0` for processor model name and clock speed.
 - **Web**: `window.navigator.hardwareConcurrency` logical cores, architecture inference via `userAgent`, with unsupported fields properly set to `null` to respect browser security boundaries.
 
-### Phase 5: Memory Information (`MemoryInfo`)
-- **Android**: `ActivityManager.MemoryInfo` for total memory, available memory, and low memory warning flag; JVM runtime memory for process resident memory, and `/proc/meminfo` fallback.
+### Phase 5: Memory Information (`MemoryInfo`, `ProcessMemoryInfo`)
+- **Android**: `ActivityManager.MemoryInfo` for system total RAM, available RAM, and low memory warning flag; `/proc/self/status` (`VmRSS`) for process resident set size; `/proc/self/status` (`VmSize`) for process virtual memory; `Debug.getMemoryInfo` for Proportional Set Size (`totalPss`); and `Runtime.getRuntime()` for Java/ART heap allocated and used memory.
 - **iOS**: `ProcessInfo.processInfo.physicalMemory` for total RAM, Mach `host_statistics64` (`HOST_VM_INFO64`) for available memory, and Mach `mach_task_basic_info` for resident/virtual process sizes.
 - **macOS**: `ProcessInfo.processInfo.physicalMemory` for total RAM, Mach `host_statistics64` (`HOST_VM_INFO64`) for available memory, and Mach `mach_task_basic_info` for resident/virtual process sizes.
 - **Windows**: Win32 `GlobalMemoryStatusEx` for total/available physical RAM and memory load pressure; `K32GetProcessMemoryInfo` for working set size (resident) and pagefile usage (virtual).

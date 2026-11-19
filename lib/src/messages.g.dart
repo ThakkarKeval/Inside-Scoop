@@ -384,6 +384,9 @@ class PlatformMemoryInfo {
     this.processResidentBytes,
     this.processVirtualBytes,
     required this.isLowMemory,
+    this.totalPssBytes,
+    this.jvmHeapAllocatedBytes,
+    this.jvmHeapUsedBytes,
   });
 
   int totalPhysicalBytes;
@@ -396,6 +399,12 @@ class PlatformMemoryInfo {
 
   bool isLowMemory;
 
+  int? totalPssBytes;
+
+  int? jvmHeapAllocatedBytes;
+
+  int? jvmHeapUsedBytes;
+
   List<Object?> _toList() {
     return <Object?>[
       totalPhysicalBytes,
@@ -403,6 +412,9 @@ class PlatformMemoryInfo {
       processResidentBytes,
       processVirtualBytes,
       isLowMemory,
+      totalPssBytes,
+      jvmHeapAllocatedBytes,
+      jvmHeapUsedBytes,
     ];
   }
 
@@ -417,6 +429,9 @@ class PlatformMemoryInfo {
       processResidentBytes: result[2] as int?,
       processVirtualBytes: result[3] as int?,
       isLowMemory: result[4]! as bool,
+      totalPssBytes: result[5] as int?,
+      jvmHeapAllocatedBytes: result[6] as int?,
+      jvmHeapUsedBytes: result[7] as int?,
     );
   }
 
@@ -429,7 +444,7 @@ class PlatformMemoryInfo {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(totalPhysicalBytes, other.totalPhysicalBytes) && _deepEquals(availablePhysicalBytes, other.availablePhysicalBytes) && _deepEquals(processResidentBytes, other.processResidentBytes) && _deepEquals(processVirtualBytes, other.processVirtualBytes) && _deepEquals(isLowMemory, other.isLowMemory);
+    return _deepEquals(totalPhysicalBytes, other.totalPhysicalBytes) && _deepEquals(availablePhysicalBytes, other.availablePhysicalBytes) && _deepEquals(processResidentBytes, other.processResidentBytes) && _deepEquals(processVirtualBytes, other.processVirtualBytes) && _deepEquals(isLowMemory, other.isLowMemory) && _deepEquals(totalPssBytes, other.totalPssBytes) && _deepEquals(jvmHeapAllocatedBytes, other.jvmHeapAllocatedBytes) && _deepEquals(jvmHeapUsedBytes, other.jvmHeapUsedBytes);
   }
 
   @override
@@ -438,7 +453,7 @@ class PlatformMemoryInfo {
 
   @override
   String toString() {
-    return 'PlatformMemoryInfo(totalPhysicalBytes: $totalPhysicalBytes, availablePhysicalBytes: $availablePhysicalBytes, processResidentBytes: $processResidentBytes, processVirtualBytes: $processVirtualBytes, isLowMemory: $isLowMemory)';
+    return 'PlatformMemoryInfo(totalPhysicalBytes: $totalPhysicalBytes, availablePhysicalBytes: $availablePhysicalBytes, processResidentBytes: $processResidentBytes, processVirtualBytes: $processVirtualBytes, isLowMemory: $isLowMemory, totalPssBytes: $totalPssBytes, jvmHeapAllocatedBytes: $jvmHeapAllocatedBytes, jvmHeapUsedBytes: $jvmHeapUsedBytes)';
   }
 }
 

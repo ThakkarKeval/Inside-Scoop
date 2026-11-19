@@ -89,6 +89,9 @@ class MethodChannelInsideScoop extends InsideScoopPlatform {
       processResidentBytes: platformMemory.processResidentBytes,
       processVirtualBytes: platformMemory.processVirtualBytes,
       isLowMemory: platformMemory.isLowMemory,
+      totalPssBytes: platformMemory.totalPssBytes,
+      jvmHeapAllocatedBytes: platformMemory.jvmHeapAllocatedBytes,
+      jvmHeapUsedBytes: platformMemory.jvmHeapUsedBytes,
     );
   }
 

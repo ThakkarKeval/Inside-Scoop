@@ -300,7 +300,10 @@ class PlatformMemoryInfo {
     int64_t available_physical_bytes,
     const int64_t* process_resident_bytes,
     const int64_t* process_virtual_bytes,
-    bool is_low_memory);
+    bool is_low_memory,
+    const int64_t* total_pss_bytes,
+    const int64_t* jvm_heap_allocated_bytes,
+    const int64_t* jvm_heap_used_bytes);
 
   int64_t total_physical_bytes() const;
   void set_total_physical_bytes(int64_t value_arg);
@@ -319,6 +322,18 @@ class PlatformMemoryInfo {
   bool is_low_memory() const;
   void set_is_low_memory(bool value_arg);
 
+  const int64_t* total_pss_bytes() const;
+  void set_total_pss_bytes(const int64_t* value_arg);
+  void set_total_pss_bytes(int64_t value_arg);
+
+  const int64_t* jvm_heap_allocated_bytes() const;
+  void set_jvm_heap_allocated_bytes(const int64_t* value_arg);
+  void set_jvm_heap_allocated_bytes(int64_t value_arg);
+
+  const int64_t* jvm_heap_used_bytes() const;
+  void set_jvm_heap_used_bytes(const int64_t* value_arg);
+  void set_jvm_heap_used_bytes(int64_t value_arg);
+
   bool operator==(const PlatformMemoryInfo& other) const;
   bool operator!=(const PlatformMemoryInfo& other) const;
   /// Returns a hash code value for the object. This method is supported for the benefit of hash tables.
@@ -335,6 +350,9 @@ class PlatformMemoryInfo {
   std::optional<int64_t> process_resident_bytes_;
   std::optional<int64_t> process_virtual_bytes_;
   bool is_low_memory_;
+  std::optional<int64_t> total_pss_bytes_;
+  std::optional<int64_t> jvm_heap_allocated_bytes_;
+  std::optional<int64_t> jvm_heap_used_bytes_;
 };
 
 

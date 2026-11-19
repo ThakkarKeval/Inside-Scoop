@@ -426,7 +426,10 @@ data class PlatformMemoryInfo (
   val availablePhysicalBytes: Long,
   val processResidentBytes: Long? = null,
   val processVirtualBytes: Long? = null,
-  val isLowMemory: Boolean
+  val isLowMemory: Boolean,
+  val totalPssBytes: Long? = null,
+  val jvmHeapAllocatedBytes: Long? = null,
+  val jvmHeapUsedBytes: Long? = null
 )
  {
   companion object {
@@ -436,7 +439,10 @@ data class PlatformMemoryInfo (
       val processResidentBytes = pigeonVar_list[2] as Long?
       val processVirtualBytes = pigeonVar_list[3] as Long?
       val isLowMemory = pigeonVar_list[4] as Boolean
-      return PlatformMemoryInfo(totalPhysicalBytes, availablePhysicalBytes, processResidentBytes, processVirtualBytes, isLowMemory)
+      val totalPssBytes = pigeonVar_list[5] as Long?
+      val jvmHeapAllocatedBytes = pigeonVar_list[6] as Long?
+      val jvmHeapUsedBytes = pigeonVar_list[7] as Long?
+      return PlatformMemoryInfo(totalPhysicalBytes, availablePhysicalBytes, processResidentBytes, processVirtualBytes, isLowMemory, totalPssBytes, jvmHeapAllocatedBytes, jvmHeapUsedBytes)
     }
   }
   fun toList(): List<Any?> {
@@ -446,6 +452,9 @@ data class PlatformMemoryInfo (
       processResidentBytes,
       processVirtualBytes,
       isLowMemory,
+      totalPssBytes,
+      jvmHeapAllocatedBytes,
+      jvmHeapUsedBytes,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -456,7 +465,7 @@ data class PlatformMemoryInfo (
       return true
     }
     val other = other as PlatformMemoryInfo
-    return MessagesPigeonUtils.deepEquals(this.totalPhysicalBytes, other.totalPhysicalBytes) && MessagesPigeonUtils.deepEquals(this.availablePhysicalBytes, other.availablePhysicalBytes) && MessagesPigeonUtils.deepEquals(this.processResidentBytes, other.processResidentBytes) && MessagesPigeonUtils.deepEquals(this.processVirtualBytes, other.processVirtualBytes) && MessagesPigeonUtils.deepEquals(this.isLowMemory, other.isLowMemory)
+    return MessagesPigeonUtils.deepEquals(this.totalPhysicalBytes, other.totalPhysicalBytes) && MessagesPigeonUtils.deepEquals(this.availablePhysicalBytes, other.availablePhysicalBytes) && MessagesPigeonUtils.deepEquals(this.processResidentBytes, other.processResidentBytes) && MessagesPigeonUtils.deepEquals(this.processVirtualBytes, other.processVirtualBytes) && MessagesPigeonUtils.deepEquals(this.isLowMemory, other.isLowMemory) && MessagesPigeonUtils.deepEquals(this.totalPssBytes, other.totalPssBytes) && MessagesPigeonUtils.deepEquals(this.jvmHeapAllocatedBytes, other.jvmHeapAllocatedBytes) && MessagesPigeonUtils.deepEquals(this.jvmHeapUsedBytes, other.jvmHeapUsedBytes)
   }
 
   override fun hashCode(): Int {
@@ -466,10 +475,13 @@ data class PlatformMemoryInfo (
     result = 31 * result + MessagesPigeonUtils.deepHash(this.processResidentBytes)
     result = 31 * result + MessagesPigeonUtils.deepHash(this.processVirtualBytes)
     result = 31 * result + MessagesPigeonUtils.deepHash(this.isLowMemory)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.totalPssBytes)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.jvmHeapAllocatedBytes)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.jvmHeapUsedBytes)
     return result
   }
   override fun toString(): String {
-    return "PlatformMemoryInfo(totalPhysicalBytes=$totalPhysicalBytes, availablePhysicalBytes=$availablePhysicalBytes, processResidentBytes=$processResidentBytes, processVirtualBytes=$processVirtualBytes, isLowMemory=$isLowMemory)"
+    return "PlatformMemoryInfo(totalPhysicalBytes=$totalPhysicalBytes, availablePhysicalBytes=$availablePhysicalBytes, processResidentBytes=$processResidentBytes, processVirtualBytes=$processVirtualBytes, isLowMemory=$isLowMemory, totalPssBytes=$totalPssBytes, jvmHeapAllocatedBytes=$jvmHeapAllocatedBytes, jvmHeapUsedBytes=$jvmHeapUsedBytes)"
   }
 }
 

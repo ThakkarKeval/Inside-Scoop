@@ -54,6 +54,9 @@ class FakeInsideScoopHostApi extends InsideScoopHostApi {
     processResidentBytes: 104857600,
     processVirtualBytes: 209715200,
     isLowMemory: false,
+    totalPssBytes: 78643200,
+    jvmHeapAllocatedBytes: 52428800,
+    jvmHeapUsedBytes: 31457280,
   );
 
   @override
@@ -165,7 +168,18 @@ void main() {
     expect(memInfo.usedPhysicalBytes, equals(8589934592));
     expect(memInfo.processResidentBytes, equals(104857600));
     expect(memInfo.processVirtualBytes, equals(209715200));
+    expect(memInfo.totalPssBytes, equals(78643200));
+    expect(memInfo.jvmHeapAllocatedBytes, equals(52428800));
+    expect(memInfo.jvmHeapUsedBytes, equals(31457280));
     expect(memInfo.isLowMemory, isFalse);
+
+    // Verify detailed ProcessMemoryInfo breakdown
+    expect(memInfo.process, isNotNull);
+    expect(memInfo.process!.residentSetBytes, equals(104857600));
+    expect(memInfo.process!.virtualBytes, equals(209715200));
+    expect(memInfo.process!.totalPssBytes, equals(78643200));
+    expect(memInfo.process!.javaHeapAllocatedBytes, equals(52428800));
+    expect(memInfo.process!.javaHeapUsedBytes, equals(31457280));
   });
 
   test('getStorageInfo converts PlatformStorageInfo to StorageInfo', () async {

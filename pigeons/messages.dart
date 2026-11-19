@@ -97,6 +97,9 @@ class PlatformMemoryInfo {
     this.processResidentBytes,
     this.processVirtualBytes,
     required this.isLowMemory,
+    this.totalPssBytes,
+    this.jvmHeapAllocatedBytes,
+    this.jvmHeapUsedBytes,
   });
 
   final int totalPhysicalBytes;
@@ -104,6 +107,9 @@ class PlatformMemoryInfo {
   final int? processResidentBytes;
   final int? processVirtualBytes;
   final bool isLowMemory;
+  final int? totalPssBytes;
+  final int? jvmHeapAllocatedBytes;
+  final int? jvmHeapUsedBytes;
 }
 
 class PlatformStorageInfo {

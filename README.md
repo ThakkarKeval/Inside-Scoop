@@ -209,8 +209,10 @@ Below is the comprehensive field-by-field availability breakdown across all 6 ta
 | `usedPhysicalBytes` | ✅ (Calculated) | ✅ (Calculated) | ✅ (Calculated) | ✅ (Calculated) | ✅ (Calculated) | ⚠️ (Approximate) |
 | `usagePercentage` | ✅ (Calculated) | ✅ (Calculated) | ✅ (Calculated) | ✅ (Calculated) | ✅ (Calculated) | ⚠️ (Approximate) |
 | `isLowMemory` | ✅ (`ActivityManager.lowMemory`) | ⚠️ (Memory pressure) | ⚠️ (Memory pressure) | ✅ (`MemoryLoad > 90%`) | ⚠️ (`MemAvailable < 10%`) | ❌ |
-| `processResidentBytes` | ✅ (`Runtime.totalMemory()`) | ✅ (`mach_task_basic_info`) | ✅ (`mach_task_basic_info`) | ✅ (`WorkingSetSize`) | ✅ (`VmRSS`) | ❌ |
-| `processVirtualBytes` | ❌ | ❌ | ❌ | ✅ (`PagefileUsage`) | ✅ (`VmSize`) | ❌ |
+| `processResidentBytes` | ✅ (`/proc/self/status VmRSS`) | ✅ (`mach_task_basic_info`) | ✅ (`mach_task_basic_info`) | ✅ (`WorkingSetSize`) | ✅ (`VmRSS`) | ❌ |
+| `processVirtualBytes` | ✅ (`/proc/self/status VmSize`) | ✅ (`mach_task_basic_info`) | ✅ (`mach_task_basic_info`) | ✅ (`PagefileUsage`) | ✅ (`VmSize`) | ❌ |
+| `totalPssBytes` | ✅ (`Debug.getMemoryInfo`) | ❌ | ❌ | ❌ | ❌ | ❌ |
+| `process` (`ProcessMemoryInfo`) | ✅ (Detailed RSS, PSS, JVM heap) | ✅ (RSS, Virtual) | ✅ (RSS, Virtual) | ✅ (RSS, Virtual) | ✅ (RSS, Virtual) | ❌ |
 
 ---
 

@@ -1000,12 +1000,18 @@ PlatformMemoryInfo::PlatformMemoryInfo(
   int64_t available_physical_bytes,
   const int64_t* process_resident_bytes,
   const int64_t* process_virtual_bytes,
-  bool is_low_memory)
+  bool is_low_memory,
+  const int64_t* total_pss_bytes,
+  const int64_t* jvm_heap_allocated_bytes,
+  const int64_t* jvm_heap_used_bytes)
  : total_physical_bytes_(total_physical_bytes),
     available_physical_bytes_(available_physical_bytes),
     process_resident_bytes_(process_resident_bytes ? std::optional<int64_t>(*process_resident_bytes) : std::nullopt),
     process_virtual_bytes_(process_virtual_bytes ? std::optional<int64_t>(*process_virtual_bytes) : std::nullopt),
-    is_low_memory_(is_low_memory) {}
+    is_low_memory_(is_low_memory),
+    total_pss_bytes_(total_pss_bytes ? std::optional<int64_t>(*total_pss_bytes) : std::nullopt),
+    jvm_heap_allocated_bytes_(jvm_heap_allocated_bytes ? std::optional<int64_t>(*jvm_heap_allocated_bytes) : std::nullopt),
+    jvm_heap_used_bytes_(jvm_heap_used_bytes ? std::optional<int64_t>(*jvm_heap_used_bytes) : std::nullopt) {}
 
 int64_t PlatformMemoryInfo::total_physical_bytes() const {
   return total_physical_bytes_;
@@ -1060,14 +1066,56 @@ void PlatformMemoryInfo::set_is_low_memory(bool value_arg) {
 }
 
 
+const int64_t* PlatformMemoryInfo::total_pss_bytes() const {
+  return total_pss_bytes_ ? &(*total_pss_bytes_) : nullptr;
+}
+
+void PlatformMemoryInfo::set_total_pss_bytes(const int64_t* value_arg) {
+  total_pss_bytes_ = value_arg ? std::optional<int64_t>(*value_arg) : std::nullopt;
+}
+
+void PlatformMemoryInfo::set_total_pss_bytes(int64_t value_arg) {
+  total_pss_bytes_ = value_arg;
+}
+
+
+const int64_t* PlatformMemoryInfo::jvm_heap_allocated_bytes() const {
+  return jvm_heap_allocated_bytes_ ? &(*jvm_heap_allocated_bytes_) : nullptr;
+}
+
+void PlatformMemoryInfo::set_jvm_heap_allocated_bytes(const int64_t* value_arg) {
+  jvm_heap_allocated_bytes_ = value_arg ? std::optional<int64_t>(*value_arg) : std::nullopt;
+}
+
+void PlatformMemoryInfo::set_jvm_heap_allocated_bytes(int64_t value_arg) {
+  jvm_heap_allocated_bytes_ = value_arg;
+}
+
+
+const int64_t* PlatformMemoryInfo::jvm_heap_used_bytes() const {
+  return jvm_heap_used_bytes_ ? &(*jvm_heap_used_bytes_) : nullptr;
+}
+
+void PlatformMemoryInfo::set_jvm_heap_used_bytes(const int64_t* value_arg) {
+  jvm_heap_used_bytes_ = value_arg ? std::optional<int64_t>(*value_arg) : std::nullopt;
+}
+
+void PlatformMemoryInfo::set_jvm_heap_used_bytes(int64_t value_arg) {
+  jvm_heap_used_bytes_ = value_arg;
+}
+
+
 EncodableList PlatformMemoryInfo::ToEncodableList() const {
   EncodableList list;
-  list.reserve(5);
+  list.reserve(8);
   list.push_back(EncodableValue(total_physical_bytes_));
   list.push_back(EncodableValue(available_physical_bytes_));
   list.push_back(process_resident_bytes_ ? EncodableValue(*process_resident_bytes_) : EncodableValue());
   list.push_back(process_virtual_bytes_ ? EncodableValue(*process_virtual_bytes_) : EncodableValue());
   list.push_back(EncodableValue(is_low_memory_));
+  list.push_back(total_pss_bytes_ ? EncodableValue(*total_pss_bytes_) : EncodableValue());
+  list.push_back(jvm_heap_allocated_bytes_ ? EncodableValue(*jvm_heap_allocated_bytes_) : EncodableValue());
+  list.push_back(jvm_heap_used_bytes_ ? EncodableValue(*jvm_heap_used_bytes_) : EncodableValue());
   return list;
 }
 
@@ -1084,11 +1132,23 @@ PlatformMemoryInfo PlatformMemoryInfo::FromEncodableList(const EncodableList& li
   if (!encodable_process_virtual_bytes.IsNull()) {
     decoded.set_process_virtual_bytes(std::get<int64_t>(encodable_process_virtual_bytes));
   }
+  auto& encodable_total_pss_bytes = list[5];
+  if (!encodable_total_pss_bytes.IsNull()) {
+    decoded.set_total_pss_bytes(std::get<int64_t>(encodable_total_pss_bytes));
+  }
+  auto& encodable_jvm_heap_allocated_bytes = list[6];
+  if (!encodable_jvm_heap_allocated_bytes.IsNull()) {
+    decoded.set_jvm_heap_allocated_bytes(std::get<int64_t>(encodable_jvm_heap_allocated_bytes));
+  }
+  auto& encodable_jvm_heap_used_bytes = list[7];
+  if (!encodable_jvm_heap_used_bytes.IsNull()) {
+    decoded.set_jvm_heap_used_bytes(std::get<int64_t>(encodable_jvm_heap_used_bytes));
+  }
   return decoded;
 }
 
 bool PlatformMemoryInfo::operator==(const PlatformMemoryInfo& other) const {
-  return PigeonInternalDeepEquals(total_physical_bytes_, other.total_physical_bytes_) && PigeonInternalDeepEquals(available_physical_bytes_, other.available_physical_bytes_) && PigeonInternalDeepEquals(process_resident_bytes_, other.process_resident_bytes_) && PigeonInternalDeepEquals(process_virtual_bytes_, other.process_virtual_bytes_) && PigeonInternalDeepEquals(is_low_memory_, other.is_low_memory_);
+  return PigeonInternalDeepEquals(total_physical_bytes_, other.total_physical_bytes_) && PigeonInternalDeepEquals(available_physical_bytes_, other.available_physical_bytes_) && PigeonInternalDeepEquals(process_resident_bytes_, other.process_resident_bytes_) && PigeonInternalDeepEquals(process_virtual_bytes_, other.process_virtual_bytes_) && PigeonInternalDeepEquals(is_low_memory_, other.is_low_memory_) && PigeonInternalDeepEquals(total_pss_bytes_, other.total_pss_bytes_) && PigeonInternalDeepEquals(jvm_heap_allocated_bytes_, other.jvm_heap_allocated_bytes_) && PigeonInternalDeepEquals(jvm_heap_used_bytes_, other.jvm_heap_used_bytes_);
 }
 
 bool PlatformMemoryInfo::operator!=(const PlatformMemoryInfo& other) const {
@@ -1102,6 +1162,9 @@ size_t PlatformMemoryInfo::Hash() const {
   result = result * 31 + PigeonInternalDeepHash(process_resident_bytes_);
   result = result * 31 + PigeonInternalDeepHash(process_virtual_bytes_);
   result = result * 31 + PigeonInternalDeepHash(is_low_memory_);
+  result = result * 31 + PigeonInternalDeepHash(total_pss_bytes_);
+  result = result * 31 + PigeonInternalDeepHash(jvm_heap_allocated_bytes_);
+  result = result * 31 + PigeonInternalDeepHash(jvm_heap_used_bytes_);
   return result;
 }
 
@@ -1129,6 +1192,27 @@ std::ostream& operator<<(
   }
   os << ", is_low_memory: ";
   os << PigeonInternalToString(obj.is_low_memory_);
+  os << ", total_pss_bytes: ";
+  if (obj.total_pss_bytes_) {
+    os << PigeonInternalToString(*obj.total_pss_bytes_);
+  }
+  else {
+    os << "null";
+  }
+  os << ", jvm_heap_allocated_bytes: ";
+  if (obj.jvm_heap_allocated_bytes_) {
+    os << PigeonInternalToString(*obj.jvm_heap_allocated_bytes_);
+  }
+  else {
+    os << "null";
+  }
+  os << ", jvm_heap_used_bytes: ";
+  if (obj.jvm_heap_used_bytes_) {
+    os << PigeonInternalToString(*obj.jvm_heap_used_bytes_);
+  }
+  else {
+    os << "null";
+  }
   os << ")";
   return os;
 }
