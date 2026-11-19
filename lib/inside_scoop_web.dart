@@ -32,12 +32,16 @@ class InsideScoopWeb extends InsideScoopPlatform {
   Future<AppInfo> getAppInfo() async {
     final title = web.document.title;
     final host = web.window.location.host;
+    final metaVersion = web.document.querySelector('meta[name="version"]')?.getAttribute('content') ??
+        web.document.querySelector('meta[name="app-version"]')?.getAttribute('content');
+    final metaBuild = web.document.querySelector('meta[name="build-number"]')?.getAttribute('content');
+
     return AppInfo(
       appName: title.isNotEmpty ? title : 'Web Application',
-      packageName: host.isNotEmpty ? host : 'web.local',
-      version: '1.0.0',
-      buildNumber: '1',
-      installerStore: 'web',
+      packageName: host.isNotEmpty ? host : 'unknown',
+      version: metaVersion ?? 'unknown',
+      buildNumber: metaBuild ?? 'unknown',
+      installerStore: host.isNotEmpty ? host : null,
     );
   }
 
@@ -46,7 +50,7 @@ class InsideScoopWeb extends InsideScoopPlatform {
     final ua = web.window.navigator.userAgent;
     final platform = web.window.navigator.platform;
     return OsInfo(
-      name: 'Web ($platform)',
+      name: platform.isNotEmpty ? 'Web ($platform)' : 'Web',
       version: 'Browser',
       buildNumber: ua,
       architecture: 'wasm/js',
@@ -61,13 +65,15 @@ class InsideScoopWeb extends InsideScoopPlatform {
     final category = touchPoints > 0
         ? (width < 600 ? DeviceCategory.phone : DeviceCategory.tablet)
         : DeviceCategory.desktop;
+    final ua = web.window.navigator.userAgent.toLowerCase();
+    final isHeadless = ua.contains('headless') || ua.contains('puppeteer') || ua.contains('playwright');
 
     return DeviceInfo(
       model: 'Browser Client',
       manufacturer: 'Web Client',
       brand: 'Web',
       category: category,
-      isPhysicalDevice: true,
+      isPhysicalDevice: !isHeadless,
       supportedAbis: const <String>['wasm', 'javascript'],
     );
   }
@@ -99,7 +105,7 @@ class InsideScoopWeb extends InsideScoopPlatform {
 
   @override
   Future<MemoryInfo> getMemoryInfo() async {
-    int totalBytes = 4 * 1024 * 1024 * 1024;
+    int totalBytes = 0;
     try {
       final mem = web.window.navigator.deviceMemory;
       if (mem > 0) {
@@ -109,7 +115,7 @@ class InsideScoopWeb extends InsideScoopPlatform {
 
     return MemoryInfo(
       totalPhysicalBytes: totalBytes,
-      availablePhysicalBytes: (totalBytes * 0.5).round(),
+      availablePhysicalBytes: 0,
       processResidentBytes: null,
       processVirtualBytes: null,
       isLowMemory: false,
@@ -118,8 +124,8 @@ class InsideScoopWeb extends InsideScoopPlatform {
 
   @override
   Future<StorageInfo> getStorageInfo() async {
-    int total = 10 * 1024 * 1024 * 1024;
-    int available = 8 * 1024 * 1024 * 1024;
+    int total = 0;
+    int available = 0;
 
     try {
       final storageManager = web.window.navigator.storage;
@@ -143,11 +149,35 @@ class InsideScoopWeb extends InsideScoopPlatform {
 
   @override
   Future<GpuInfo> getGpuInfo() async {
-    return const GpuInfo(
-      vendor: 'Web Browser',
-      renderer: 'WebGL Context',
-      apiFamily: 'WebGL',
-      apiVersion: '2.0',
+    String vendor = 'unknown';
+    String renderer = 'unknown';
+    String? apiVersion;
+
+    try {
+      final canvas = web.document.createElement('canvas') as web.HTMLCanvasElement;
+      final gl = (canvas.getContext('webgl2') ?? canvas.getContext('webgl')) as web.WebGLRenderingContext?;
+      if (gl != null) {
+        apiVersion = (gl is web.WebGL2RenderingContext) ? 'WebGL 2.0' : 'WebGL 1.0';
+        final debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        if (debugInfo != null) {
+          final unmaskedVendor = gl.getParameter(0x9245);
+          final unmaskedRenderer = gl.getParameter(0x9246);
+          if (unmaskedVendor != null) vendor = unmaskedVendor.toString();
+          if (unmaskedRenderer != null) renderer = unmaskedRenderer.toString();
+        } else {
+          final v = gl.getParameter(0x1F00);
+          final r = gl.getParameter(0x1F01);
+          if (v != null) vendor = v.toString();
+          if (r != null) renderer = r.toString();
+        }
+      }
+    } catch (_) {}
+
+    return GpuInfo(
+      vendor: vendor,
+      renderer: renderer,
+      apiFamily: apiVersion != null ? 'WebGL' : null,
+      apiVersion: apiVersion,
       totalVramBytes: null,
       isUnifiedMemory: null,
     );

@@ -344,20 +344,39 @@ class InsideScoopPlugin(private var context: Context? = null) : FlutterPlugin, I
         val resolvedVendor = vendor?.takeIf { it.isNotBlank() }
             ?: if (hardware?.contains("qcom", ignoreCase = true) == true) "Qualcomm"
                else if (hardware?.contains("mali", ignoreCase = true) == true) "ARM"
-               else "Android"
+               else "unknown"
 
         val resolvedRenderer = renderer?.takeIf { it.isNotBlank() }
             ?: hardware?.takeIf { it.isNotBlank() }
             ?: board?.takeIf { it.isNotBlank() }
-            ?: "OpenGL ES Generic Renderer"
+            ?: "unknown"
+
+        val isEmulatorOrVirtual = resolvedRenderer.contains("swiftshader", ignoreCase = true) ||
+            resolvedRenderer.contains("llvmpipe", ignoreCase = true) ||
+            resolvedRenderer.contains("goldfish", ignoreCase = true) ||
+            resolvedRenderer.contains("ranchu", ignoreCase = true) ||
+            resolvedRenderer.contains("virgl", ignoreCase = true)
+
+        val unified: Boolean? = if (isEmulatorOrVirtual) {
+            false
+        } else if (resolvedVendor.contains("Qualcomm", ignoreCase = true) ||
+                   resolvedVendor.contains("ARM", ignoreCase = true) ||
+                   resolvedVendor.contains("Imagination", ignoreCase = true) ||
+                   resolvedRenderer.contains("Adreno", ignoreCase = true) ||
+                   resolvedRenderer.contains("Mali", ignoreCase = true) ||
+                   resolvedRenderer.contains("PowerVR", ignoreCase = true)) {
+            true
+        } else {
+            null
+        }
 
         return PlatformGpuInfo(
             vendor = resolvedVendor,
             renderer = resolvedRenderer,
             apiFamily = "OpenGL ES",
-            apiVersion = apiVersion ?: "3.0",
+            apiVersion = apiVersion,
             totalVramBytes = null,
-            isUnifiedMemory = true
+            isUnifiedMemory = unified
         )
     }
 
