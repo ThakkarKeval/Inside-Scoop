@@ -19,6 +19,7 @@ export 'src/core/models/app_info.dart';
 export 'src/core/models/battery_info.dart';
 export 'src/core/models/cpu_info.dart';
 export 'src/core/models/device_info.dart';
+export 'src/core/models/diagnostic_diff.dart';
 export 'src/core/models/diagnostic_report.dart';
 export 'src/core/models/gpu_info.dart';
 export 'src/core/models/memory_info.dart';

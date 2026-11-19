@@ -7,6 +7,7 @@ import 'app_info.dart';
 import 'battery_info.dart';
 import 'cpu_info.dart';
 import 'device_info.dart';
+import 'diagnostic_diff.dart';
 import 'gpu_info.dart';
 import 'memory_info.dart';
 import 'os_info.dart';
@@ -335,6 +336,10 @@ class DiagnosticReport {
     battery,
     network,
   );
+
+  /// Compares this baseline report against a subsequent [other] report and returns a [DiagnosticDiff].
+  DiagnosticDiff diff(DiagnosticReport other) =>
+      DiagnosticDiff.compare(this, other);
 
   @override
   String toString() {
