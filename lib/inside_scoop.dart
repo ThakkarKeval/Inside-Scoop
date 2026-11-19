@@ -25,6 +25,7 @@ export 'src/core/models/memory_info.dart';
 export 'src/core/models/network_info.dart';
 export 'src/core/models/os_info.dart';
 export 'src/core/models/storage_info.dart';
+export 'src/core/models/system_metric.dart';
 export 'src/core/models/system_metrics_snapshot.dart';
 export 'src/features/app/app_service.dart';
 export 'src/features/battery/battery_service.dart';

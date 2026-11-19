@@ -1,5 +1,7 @@
 import 'package:meta/meta.dart';
 
+import '../models/system_metric.dart';
+
 /// Enumeration of reasons why a specific system information query
 /// cannot be fulfilled.
 enum ScoopUnavailableReason {
@@ -75,6 +77,24 @@ sealed class ScoopResult<T> {
         reason,
         message,
       ),
+    };
+  }
+
+  /// Converts this [ScoopResult] to a [SystemMetric] with an explicit [quality] and optional [source].
+  SystemMetric<T> toMetric({
+    MetricQuality quality = MetricQuality.measured,
+    String? source,
+  }) {
+    return switch (this) {
+      ScoopAvailable(:final value) => SystemMetric<T>(
+          value: value,
+          quality: quality,
+          source: source,
+        ),
+      ScoopUnavailable(:final reason, :final message) =>
+        SystemMetric<T>.unavailable(
+          source ?? (message != null ? '${reason.name}: $message' : reason.name),
+        ),
     };
   }
 }
