@@ -22,6 +22,7 @@ export 'src/core/models/device_info.dart';
 export 'src/core/models/diagnostic_diff.dart';
 export 'src/core/models/diagnostic_report.dart';
 export 'src/core/models/gpu_info.dart';
+export 'src/core/models/health_alert.dart';
 export 'src/core/models/memory_info.dart';
 export 'src/core/models/network_info.dart';
 export 'src/core/models/os_info.dart';

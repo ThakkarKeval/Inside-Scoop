@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 
 import '../../core/models/battery_info.dart';
 import '../../core/models/cpu_info.dart';
+import '../../core/models/health_alert.dart';
 import '../../core/models/memory_info.dart';
 import '../../core/models/network_info.dart';
 import '../../core/models/system_metrics_snapshot.dart';
@@ -131,5 +132,16 @@ class MonitoringService {
     );
 
     return controller.stream;
+  }
+
+  /// Begins a real-time stream that evaluates snapshots against [thresholds]
+  /// and emits a list of [HealthAlert] whenever one or more alerts are triggered.
+  Stream<List<HealthAlert>> watchHealthAlerts({
+    HealthThresholds thresholds = const HealthThresholds(),
+    MonitoringConfig config = const MonitoringConfig(),
+  }) {
+    return startMonitoring(config: config)
+        .map((snapshot) => thresholds.evaluate(snapshot))
+        .where((alerts) => alerts.isNotEmpty);
   }
 }
